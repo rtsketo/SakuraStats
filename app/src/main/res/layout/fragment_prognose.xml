@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/progFrag"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:gravity="center"
+    android:orientation="vertical"
+    tools:context=".ProgFrag">
+
+    <ImageView
+        android:id="@+id/bgWaves"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/bg_waves"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/loadingOp"
+        android:layout_width="@dimen/_107sdp"
+        android:layout_height="@dimen/_31sdp"
+        android:scaleType="fitXY"
+        android:src="@drawable/cr_shadow"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/wifiOp"
+        android:layout_width="@dimen/_28sdp"
+        android:layout_height="@dimen/_25sdp"
+        android:scaleType="fitXY"
+        android:src="@drawable/cr_shadow"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/loadingAnim"
+        android:layout_width="@dimen/_18sdp"
+        android:layout_height="@dimen/_18sdp"
+        android:layout_marginStart="@dimen/_6sdp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/loadingOp"
+        app:layout_constraintStart_toStartOf="@+id/loadingOp"
+        app:layout_constraintTop_toTopOf="@+id/loadingOp"
+        app:srcCompat="@drawable/loading"
+        tools:ignore="ContentDescription" />
+
+    <com.qwerjk.better_text.MagicTextView
+        android:id="@+id/loading"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/_15sdp"
+        android:layout_marginStart="@dimen/_6sdp"
+        android:layout_marginEnd="@dimen/_6sdp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/loadingAnim"
+        app:layout_constraintEnd_toEndOf="@+id/loadingOp"
+        app:layout_constraintStart_toEndOf="@+id/loadingAnim"
+        app:layout_constraintTop_toTopOf="@+id/loadingAnim" />
+
+    <ImageView
+        android:id="@+id/wifi"
+        android:layout_width="@dimen/_15sdp"
+        android:layout_height="@dimen/_12sdp"
+        android:layout_marginStart="@dimen/_6sdp"
+        android:layout_marginTop="@dimen/_6sdp"
+        android:layout_marginEnd="@dimen/_6sdp"
+        android:layout_marginBottom="@dimen/_6sdp"
+        android:alpha=".65"
+        android:src="@drawable/no_wifi"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/wifiOp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/wifiOp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/no_wifi"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/headImage"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/_48sdp"
+        android:layout_marginStart="@dimen/_12sdp"
+        android:layout_marginTop="@dimen/_74sdp"
+        android:layout_marginEnd="@dimen/_12sdp"
+        android:layout_marginBottom="@dimen/_6sdp"
+        android:cropToPadding="false"
+        android:scaleType="fitCenter"
+        android:src="@drawable/cr_logo"
+        app:layout_constraintBottom_toTopOf="@+id/warClanList"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.35000002"
+        tools:ignore="ContentDescription" />
+
+
+    <LinearLayout
+        android:id="@+id/warClanList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_12sdp"
+        android:layout_marginEnd="@dimen/_12sdp"
+        android:layout_marginBottom="@dimen/_3sdp"
+        android:animateLayoutChanges="true"
+        android:orientation="vertical"
+        android:paddingBottom="8dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+</android.support.constraint.ConstraintLayout>

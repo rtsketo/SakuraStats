@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".Interface">
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewPager"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@android:color/holo_blue_light"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/imageView5"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/imageView5"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="@dimen/_2sdp"
+        android:layout_marginTop="@dimen/_2sdp"
+        android:layout_marginEnd="@dimen/_2sdp"
+        android:layout_marginBottom="@dimen/_2sdp"
+        android:scaleType="fitXY"
+        android:src="@drawable/cr_bot_bg"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/imageView7"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/imageView7"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/_55sdp"
+        android:scaleType="fitXY"
+        android:src="@drawable/frame_outter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/frame_outter"
+        tools:ignore="ContentDescription" />
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/constraintLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageView
+            android:id="@+id/actiTab"
+            android:layout_width="@dimen/_49sdp"
+            android:layout_height="@dimen/_49sdp"
+            android:layout_marginBottom="@dimen/_2sdp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/cr_activity"
+            android:visibility="visible"
+            app:layout_constraintBottom_toTopOf="@+id/tab3"
+            app:layout_constraintEnd_toStartOf="@+id/settiTab"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/warTab"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/warTab"
+            android:layout_width="@dimen/_49sdp"
+            android:layout_height="@dimen/_49sdp"
+            android:layout_marginBottom="@dimen/_2sdp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/cr_analytics"
+            android:visibility="visible"
+            app:layout_constraintBottom_toTopOf="@+id/tab2"
+            app:layout_constraintEnd_toStartOf="@+id/actiTab"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/progTab"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/settiTab"
+            android:layout_width="@dimen/_49sdp"
+            android:layout_height="@dimen/_49sdp"
+            android:layout_marginBottom="@dimen/_2sdp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/cr_gear"
+            android:visibility="visible"
+            app:layout_constraintBottom_toTopOf="@+id/tab4"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/actiTab"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/progTab"
+            android:layout_width="@dimen/_49sdp"
+            android:layout_height="@dimen/_49sdp"
+            android:layout_marginBottom="@dimen/_2sdp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/cr_shield"
+            android:visibility="visible"
+            app:layout_constraintBottom_toTopOf="@+id/tab1"
+            app:layout_constraintEnd_toStartOf="@+id/warTab"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:ignore="ContentDescription" />
+
+        <com.qwerjk.better_text.MagicTextView
+            android:id="@+id/tab1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/_3sdp"
+            android:textColor="@android:color/background_light"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/progTab"
+            app:layout_constraintStart_toStartOf="@+id/progTab" />
+
+        <com.qwerjk.better_text.MagicTextView
+            android:id="@+id/tab2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/_3sdp"
+            android:textColor="@android:color/background_light"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/warTab"
+            app:layout_constraintStart_toStartOf="@+id/warTab" />
+
+        <com.qwerjk.better_text.MagicTextView
+            android:id="@+id/tab3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_6sdp"
+            android:layout_marginEnd="@dimen/_6sdp"
+            android:layout_marginBottom="@dimen/_3sdp"
+            android:textColor="@android:color/background_light"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/actiTab"
+            app:layout_constraintStart_toStartOf="@+id/actiTab" />
+
+        <com.qwerjk.better_text.MagicTextView
+            android:id="@+id/tab4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_6sdp"
+            android:layout_marginEnd="@dimen/_6sdp"
+            android:layout_marginBottom="@dimen/_3sdp"
+            android:textColor="@android:color/background_light"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/settiTab"
+            app:layout_constraintStart_toStartOf="@+id/settiTab" />
+    </android.support.constraint.ConstraintLayout>
+
+</android.support.constraint.ConstraintLayout>

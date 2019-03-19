@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/_12sdp"
+    android:layout_marginEnd="@dimen/_12sdp"
+    android:paddingBottom="@dimen/_3sdp"
+    android:visibility="visible"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent">
+
+    <ImageView
+        android:id="@+id/frameBG"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="@dimen/_2sdp"
+        android:layout_marginTop="@dimen/_2sdp"
+        android:layout_marginEnd="@dimen/_2sdp"
+        android:layout_marginBottom="@dimen/_2sdp"
+        android:background="@drawable/background_1"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/background_1"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/frameShine"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/_18sdp"
+        android:layout_marginStart="@dimen/_6sdp"
+        android:layout_marginTop="@dimen/_6sdp"
+        android:layout_marginEnd="@dimen/_6sdp"
+        android:scaleType="fitXY"
+        android:src="@drawable/shine"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/shine"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/outterFrame"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/frame_outter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/frame_outter"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/clanBadge"
+        android:layout_width="@dimen/_34sdp"
+        android:layout_height="0dp"
+        android:layout_marginStart="@dimen/_6sdp"
+        android:layout_marginTop="@dimen/_6sdp"
+        android:layout_marginBottom="@dimen/_6sdp"
+        android:layout_weight="0"
+        android:scaleType="fitCenter"
+        android:src="@drawable/no_clan"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/cherry_blossom_04"
+        tools:ignore="ContentDescription" />
+
+    <com.qwerjk.better_text.MagicTextView
+        android:id="@+id/clanName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_1sdp"
+        android:layout_marginTop="@dimen/_9sdp"
+        android:layout_weight="1"
+        android:gravity="end"
+        android:padding="3dp"
+        android:textAllCaps="false"
+        android:textColor="@android:color/background_light"
+        android:textStyle="bold"
+        android:typeface="normal"
+        android:visibility="visible"
+        app:layout_constraintStart_toEndOf="@+id/clanBadge"
+        app:layout_constraintTop_toTopOf="parent" />
+    <!--android:autoText="false"-->
+    <!--android:textAlignment="viewStart"-->
+
+    <com.qwerjk.better_text.MagicTextView
+        android:id="@+id/clanTag"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_1sdp"
+        android:layout_weight="1"
+        android:padding="@dimen/_2sdp"
+        android:textColor="@android:color/white"
+        app:layout_constraintBaseline_toBaselineOf="@+id/clanTrophies"
+        app:layout_constraintStart_toEndOf="@+id/clanBadge" />
+
+    <ImageView
+        android:id="@+id/warTrophy"
+        android:layout_width="@dimen/_12sdp"
+        android:layout_height="@dimen/_12sdp"
+        android:layout_marginStart="@dimen/_3sdp"
+        android:layout_marginBottom="@dimen/_6sdp"
+        android:adjustViewBounds="false"
+        android:cropToPadding="false"
+        android:scaleType="fitCenter"
+        android:src="@drawable/cr_trophy"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/clanTrophies"
+        app:layout_constraintHorizontal_chainStyle="spread_inside"
+        app:layout_constraintStart_toEndOf="@+id/clanTag"
+        app:layout_constraintTop_toBottomOf="@+id/clanName"
+        app:layout_constraintVertical_bias="0.0"
+        tools:ignore="ContentDescription" />
+
+    <com.qwerjk.better_text.MagicTextView
+        android:id="@+id/clanTrophies"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/_2sdp"
+        android:textColor="@android:color/holo_purple"
+        app:layout_constraintBottom_toBottomOf="@+id/warTrophy"
+        app:layout_constraintStart_toEndOf="@+id/warTrophy"
+        app:layout_constraintTop_toTopOf="@+id/warTrophy" />
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="@dimen/_95sdp"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/_6sdp"
+        android:layout_marginEnd="@dimen/_6sdp"
+        android:layout_marginBottom="@dimen/_6sdp"
+        android:background="@drawable/frame_inner"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.qwerjk.better_text.MagicTextView
+            android:id="@+id/remaining"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/_2sdp"
+            app:layout_constraintBottom_toBottomOf="@+id/sword"
+            app:layout_constraintStart_toEndOf="@+id/sword"
+            app:layout_constraintTop_toTopOf="@+id/sword" />
+
+        <ImageView
+            android:id="@+id/crown"
+            android:layout_width="@dimen/_11sdp"
+            android:layout_height="@dimen/_13sdp"
+            android:layout_marginStart="@dimen/_6sdp"
+            android:layout_marginTop="@dimen/_3sdp"
+            android:layout_marginEnd="@dimen/_6sdp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/cr_crown"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/plusOne"
+            app:layout_constraintStart_toStartOf="@+id/remaining"
+            app:layout_constraintTop_toBottomOf="@+id/winMedal"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/sword"
+            android:layout_width="@dimen/_12sdp"
+            android:layout_height="@dimen/_12sdp"
+            android:layout_marginStart="@dimen/_3sdp"
+            android:layout_marginTop="@dimen/_3sdp"
+            android:adjustViewBounds="false"
+            android:scaleType="fitCenter"
+            android:src="@drawable/cr_sword"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/winMedal"
+            app:srcCompat="@drawable/cr_sword"
+            tools:ignore="ContentDescription" />
+
+        <com.qwerjk.better_text.MagicTextView
+            android:id="@+id/predictWins"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/_6sdp"
+            android:layout_weight="1"
+            android:padding="@dimen/_2sdp"
+            app:layout_constraintBottom_toBottomOf="@+id/uknown"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/uknown" />
+
+        <ImageView
+            android:id="@+id/winMedal"
+            android:layout_width="@dimen/_18sdp"
+            android:layout_height="@dimen/_18sdp"
+            android:layout_marginStart="@dimen/_9sdp"
+            android:layout_weight="0"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/cr_medal"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ContentDescription" />
+
+        <com.qwerjk.better_text.MagicTextView
+            android:id="@+id/clanPlusOne"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/_2sdp"
+            app:layout_constraintBottom_toBottomOf="@+id/plusOne"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/plusOne" />
+
+        <ImageView
+            android:id="@+id/plusOne"
+            android:layout_width="@dimen/_12sdp"
+            android:layout_height="@dimen/_12sdp"
+            android:layout_marginTop="@dimen/_3sdp"
+            android:src="@drawable/cr_plusplus"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/clanPlusOne"
+            app:layout_constraintTop_toBottomOf="@+id/uknown"
+            tools:ignore="ContentDescription" />
+
+        <com.qwerjk.better_text.MagicTextView
+            android:id="@+id/clanCrown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/_2sdp"
+            app:layout_constraintBottom_toBottomOf="@+id/crown"
+            app:layout_constraintStart_toEndOf="@+id/crown"
+            app:layout_constraintTop_toTopOf="@+id/crown" />
+
+        <com.qwerjk.better_text.MagicTextView
+            android:id="@+id/actualWins"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="@dimen/_2sdp"
+            app:layout_constraintBottom_toBottomOf="@+id/winMedal"
+            app:layout_constraintStart_toEndOf="@+id/winMedal"
+            app:layout_constraintTop_toTopOf="@+id/winMedal" />
+
+        <ImageView
+            android:id="@+id/uknown"
+            android:layout_width="@dimen/_18sdp"
+            android:layout_height="@dimen/_18sdp"
+            android:layout_weight="0"
+            android:src="@drawable/cr_prognose"
+            app:layout_constraintEnd_toStartOf="@+id/predictWins"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ContentDescription" />
+    </android.support.constraint.ConstraintLayout>
+
+</android.support.constraint.ConstraintLayout>
