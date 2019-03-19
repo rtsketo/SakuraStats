@@ -2,7 +2,6 @@ package eu.rtsketo.sakurastats;
 
 
 import android.graphics.Color;
-import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
@@ -41,7 +40,6 @@ import static eu.rtsketo.sakurastats.Statics.hasPlayerMap;
 import static eu.rtsketo.sakurastats.Statics.o2l;
 import static eu.rtsketo.sakurastats.Statics.rotate;
 import static eu.rtsketo.sakurastats.Statics.sdp2px;
-import static eu.rtsketo.sakurastats.Statics.smallWidth;
 import static java.lang.Math.min;
 
 
