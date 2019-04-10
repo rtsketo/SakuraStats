@@ -27,7 +27,6 @@ import static eu.rtsketo.sakurastats.DBControl.getDB;
 import static eu.rtsketo.sakurastats.Interface.getLastClan;
 import static eu.rtsketo.sakurastats.Interface.getLastForce;
 import static eu.rtsketo.sakurastats.Interface.getLastUse;
-import static eu.rtsketo.sakurastats.Interface.incUseCount;
 import static eu.rtsketo.sakurastats.Interface.setLastForce;
 import static eu.rtsketo.sakurastats.Statics.animateView;
 import static eu.rtsketo.sakurastats.Statics.blinkView;
@@ -64,8 +63,7 @@ public class ProgFrag extends Fragment {
         ImageView bgWaves = root.findViewById(R.id.bgWaves);
         ((AnimationDrawable)bgWaves.getDrawable()).start();
 
-        loadingAnim.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) { refresh(true); }});
+        loadingAnim.setOnClickListener(v -> refresh(true));
 
         loaded = true;
         System.out.println("Prog, I'm loaded!");
@@ -73,58 +71,55 @@ public class ProgFrag extends Fragment {
     }
 
     public void refresh(final boolean force) {
-        getFixedPool().execute(new Runnable() {
-            @Override public void run() {
-                setLoading(true);
-                String tag = getLastClan();
-                if (force) {
-                    boolean refresh = getLastUse(tag);
-                    List<ClanStats> cs = getClanStats(tag);
-                    if (refresh) { setStats(cs); setLastForce(0); }}
-                else setStats(getDB().getDao()
-                        .getClanStatsList(tag));
-                incUseCount();
-                setLoading(false); }});
+        getFixedPool().execute(() -> {
+            setLoading(true);
+            String tag = getLastClan();
+            if (force) {
+                boolean refresh = getLastUse(tag);
+                List<ClanStats> cs = getClanStats(tag);
+                if (refresh) { setStats(cs); setLastForce(0); }}
+            else setStats(getDB().getDao()
+                    .getClanStatsList(tag));
+            setLoading(false); });
     }
 
     public void setLoading(final boolean loading) {
         final int size = sdp2px(10);
-        getActi().runOnUiThread(new Runnable() {
-            @Override public void run() {
-                if (!loading || getBackThread().getGUI())
-                    blinkView(((Interface)getActi())
-                        .getTab(0), loading);
+        getActi().runOnUiThread(() -> {
+            if (!loading || getBackThread().getGUI())
+                blinkView(((Interface)getActi())
+                    .getTab(0), loading);
 
-                if (loading) {
-                    loadingAnim.setEnabled(false);
-                    loadingAnim.setColorFilter(null);
-                    loadView.setVisibility(View.VISIBLE);
-                    loadingOp.setVisibility(View.VISIBLE);
-                    loadingAnim.setVisibility(View.VISIBLE);
-                    decorate(loadView, "Loading...", size);
-                    loadingAnim.setImageResource(R.drawable.loading);
-                    animateView(loadingAnim, loading);
-                } else {
-                    animateView(loadingAnim, loading);
-                    loadingAnim.setImageResource(R.drawable.refresh);
-                    loadingAnim.setColorFilter(Color.argb(100,200,200,200));
+            if (loading) {
+                loadingAnim.setEnabled(false);
+                loadingAnim.setColorFilter(null);
+                loadView.setVisibility(View.VISIBLE);
+                loadingOp.setVisibility(View.VISIBLE);
+                loadingAnim.setVisibility(View.VISIBLE);
+                decorate(loadView, "Loading...", size);
+                loadingAnim.setImageResource(R.drawable.loading);
+                animateView(loadingAnim, loading);
+            } else {
+                animateView(loadingAnim, loading);
+                loadingAnim.setImageResource(R.drawable.refresh);
+                loadingAnim.setColorFilter(Color.argb(100,200,200,200));
 
-                    final Timer timer = new Timer();
-                    timer.schedule(new TimerTask() {
-                        @Override public void run() {
-                            final int refresh = 15 - getLastForce(0);
-                            if (refresh < 0) getActi().runOnUiThread(new Runnable() {
-                                @Override public void run() {
-                                    loadView.setVisibility(View.INVISIBLE);
-                                    loadingOp.setVisibility(View.INVISIBLE);
-                                    loadingAnim.setColorFilter(null);
-                                    loadingAnim.setEnabled(true);
-                                    timer.cancel(); }});
-                            else getActi().runOnUiThread(new Runnable() {
-                                @Override public void run() {
-                                    loadView.setVisibility(View.VISIBLE);
-                                    decorate(loadView, "     "+refresh+"min", size); }});
-                        }}, 0, 60000); }}});
+                final Timer timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override public void run() {
+                        final int refresh = 15 - getLastForce(0);
+                        if (refresh < 0) getActi().runOnUiThread(new Runnable() {
+                            @Override public void run() {
+                                loadView.setVisibility(View.INVISIBLE);
+                                loadingOp.setVisibility(View.INVISIBLE);
+                                loadingAnim.setColorFilter(null);
+                                loadingAnim.setEnabled(true);
+                                timer.cancel(); }});
+                        else getActi().runOnUiThread(new Runnable() {
+                            @Override public void run() {
+                                loadView.setVisibility(View.VISIBLE);
+                                decorate(loadView, "     "+refresh+"min", size); }});
+                    }}, 0, 60000); }});
     }
 
     public void setStats(List<ClanStats> clans) {
@@ -152,18 +147,15 @@ public class ProgFrag extends Fragment {
             decorate(more, "Stats can't be refreshed in less than 15min",sdp2px(8));
             info.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
             more.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-            getActi().runOnUiThread(new Runnable() {
-                @Override public void run() {
-                    lineage.addView(info);
-                    lineage.addView(more); }});
+            getActi().runOnUiThread(() -> {
+                lineage.addView(info);
+                lineage.addView(more); });
         }
     }
 
     private void removeViews() {
         while (lineage == null) sleep(500);
-        getActi().runOnUiThread(new Runnable() {
-            @Override public void run() {
-                lineage.removeAllViews(); }}); }
+        getActi().runOnUiThread(() -> lineage.removeAllViews()); }
 
     private void addClan(ClanStats clan) {
         int predictWins = clan.getEstimatedWins();
@@ -181,15 +173,7 @@ public class ProgFrag extends Fragment {
         MagicTextView troph = frame.findViewById(R.id.clanTrophies);
         ImageView badge = frame.findViewById(R.id.clanBadge);
 
-        int[] maxy = new int[2];
-//        if (smallWidth()) {
-            maxy[0] = 104;
-            maxy[1] = 52;
-//        } else {
-//            maxy[0] = 120;
-//            maxy[1] = -1;
-//        }
-
+        int[] maxy = new int[] {104, 52};
         decorate(name, clan.getName(), sdp2px(9), Color.WHITE, maxy[0]);
         decorate(tag, "#"+clan.getTag(), sdp2px(6), Color.WHITE, maxy[1]);
         decorate(wins, clan.getActualWins(), sdp2px(9));
@@ -203,22 +187,7 @@ public class ProgFrag extends Fragment {
         badge.setImageResource(getActi().getResources().getIdentifier(
                 clan.getBadge(),"drawable", getActi().getPackageName()));
 
-        getActi().runOnUiThread(new Runnable() {
-            @Override public void run() {
-                lineage.addView(frame); }});
-
-//        final ConstraintLayout.LayoutParams params =
-//                new ConstraintLayout.LayoutParams(
-//                        ConstraintLayout.LayoutParams.MATCH_PARENT,
-//                        ConstraintLayout.LayoutParams.WRAP_CONTENT);
-//        params.bottomMargin = dp2p(8f);
-
-//        getActi().runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                lineage.addView(frame,params);
-//            }
-//        });
+        getActi().runOnUiThread(() -> lineage.addView(frame));
     }
 
     public Pair<ImageView, ImageView> getWifi() {

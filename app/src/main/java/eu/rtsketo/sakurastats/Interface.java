@@ -11,7 +11,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Pair;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -40,7 +39,6 @@ import static eu.rtsketo.sakurastats.Statics.updatePlayerMap;
 public class Interface extends AppCompatActivity {
     private ImageView progTab, warTab, actiTab, settiTab;
     private MagicTextView[] tab = new MagicTextView[4];
-    private SectionsPagerAdapter mSectionsPagerAdapter;
     private static SharedPreferences preferences;
     private static Pair<Integer, Integer> dims;
     private ViewPager mViewPager;
@@ -81,34 +79,26 @@ public class Interface extends AppCompatActivity {
         mViewPager.setOffscreenPageLimit(4);
 
         preferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(mSectionsPagerAdapter);
         super.onCreate(savedInstanceState);
         startApp();
     }
 
     private void startApp() {
-        getCachePool().execute(new Runnable() {
-            @Override public void run() {
-                if (getLastClan()==null)
-                    getActi().runOnUiThread(new Runnable() {
-                        @Override public void run() {
-                            createDialog(Statics.SakuraDialog.INPUT); }});
-                else {
-                    while(!getActiFrag().isLoaded() ||
-                            !getWarFrag().isLoaded() ||
-                            !getProgFrag().isLoaded())
-                        sleep(50);
-                    updatePlayerMap();
-                    if (getBackThread().getApproval())
-                        getProgFrag().refresh(false);
-                    sleep(500);
-                    if (getBackThread().getApproval())
-                        getWarFrag().refreshList(0);
-                    sleep(500);
-                    if (getBackThread().getApproval())
-                        getActiFrag().refreshList(0);
-                    updateAll(); }}});
+        getCachePool().execute(() -> {
+            if (getLastClan()==null)
+                getActi().runOnUiThread(() ->
+                        createDialog(Statics.SakuraDialog.INPUT));
+            else {
+                while(!getActiFrag().isLoaded() ||
+                        !getWarFrag().isLoaded() ||
+                        !getProgFrag().isLoaded())
+                    sleep(50);
+                updatePlayerMap(false);
+                if (getBackThread().getApproval())
+                    getProgFrag().refresh(false);
+                updateAll(); }});
     }
 
     public ImageView getTab(int c) {
@@ -128,9 +118,8 @@ public class Interface extends AppCompatActivity {
 
         for (int c = 0; c < 4; c++) {
             final int finalC = c;
-            getTab(c).setOnClickListener(new View.OnClickListener() {
-                @Override public void onClick(View view) {
-                    changeTabTo(finalC); }}); }
+            getTab(c).setOnClickListener(
+                    view -> changeTabTo(finalC)); }
 
         tab[0] = findViewById(R.id.tab1);
         tab[1] = findViewById(R.id.tab2);
@@ -156,7 +145,7 @@ public class Interface extends AppCompatActivity {
         if (getLastUse(clan, "auto")) {
             getBackThread().setLock(true);
             while (getFixedPool().getActiveCount() > 0)
-                sleep(500); sleep(3000);
+                sleep(500);
             setLastUse(clan, "auto");
             getBackThread().setClan(clan);
             getBackThread().setGUI(false);
@@ -164,7 +153,7 @@ public class Interface extends AppCompatActivity {
             getBackThread().startThread();
 
             while (getBackThread().getThread().isAlive())
-                sleep(500); sleep(1000);
+                sleep(500);
             if (getBackThread().getApproval()
                     && getLastClan().equals(clan)) {
                 getActiFrag().refreshList(0);
@@ -223,9 +212,8 @@ public class Interface extends AppCompatActivity {
     public static int getUseCount() {
         int uc = preferences.getInt("useCount", 0);
         if (uc == 250 || uc == 3000 || uc == 10000)
-            getActi().runOnUiThread(new Runnable() {
-                @Override public void run() {
-                    createDialog(Statics.SakuraDialog.RATEQUEST); }});
+            getActi().runOnUiThread(() -> createDialog(
+                    Statics.SakuraDialog.RATEQUEST));
         return uc;
     }
 

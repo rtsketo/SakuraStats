@@ -65,19 +65,25 @@ import static eu.rtsketo.sakurastats.Statics.l2o;
 
 public class APIControl {
     private static Api api;
-    private static int timeout;
+    private static int retries = 5;
+    private static int timeout = 6000;
+    private static Map<String, List<ClanWarLog>> clanWars = new HashMap<>();
     private static Map<String, Document> pageMap = new HashMap<>();
     private static GeneralDao db = DBControl.getDB().getDao();
     private static List<ClanStats> clanList;
-//    private static List<ClanWar> warClans;
     private static int maxParticipants;
     private static String mainTag;
     private static int sleepTime;
 
     static void initAPI() {
         api = null;
-        api = new Api("http://api.royaleapi.com/", "Replace this with API-KEY");
-        timeout = 30000;
+        api = new Api("http://api.royaleapi.com/",
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
+                ".eyJpZCI6OTg2LCJpZGVuIjoiMTc3NDg1Nzg0OTIy" +
+                "ODQ5MjgxIiwibWQiOnsidXNlcm5hbWUiOiJEZWFkbH" +
+                "lBbGl2ZSIsImtleVZlcnNpb24iOjMsImRpc2NyaW1pb" +
+                "mF0b3IiOiI3MjI5In0sInRzIjoxNTQxNDQzNzAxNjcyf" +
+                "Q.uLGmc7wvzsmkt2ughm1QU-pUjrirWYwj3lQON7acF8k");
     }
 
     public static Api getApi() {
@@ -106,10 +112,9 @@ public class APIControl {
 
     static boolean checkClan(final String tag) {
         try { TimeLimiter limiter = SimpleTimeLimiter.create(getCachePool());
-            Clan clan = limiter.callWithTimeout(new Callable<Clan>() {
-                public Clan call() {
-                    return api.getClan(ClanRequest.builder(tag).build());
-                }}, timeout, TimeUnit.MILLISECONDS);
+            Clan clan = limiter.callWithTimeout(() ->
+                    api.getClan(ClanRequest.builder(tag).build()),
+                    timeout, TimeUnit.MILLISECONDS);
             if (clan.getTag() != null) return true; }
         catch (Exception ex) { cought(ex); ex.printStackTrace(); }
         try { Document doc = getPage("https://spy.deckshop.pro/clan/"+tag);
@@ -124,7 +129,7 @@ public class APIControl {
         return false;
     }
 
-    private static List<Member> getMembers(final String tag) {
+    public static List<Member> getMembers(final String tag) {
         List<Member> members = null;
         try { TimeLimiter limiter = SimpleTimeLimiter.create(getCachePool());
             members = limiter.callWithTimeout(new Callable<List<Member>>() {
@@ -151,6 +156,49 @@ public class APIControl {
                     members = mems;
         } catch (IOException ex) { cought(ex); sleep(); return getMembers(tag); }
         return members;
+    }
+
+    private static PlayerStats getWarStats(final String tag) {
+        Document doc = null;
+        PlayerStats ps = null;
+        for (int c = 0; c < retries || doc == null; c++) {
+        try {
+            doc = getPage("https://royaleapi.com/inc/player/cw_history?player_tag="+tag);
+            double wins = doc.select(".won_all").size() - 1
+                    + (doc.select(".won_one").size() - 1) * .5;
+            int missed = doc.select(".missed").size() - 1;
+            int wars = doc.select(".war_hit").size();
+
+            double ratio = wars == 0? 0 :  wins / wars;
+            double norma = (1.0 + wins)/(2.0 + wars);
+
+            ps = new PlayerStats();
+            ps.setWins((int)wins);
+            ps.setMissed(missed);
+            ps.setRatio(ratio);
+            ps.setNorma(norma);
+            ps.setWars(wars);
+            ps.setTag(tag);
+        } catch (IOException ex) { cought(ex); sleep(); }}
+        return ps;
+    }
+
+    // Deprecated
+    private static int lastWin(Document doc) {
+        int league = 4;
+        Element eleLeague = doc.select(".won_one .league img," +
+                " .won_all .league img").first();
+
+        if (eleLeague != null) {
+            String lastLeague = eleLeague
+                    .attr("data-cfsrc").toLowerCase();
+            if (lastLeague.contains("silver")) league = 3;
+            else if (lastLeague.contains("gold")) league = 2;
+            else if (lastLeague.contains("legend")) league = 1;
+        }
+
+        int order = l2o(league*10);
+        return  order;
     }
 
     static List<TopClan> getTopClans() {
@@ -341,12 +389,13 @@ public class APIControl {
     }
 
     private static List<ClanWarLog> getClanWarLog(final String tag) {
+        if (clanWars.containsKey(tag)) return clanWars.get(tag);
         List<ClanWarLog> clanWarLogs = null;
         try { TimeLimiter limiter = SimpleTimeLimiter.create(getCachePool());
-            clanWarLogs = limiter.callWithTimeout(new Callable<List<ClanWarLog>>() {
-                public List<ClanWarLog> call() {
-                    return api.getClanWarLog(ClanWarLogRequest.builder(tag).build());
-                }}, timeout, TimeUnit.MILLISECONDS);
+            clanWarLogs = limiter.callWithTimeout(() ->
+                    api.getClanWarLog(ClanWarLogRequest
+                            .builder(tag).build()),
+                    timeout, TimeUnit.MILLISECONDS);
             System.out.print("\nCRAPI "+tag+": ");
             for (ClanWarLog cwl : clanWarLogs)
                 System.out.print(cwl.getCreatedDate()+" "); }
@@ -411,7 +460,7 @@ public class APIControl {
                             .attr("href")
                             .replace("/clan/","")
                             .replace("/war/log","");
-                    int warTrophies = Integer.valueOf(
+                    int warTrophies = Integer.parseInt(
                             stand.selectFirst("td.trophy").ownText());
 
                     ClanWarLogStanding cwls = new ClanWarLogStanding();
@@ -442,6 +491,7 @@ public class APIControl {
             reader.close();
             clanWarLogs = logDays;
         } catch (Exception ex) { cought(ex); sleep(); clanWarLogs = getClanWarLog(tag); }
+        clanWars.put(tag, clanWarLogs);
         return clanWarLogs;
     }
 
@@ -573,8 +623,6 @@ public class APIControl {
                 clanStats.setClan3(opponentClan[2]);
                 clanStats.setClan4(opponentClan[3]);
             }
-//        }
-
         db.insertClanStats(clanStats);
         return clanStats;
     }
@@ -590,9 +638,7 @@ public class APIControl {
 
         for (final ClanWarStanding clan : standings)
             if (!clan.getTag().equals(mainClan.getClan().getTag()))
-                getFixedPool().execute(new Runnable() {
-                    @Override public void run() {
-                        clanList.add(getClan(clan.getTag())); }});
+                getFixedPool().execute(() -> clanList.add(getClan(clan.getTag())));
             while (clanList.size() < 4) sleep(500);
 
         return maxParticipants - mainClan.getClan().getBattlesPlayed();
@@ -626,7 +672,7 @@ public class APIControl {
         double winProbability = 0;
 
         if (poly!=null) {
-            double coef[] = poly.getCoefficients();
+            double[] coef = poly.getCoefficients();
             for (int c = 0; c < coef.length; c++)
                 if (maxCoef < coef[c]) {
                     maxCoef = coef[c];
@@ -664,11 +710,10 @@ public class APIControl {
     }
 
 
-    static List<ClanStats> getClanStats(String tag) {
+    public static List<ClanStats> getClanStats(String tag) {
             if (getLastUse(tag)) {
                 db.resetClanStats(tag);
                 clanList = new ArrayList<>();
-//                warClans = new ArrayList<>();
                 clanList.add(getClan(tag, true));
                 setLastUse(tag);
                 return clanList;
@@ -677,7 +722,7 @@ public class APIControl {
             return db.getClanStatsList(tag);
     }
 
-    static List<PlayerStats> getPlayerStats(ClanWar clanWar, boolean force) {
+    private static List<PlayerStats> getPlayerStats(ClanWar clanWar, boolean force) {
         List<PlayerStats> playerStats =
                 getPlayerStats(clanWar.getClan().getTag(), force);
         List<PlayerStats> currentStats = new ArrayList<>();
@@ -693,18 +738,43 @@ public class APIControl {
         return currentStats;
     }
 
+    public static PlayerStats getPlayerStats(String clanTag, Member member, boolean force) {
+        PlayerStats ps;
+
+        if (getLastUse(member.getTag(), "wstat") || force) {
+            ps = getWarStats(member.getTag());
+            ps.setName(member.getName());
+            ps.setTag(member.getTag());
+            ps.setClan(clanTag);
+
+            ps.setChest(findLastWarWin(ps));
+
+            if (ps.getNorma() != .5)
+                setLastUse(member.getTag(), "wstat");
+        } else ps = db.getPlayerStats(member.getTag());
+
+        ps.setCurrent(true);
+        db.insertPlayerStats(ps);
+        return ps;
+    }
+
+    static List<PlayerStats> getPlayerStats(String tag) {
+        return getPlayerStats(tag, false); }
     static List<PlayerStats> getPlayerStats(String tag, boolean force) {
         if (getLastUse(tag) || force) {
             List<Member> members = getMembers(tag);
-            List<ClanWarLog> warLog = getClanWarLog(tag);
+//            List<ClanWarLog> warLog = getClanWarLog(tag);
             List<PlayerStats> players = new ArrayList<>();
             db.resetCurrentPlayers(tag);
 
-            for (Member member : members)
-                    players.add(getPlayer(tag, member, warLog));
+            for (Member member : members) {
+                PlayerStats player = getPlayerStats(tag, member, force);
+                player.setCurrent(true);
+                players.add(player);
+            }
 
-            for (ClanWarLog day : warLog)
-                db.addWarDay(new WarDay(day.getCreatedDate(), mainTag));
+//            for (ClanWarLog day : warLog)
+//                db.addWarDay(new WarDay(day.getCreatedDate(), mainTag));
 
             return players;
         }
@@ -712,6 +782,41 @@ public class APIControl {
         return db.getClanPlayerStats(tag);
     }
 
+
+    private static int findLastWarWin(PlayerStats player) {
+        int chest = 0;
+        List<ClanWarLog> warLog = getClanWarLog(player.getClan());
+        for (ClanWarLog dayLog : warLog)
+            for (ClanWarLogParticipant dayPlayer : dayLog.getParticipants())
+                if (dayPlayer.getTag().equals(player.getTag())) {
+                    int warTroph = dayLog.getStandings()
+                            .get(0).getWarTrophies();
+
+                    int league = 4;
+                    if (warTroph > 2999) league = 1;
+                    else if (warTroph > 1499) league = 2;
+                    else if (warTroph > 599) league = 3;
+
+                    int position = 0;
+                    for (ClanWarLogStanding cwls : dayLog.getStandings()) {
+                        position++;
+                        if (cwls.getTag().equals(player.getClan()))
+                            break;
+                    }
+
+                    int order = l2o(league * 10 + position);
+                    int season = warLog.get(0).getSeasonNumber()
+                            != dayLog.getSeasonNumber() ?
+                            0 : dayLog.getSeasonNumber();
+                    int newChest = order + season * 100;
+                    if (chest < newChest) chest = newChest;
+                }
+        return chest;
+    }
+
+
+
+    // Deprecated
     private static PlayerStats getPlayer(String clanTag,
                 Member member, List<ClanWarLog> warLog) {
         PlayerStats player = new PlayerStats();
@@ -797,7 +902,6 @@ public class APIControl {
                 else cardCount += 1.0 / dif;
             }
 
-            System.out.println("Count: "+cardCount + " / "+profile.getCards().size());
             int score = (int) ((cardCount / profile
                     .getCards().size()) * 8182.73);
 
@@ -848,6 +952,7 @@ public class APIControl {
         return player;
     }
 
+    // Deprecated
     public static PlayerStats getMissingPlayer(Member member, String clanTag) {
         PlayerStats newPlayer = new PlayerStats();
         newPlayer.setTag(member.getTag());
@@ -875,10 +980,6 @@ public class APIControl {
         clanURL.connect();
         InputStream input = clanURL.getInputStream();
         Document doc =  Jsoup.parse(input,"UTF-8", page);
-//        Document doc = Jsoup.connect(page)
-//                .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6")
-//                .referrer("http://www.google.com")
-//                .get();
         if (page.contains("royaleapi")) pageMap.put(page, doc);
         input.close();
         return doc;
@@ -888,7 +989,3 @@ public class APIControl {
         pageMap.clear();
     }
 }
-
-
-//                double log = wins == 0 ? 0 : Math.log(wins) / Math.log(maxPlayed);
-//                double norma = (log + 1) / 2 * ratio;

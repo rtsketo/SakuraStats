@@ -22,11 +22,7 @@ public abstract class DBControl extends RoomDatabase {
          return db;
     }
 
-    public static DBControl getDB() {
-        if (db == null)
-           System.out.println("Thereeeeee");
-        return db;
-    }
+    public static DBControl getDB() { return db; }
 }
 
 

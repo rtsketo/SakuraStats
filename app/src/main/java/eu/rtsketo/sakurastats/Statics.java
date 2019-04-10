@@ -26,29 +26,38 @@ import android.widget.ImageView;
 import com.qwerjk.better_text.MagicTextView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import io.reactivex.subjects.PublishSubject;
+import jcrapi.model.Member;
+
 import static android.support.v4.content.ContextCompat.startActivity;
 import static eu.rtsketo.sakurastats.APIControl.checkClan;
+import static eu.rtsketo.sakurastats.APIControl.getMemberActivity;
+import static eu.rtsketo.sakurastats.APIControl.getMembers;
+import static eu.rtsketo.sakurastats.APIControl.getPlayerProfile;
+import static eu.rtsketo.sakurastats.APIControl.getPlayerStats;
 import static eu.rtsketo.sakurastats.APIControl.sleep;
 import static eu.rtsketo.sakurastats.Interface.getDimensions;
 import static eu.rtsketo.sakurastats.Interface.getLastClan;
+import static eu.rtsketo.sakurastats.Interface.getLastUse;
+import static eu.rtsketo.sakurastats.Interface.incUseCount;
 import static eu.rtsketo.sakurastats.Interface.setLastClan;
 import static eu.rtsketo.sakurastats.Interface.setStoredClan;
 import static java.lang.Math.max;
 
 public class Statics {
     private static Typeface tf;
-    public static int refreshWar;
-    public static int refreshAct;
+    private static int clanSize;
     public static boolean checkInput;
-    private static float[] blackness;
     private static BackThread backThread;
     private static SparseIntArray sdpMap;
     private static AppCompatActivity activity;
@@ -56,64 +65,137 @@ public class Statics {
     private static ThreadPoolExecutor fixedPool;
     private static ThreadPoolExecutor cachePool;
     private static List<Pair<Integer, Integer>> leagueMap;
+    private static ConcurrentMap<String, Pair<ClanPlayer, PlayerStats>> playerMap;
+    private static PublishSubject<ClanPlayer> cpSub;
+    private static PublishSubject<PlayerStats> psSub;
 
     public enum SakuraDialog {INPUT, INFO, CLANQUEST, RATEQUEST}
-
-    private static Map<String, Pair<ClanPlayer, PlayerStats>> playerMap;
-
     public static void setActi(AppCompatActivity act) {
         activity = act;
     }
-
     public static void setTf(Typeface tf) {
         Statics.tf = tf;
     }
-
     public static final String agent = "Mozilla/5.0 " +
             "(Linux; Android 6.0; Nexus 5 Build/MRA58N) " +
             "AppleWebKit/537.36 (KHTML, like Gecko) " +
             "Chrome/64.0.3282.186 Mobile Safari/537.36";
 
-    public static Map<String,
-            Pair<ClanPlayer, PlayerStats>> getPlayerMap() {
-        return playerMap;
-    }
+    public static int getClanSize() { return clanSize; }
+    public static boolean hasPlayerMap() { return playerMap != null; }
+    public static ConcurrentMap<String, Pair<ClanPlayer, PlayerStats>> getPlayerMap() {
+        return playerMap; }
 
-    public static boolean hasPlayerMap() {
-        return playerMap != null;
-    }
-
-    public static void putPlayerMap(
-            String tag, Pair<ClanPlayer, PlayerStats> pair) {
+    public static void putPlayerMap(String tag, Object player) {
         if (playerMap == null) resetPlayerMap();
+        Pair<ClanPlayer, PlayerStats> pair = playerMap.get(tag);
+
+        if (pair == null)
+            pair = new Pair<>(new ClanPlayer(), new PlayerStats());
+
+        if (player instanceof ClanPlayer) {
+            pair = new Pair<>((ClanPlayer) player, pair.second);
+            cpSub.onNext((ClanPlayer) player);
+        } else {
+            pair = new Pair<>(pair.first, (PlayerStats) player);
+            psSub.onNext((PlayerStats) player);
+        }
+
         playerMap.put(tag, pair);
     }
 
     public static void resetPlayerMap() {
         if (hasPlayerMap()) playerMap.clear();
-        else playerMap = new HashMap<>();
+        else playerMap = new ConcurrentHashMap<>(clanSize);
+
+        psSub = PublishSubject.create();
+        cpSub = PublishSubject.create();
+        cpSub.subscribe(getWarFrag().cpObserver());
+        psSub.subscribe(getWarFrag().psObserver());
+        cpSub.subscribe(getActiFrag().cpObserver());
+        psSub.subscribe(getActiFrag().psObserver());
     }
 
-    public static void updatePlayerMap() {
-        resetPlayerMap();
-        GeneralDao db = DBControl.getDB().getDao();
-        List<PlayerStats> ps = db.getClanPlayerStats(getLastClan());
-        for (final PlayerStats playerStats : ps) {
-            String pTag = playerStats.getTag();
-            ClanPlayer clanPlayer = db.getClanPlayer(pTag);
-            if (clanPlayer != null && getPlayerMap().size() < 50)
-                putPlayerMap(pTag, new Pair<>(clanPlayer, playerStats));
-            sleep(80);
-        }
+    private static void completeSubs() {
+        cpSub.onComplete();
+        psSub.onComplete();
     }
 
-    public static float getAppWidth() {
-        return px2dp(getDims().second);
+    public static void updatePlayerMap(boolean force) {
+        getCachePool().execute(() ->{
+            GeneralDao db = DBControl.getDB().getDao();
+            String cTag = getLastClan();
+
+            List<Member> members;
+            if (getLastUse(cTag) || force)
+                 members = getMembers(cTag);
+            else {
+                members = new ArrayList<>();
+                for (PlayerStats player : db.getClanPlayerStats(cTag)) {
+                    Member member = new Member();
+                    member.setName(player.getName());
+                    member.setTag(player.getTag());
+                    members.add(member);
+                }
+            }
+
+            clanSize = members.size();
+            resetPlayerMap();
+
+            CountDownLatch psLatch = new CountDownLatch(members.size());
+            List<PlayerStats> ps = new ArrayList<>();
+            List<ClanPlayer> cp = new ArrayList<>();
+            db.resetCurrentPlayers(cTag);
+
+            for (Member member : members)
+                getFixedPool().execute(()-> {
+                    if (getBackThread().getApproval()) {
+                        PlayerStats playerStats = getPlayerStats(cTag, member, force);
+                        putPlayerMap(member.getTag(), playerStats);
+                        ps.add(playerStats);
+                    } psLatch.countDown();
+                    updateLoading((int) (members.size() - psLatch.getCount()),
+                            members.size()*3); });
+            waitLatch(psLatch);
+
+            Collections.reverse(ps);
+            CountDownLatch cpLatch = new CountDownLatch(ps.size());
+            for (final PlayerStats playerStats : ps)
+                getFixedPool().execute(()->{
+                    if (getBackThread().getApproval()) {
+                        String pTag = playerStats.getTag();
+                        ClanPlayer clanPlayer = getPlayerProfile(pTag, force);
+                        putPlayerMap(pTag, clanPlayer);
+                        cp.add(clanPlayer);
+                    } cpLatch.countDown();
+                    updateLoading((int) (ps.size()*2 - cpLatch.getCount()),
+                            ps.size()*3); });
+            waitLatch(cpLatch);
+
+            CountDownLatch acLatch = new CountDownLatch(cp.size());
+            for (final ClanPlayer tempPlayer : cp)
+                getFixedPool().execute(()->{
+                    if (getBackThread().getApproval()) {
+                        String pTag = tempPlayer.getTag();
+                        ClanPlayer clanPlayer = getMemberActivity(tempPlayer, force);
+                        putPlayerMap(pTag, clanPlayer);
+                    } acLatch.countDown();
+                    updateLoading((int) (ps.size()*3 - acLatch.getCount()),
+                            ps.size()*3); });
+            waitLatch(acLatch);
+            completeSubs();
+            incUseCount();
+        });
     }
 
-    public static boolean smallWidth() {
-        if (px2dp(getDims().second) < 340) return true;
-        return false;
+    private static void updateLoading(int cur, int max) {
+        getWarFrag().updateLoading(cur, max);
+        getActiFrag().updateLoading(cur, max);
+    }
+
+    public static void waitLatch(CountDownLatch latch) {
+        try { latch.await(); }
+        catch (InterruptedException e) { e.printStackTrace(); }
     }
 
     private static synchronized Pair<Integer, Integer> getDims() {
@@ -125,9 +207,6 @@ public class Statics {
         return dims;
     }
 
-    public static void resetRefresh(int size) {
-        refreshAct = refreshWar = size;
-    }
 
     public static AppCompatActivity getActi() {
         while (activity == null)
@@ -157,7 +236,7 @@ public class Statics {
 
     public static ThreadPoolExecutor getFixedPool() {
         if (fixedPool == null) fixedPool = (ThreadPoolExecutor)
-                Executors.newFixedThreadPool(15);
+                Executors.newFixedThreadPool( 8);
         return fixedPool;
     }
 

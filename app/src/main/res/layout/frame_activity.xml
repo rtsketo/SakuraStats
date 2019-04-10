@@ -104,6 +104,7 @@
             android:id="@+id/legend"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_2sdp"
             app:layout_constraintBottom_toBottomOf="@+id/legendImage"
             app:layout_constraintStart_toEndOf="@+id/legendImage"
             app:layout_constraintTop_toTopOf="@+id/legendImage" />
@@ -112,6 +113,7 @@
             android:id="@+id/smc"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_2sdp"
             app:layout_constraintBottom_toBottomOf="@+id/smcImage"
             app:layout_constraintStart_toEndOf="@+id/smcImage"
             app:layout_constraintTop_toTopOf="@+id/smcImage" />
@@ -120,6 +122,7 @@
             android:id="@+id/magical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_1sdp"
             app:layout_constraintBottom_toBottomOf="@+id/magicalImage"
             app:layout_constraintStart_toEndOf="@+id/magicalImage"
             app:layout_constraintTop_toTopOf="@+id/magicalImage" />
@@ -128,7 +131,7 @@
             android:id="@+id/legendImage"
             android:layout_width="@dimen/_18sdp"
             android:layout_height="@dimen/_18sdp"
-            android:layout_marginStart="@dimen/_16sdp"
+            android:layout_marginStart="@dimen/_17sdp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@+id/magicalImage"
             app:layout_constraintTop_toTopOf="parent"
