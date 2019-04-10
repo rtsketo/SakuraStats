@@ -1,9 +1,9 @@
 # SakuraStats
 
 ##### App Discription
-&nbsp;&nbsp;&nbsp;&nbsp;In the past four months I’ve been developing an android app to make my life as a clan leader, or anyone’s else for that matter, a bit easier. Sakura Stats is an app that focuses on gathering, processing and displaying player statistics of a clan and it can help determine which players are performing good in wars, which still have low level cards and which of them are inactive.
+&nbsp;&nbsp;&nbsp;&nbsp;Sakura Stats is an app that focuses on gathering, processing and displaying player statistics of a clan and it can help determine which players are performing good in wars, which of them still have low level cards and which are inactive.
 
-&nbsp;&nbsp;&nbsp;&nbsp;The main feature the app offers is war data collection. As you know, almost every app or site out there offers a history of 10 wars per clan. In contrast, this app stores every war’s result it encounters in a local database, thus you can have player statistics for more than 10 wars (starting from the day the app was installed). In addition to that and based on those statistics, the app can predict the end result of each current war. The more wars are collected and stored, the more accurate the prediction it becomes!
+&nbsp;&nbsp;&nbsp;&nbsp;The main feature the app offers is war data collection. Almost every related app or site out there offers a history of 10 wars per clan. In contrast, this app stores every war’s result it encounters in a local database, thus one can have player statistics for more than 10 wars (starting from the day the app was installed). In addition to that and based on those statistics, the app can predict the end result of each current war. The more wars are collected and stored, the more accurate the prediction it becomes!
 
 [[PlayStore]](https://play.google.com/store/apps/details?id=eu.rtsketo.sakurastats)
  [[1]](https://i.imgur.com/mAt0LnE.png)  [[2]](https://i.imgur.com/pyBMDuf.png)  [[3]](https://i.imgur.com/KKm89AT.png)
