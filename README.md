@@ -18,7 +18,6 @@
 
 
 ##### Feature List
-___
 
 [**War Win Ratio**] 
 
@@ -62,7 +61,7 @@ ___
 
 
 ##### Thanks To
-___
+
 [*Java CR-API Connector*](https://github.com/mlieshoff/jcrapi) by mlieshoff
 
 [*RoyaleAPI*](https://royaleapi.com/) by SML and Selfish
