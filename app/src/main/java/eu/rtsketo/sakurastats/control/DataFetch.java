@@ -69,12 +69,7 @@ import static eu.rtsketo.sakurastats.main.Interface.TAG;
 @SuppressWarnings("UnstableApiUsage")
 public class DataFetch {
     private static Api api = new Api("http://api.royaleapi.com/",
-                    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
-                            ".eyJpZCI6OTg2LCJpZGVuIjoiMTc3NDg1Nzg0OTIy" +
-                            "ODQ5MjgxIiwibWQiOnsidXNlcm5hbWUiOiJEZWFkbH" +
-                            "lBbGl2ZSIsImtleVZlcnNpb24iOjMsImRpc2NyaW1pb" +
-                            "mF0b3IiOiI3MjI5In0sInRzIjoxNTQxNDQzNzAxNjcyf" +
-                            "Q.uLGmc7wvzsmkt2ughm1QU-pUjrirWYwj3lQON7acF8k");
+                    "");
 
     @SuppressWarnings("FieldCanBeLocal")
     private int retries = 5;
