@@ -1,4 +1,4 @@
-package eu.rtsketo.sakurastats;
+package eu.rtsketo.sakurastats.control;
 
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Insert;
@@ -7,8 +7,15 @@ import android.arch.persistence.room.Query;
 
 import java.util.List;
 
+import eu.rtsketo.sakurastats.dbobjects.ClanPlayer;
+import eu.rtsketo.sakurastats.dbobjects.ClanStats;
+import eu.rtsketo.sakurastats.dbobjects.PlayerStats;
+import eu.rtsketo.sakurastats.dbobjects.WarDay;
+
+@SuppressWarnings("unused")
 @Dao
-interface GeneralDao {
+public
+interface DAObject {
     @Query("SELECT COUNT(warDay) FROM WarDay WHERE tag = :tag")
     int countWarDays(String tag);
 

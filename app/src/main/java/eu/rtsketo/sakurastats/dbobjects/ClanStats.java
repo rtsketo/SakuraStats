@@ -1,10 +1,11 @@
-package eu.rtsketo.sakurastats;
+package eu.rtsketo.sakurastats.dbobjects;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
 @Entity
+public
 class ClanStats {
     @NonNull
     @PrimaryKey
@@ -60,5 +61,5 @@ class ClanStats {
     public int getCrowns() { return crowns; }
     public String getName() { return name; }
     public String getTag() { return tag; }
-    public ClanStats() { }
+    public ClanStats() { /* Needed by DAO */ }
 }

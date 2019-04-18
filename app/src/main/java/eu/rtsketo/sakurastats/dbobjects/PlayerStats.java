@@ -1,4 +1,4 @@
-package eu.rtsketo.sakurastats;
+package eu.rtsketo.sakurastats.dbobjects;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
@@ -53,6 +53,6 @@ public class PlayerStats {
     public int getMissed() { return missed; }
     public int getWars() { return wars; }
     public int getCards() { return cards; }
-    public PlayerStats() { }
+    public PlayerStats() { /* Needed by DAO */ }
 }
 

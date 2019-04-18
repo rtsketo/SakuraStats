@@ -21,7 +21,7 @@
             <!--android:resource="@array/preloaded_fonts" />-->
 
         <activity
-            android:name=".Interface"
+            android:name=".main.Interface"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_main_interface"
             android:theme="@style/FullscreenTheme"

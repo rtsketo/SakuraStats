@@ -1,7 +1,9 @@
-package eu.rtsketo.sakurastats;
+package eu.rtsketo.sakurastats.fragments;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.v4.app.Fragment;
@@ -24,42 +26,40 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import eu.rtsketo.sakurastats.R;
+import eu.rtsketo.sakurastats.dbobjects.ClanPlayer;
+import eu.rtsketo.sakurastats.dbobjects.PlayerStats;
+import eu.rtsketo.sakurastats.hashmaps.PlayerMap;
+import eu.rtsketo.sakurastats.main.Interface;
+import eu.rtsketo.sakurastats.main.Service;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
-import static eu.rtsketo.sakurastats.APIControl.sleep;
-import static eu.rtsketo.sakurastats.Interface.getLastForce;
-import static eu.rtsketo.sakurastats.Statics.animateView;
-import static eu.rtsketo.sakurastats.Statics.blinkView;
-import static eu.rtsketo.sakurastats.Statics.bounce;
-import static eu.rtsketo.sakurastats.Statics.decorate;
-import static eu.rtsketo.sakurastats.Statics.getActi;
-import static eu.rtsketo.sakurastats.Statics.getBackThread;
-import static eu.rtsketo.sakurastats.Statics.getClanSize;
-import static eu.rtsketo.sakurastats.Statics.getFixedPool;
-import static eu.rtsketo.sakurastats.Statics.getPlayerMap;
-import static eu.rtsketo.sakurastats.Statics.hasPlayerMap;
-import static eu.rtsketo.sakurastats.Statics.rotate;
-import static eu.rtsketo.sakurastats.Statics.sdp2px;
-import static eu.rtsketo.sakurastats.Statics.updatePlayerMap;
+import static eu.rtsketo.sakurastats.control.ThreadPool.getFixedPool;
+import static eu.rtsketo.sakurastats.control.ViewDecor.animateView;
+import static eu.rtsketo.sakurastats.control.ViewDecor.blinkView;
+import static eu.rtsketo.sakurastats.control.ViewDecor.bounce;
+import static eu.rtsketo.sakurastats.control.ViewDecor.decorate;
+import static eu.rtsketo.sakurastats.control.ViewDecor.rotate;
+import static eu.rtsketo.sakurastats.hashmaps.SDPMap.sdp2px;
 import static java.lang.Math.min;
 
-public class WarFrag extends Fragment {
+public class WarStatistics extends Fragment {
     private View root; private ImageView wifi;
         private MagicTextView loadView, info;
     private ConstraintLayout warBar;
     private LinearLayout lineage;
-    private boolean loaded, loading;
     private ImageView loadingAnim,
             sortRatio, sortScore, sortTroph;
     private Map<String, PlayerView> playerMap;
-    private boolean observers[] = new boolean[2];
+    private boolean[] observers = new boolean[2];
     private PlayerView[] playerView = new PlayerView[50];
     private final int[] size = { sdp2px(9), sdp2px(8) };
     private static final int[] maxy = { 112, 62 };
+    private boolean loading;
+    private Interface acti;
 
-    public boolean isLoaded() { return loaded; }
-    public WarFrag() { }
+    public WarStatistics() { /* Needed for FragmentManager */ }
 
     public Observer<PlayerStats> psObserver() {
         return new Observer<PlayerStats>() {
@@ -102,7 +102,7 @@ public class WarFrag extends Fragment {
             final String scoreText = cp.getScore() == 9001 ?
                     "max" : String.valueOf(cp.getScore());
 
-            getActi().runOnUiThread(() -> {
+            acti.runOnUiThread(() -> {
                 decorate(finalPV.score, scoreText, size[0]);
                 decorate(finalPV.troph, cp.getTrophies(), size[1]);
                 decorate(finalPV.tag, "#" + tagString, size[1],
@@ -115,7 +115,7 @@ public class WarFrag extends Fragment {
             final String normaText = (int) (ps.getNorma() * 100) + "%";
             final String ratioText = (int) (ps.getRatio() * 100) + "%";
 
-            getActi().runOnUiThread(() -> {
+            acti.runOnUiThread(() -> {
                 decorate(finalPV.norma, normaText, size[0]);
                 decorate(finalPV.wars, ps.getWars(), size[1]);
                 decorate(finalPV.missed, ps.getMissed(), size[1]);
@@ -130,8 +130,8 @@ public class WarFrag extends Fragment {
 
 
     private PlayerView getPV(String tag) {
-        int pvNum = getClanSize() - 1
-                - playerMap.size();
+        int pvNum = PlayerMap.getInstance()
+                .size() - 1 - playerMap.size();
         PlayerView pv =
                 playerView[pvNum];
         playerMap.put(tag, pv);
@@ -140,48 +140,44 @@ public class WarFrag extends Fragment {
 
     public void refreshList(final int choice) {
         getFixedPool().execute(() -> {
-            if (hasPlayerMap()) {
-                setLoading(true);
-                clearList();
+            PlayerMap pm = PlayerMap.getInstance();
+            setLoading(true);
+            clearList();
 
-                List tempList;
-                if(choice == 3) {
-                    List<PlayerStats> tempPS = new ArrayList<>();
-                    for (Map.Entry<String, Pair<ClanPlayer, PlayerStats>>
-                            player : getPlayerMap().entrySet())
-                        if (player.getValue().first != null)
-                            tempPS.add(player.getValue().second);
-                    Collections.sort(tempPS, new SortByRatio());
-                    tempList = tempPS;
-                } else {
-                    List<ClanPlayer> tempCP = new ArrayList<>();
-                    for (Map.Entry<String, Pair<ClanPlayer, PlayerStats>>
-                            player : getPlayerMap().entrySet())
-                        if (player.getValue().first != null)
-                            tempCP.add(player.getValue().first);
+            List tempList;
+            if(choice == 3) {
+                List<PlayerStats> tempPS = new ArrayList<>();
+                for (Map.Entry<String, Pair<ClanPlayer, PlayerStats>>
+                        player : pm.getAll().entrySet())
+                    if (player.getValue().first != null)
+                        tempPS.add(player.getValue().second);
+                Collections.sort(tempPS, new SortByRatio());
+                tempList = tempPS;
+            } else {
+                List<ClanPlayer> tempCP = new ArrayList<>();
+                for (Map.Entry<String, Pair<ClanPlayer, PlayerStats>>
+                        player : pm.getAll().entrySet())
+                    if (player.getValue().first != null)
+                        tempCP.add(player.getValue().first);
 
-                    if (choice == 1) Collections.sort(tempCP, new SortByTrophies());
-                    else if (choice == 2) Collections.sort(tempCP, new SortByScore());
-                    tempList = tempCP;
-                }
+                if (choice == 1) Collections.sort(tempCP, new SortByTrophies());
+                else if (choice == 2) Collections.sort(tempCP, new SortByScore());
+                tempList = tempCP;
+            }
 
-                for (int c = min(tempList.size() - 1,49); c >= 0; c--) {
-                    String tag; sleep(20);
-                    if (tempList.get(c) instanceof PlayerStats)
-                        tag = ((PlayerStats) tempList.get(c)).getTag();
-                    else tag = ((ClanPlayer) tempList.get(c)).getTag();
-                    Pair<ClanPlayer, PlayerStats> pair = getPlayerMap().get(tag);
-                    displayStats(pair.second, pair.first); }
-                setLoading(false); }});
+            for (int c = min(tempList.size() - 1,49); c >= 0; c--) {
+                String tag; SystemClock.sleep(20);
+                if (tempList.get(c) instanceof PlayerStats)
+                    tag = ((PlayerStats) tempList.get(c)).getTag();
+                else tag = ((ClanPlayer) tempList.get(c)).getTag();
+                Pair<ClanPlayer, PlayerStats> pair = pm.get(tag);
+                displayStats(pair.second, pair.first); }
+            setLoading(false); });
     }
 
     public boolean getLoading() { return loading; }
     public void setLoading(final boolean loading) {
-        getActi().runOnUiThread(() -> {
-            if (!loading || getBackThread().getGUI())
-                blinkView(((Interface)getActi())
-                    .getTab(1), loading);
-
+        acti.runOnUiThread(() -> {
             if (loading) {
                 sortRatio.setEnabled(false);
                 sortScore.setEnabled(false);
@@ -206,17 +202,18 @@ public class WarFrag extends Fragment {
                 animateView(loadingAnim, loading);
                 loadingAnim.setImageResource(R.drawable.refresh);
                 loadingAnim.setColorFilter(Color.argb(100,200,200,200));
+                blinkView(acti.getTab(1), loading);
 
                 final Timer timer = new Timer();
                 timer.schedule(new TimerTask() {
                     @Override public void run() {
-                        final int refresh = 15 - getLastForce(1);
-                        if (refresh < 0) getActi().runOnUiThread(() -> {
+                        final int refresh = 15 - acti.getLastForce(1);
+                        if (refresh < 0) acti.runOnUiThread(() -> {
                             loadView.setVisibility(View.INVISIBLE);
                             loadingAnim.setColorFilter(null);
                             loadingAnim.setEnabled(true);
                             timer.cancel(); });
-                        else getActi().runOnUiThread(() -> {
+                        else acti.runOnUiThread(() -> {
                             loadView.setVisibility(View.VISIBLE);
                             decorate(loadView, refresh+"min", size[0]); });
                     }}, 0, 60000); }});
@@ -226,11 +223,18 @@ public class WarFrag extends Fragment {
     public void refreshInfo() { info.setVisibility(View.VISIBLE); }
     public void clearList() {
         playerMap.clear();
-        getActi().runOnUiThread(() -> {
+        acti.runOnUiThread(() -> {
             for (PlayerView pv : playerView) {
                 View frame = pv.frame;
                 if (frame != null)
                     frame.setVisibility(View.GONE); }});
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        acti = (Interface) getActivity();
+        playerMap = new HashMap<>();
+        super.onAttach(context);
     }
 
     @Override
@@ -245,24 +249,21 @@ public class WarFrag extends Fragment {
         sortScore = root.findViewById(R.id.sortScore);
         sortTroph = root.findViewById(R.id.sortTroph);
         loadView = root.findViewById(R.id.loading);
-        info = new MagicTextView(getActi());
+        info = new MagicTextView(getActivity());
         info.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
-        sortTroph.setOnClickListener(view -> { bounce(view); selectSort(1); });
-        sortScore.setOnClickListener(view -> { bounce(view); selectSort(2); });
-        sortRatio.setOnClickListener(view -> { bounce(view); selectSort(3); });
+        sortTroph.setOnClickListener(view -> { bounce(view, acti); selectSort(1); });
+        sortScore.setOnClickListener(view -> { bounce(view, acti); selectSort(2); });
+        sortRatio.setOnClickListener(view -> { bounce(view, acti); selectSort(3); });
 
         initFrames();
-
-        playerMap = new HashMap<>();
-        loaded = true;
         return root;
     }
 
     private void initFrames() {
         final MagicTextView sort = root.findViewById(R.id.sort);
 
-        getActi().runOnUiThread(() -> {
+        acti.runOnUiThread(() -> {
         decorate(sort, "Sort by:", size[0]);
         decorate(loadView, "Loading...", size[0]);
         decorate(info, "\nStats are being loaded," +
@@ -270,7 +271,7 @@ public class WarFrag extends Fragment {
         lineage.addView(info); });
 
         for (int c = 0; c < playerView.length; c++) {
-            final View frame = LayoutInflater.from(getActi())
+            final View frame = LayoutInflater.from(acti)
                     .inflate(R.layout.frame_warstats, null);
 
             playerView[c] = new PlayerView(frame);
@@ -290,7 +291,7 @@ public class WarFrag extends Fragment {
 
             final int finalC = c;
             final MagicTextView rank = frame.findViewById(R.id.rank);
-            getActi().runOnUiThread(() -> {
+            acti.runOnUiThread(() -> {
                 decorate(rank, finalC+1+"",size[0]+2);
                 decorate(playerView[finalC].score, "???", size[0]);
                 decorate(playerView[finalC].norma, "???", size[0]);
@@ -306,8 +307,9 @@ public class WarFrag extends Fragment {
                 lineage.addView(frame); });
         }
 
-        rotate(root.findViewById(R.id.warSelection));
-        loadingAnim.setOnClickListener(v -> updatePlayerMap(true));
+        rotate(root.findViewById(R.id.warSelection), acti);
+        loadingAnim.setOnClickListener(v -> Service.getThread()
+                .start(acti.getLastClan(),true));
         selectSort(0);
     }
 
@@ -330,7 +332,7 @@ public class WarFrag extends Fragment {
                 ConstraintSet.END, idView, posView, sdp2px(disView));
         conSet.setVisibility(R.id.warSelection, seleVis);
         TransitionManager.beginDelayedTransition(warBar);
-        getActi().runOnUiThread(() -> conSet.applyTo(warBar));
+        acti.runOnUiThread(() -> conSet.applyTo(warBar));
         if (choice > 0) refreshList(choice);
     }
 
@@ -342,7 +344,7 @@ public class WarFrag extends Fragment {
 
     public void updateLoading(int cur, int max) {
         int percent = cur * 100 / max;
-        getActi().runOnUiThread(() ->
+        acti.runOnUiThread(() ->
                 decorate(loadView, "... " +
                 percent + "%", size[0]));
     }

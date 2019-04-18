@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_temp"
-    tools:context=".SettiFrag">
+    tools:context=".fragments.AppSettings">
 
     <LinearLayout
         android:layout_width="match_parent"

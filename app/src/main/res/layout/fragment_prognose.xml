@@ -8,7 +8,7 @@
     android:animateLayoutChanges="true"
     android:gravity="center"
     android:orientation="vertical"
-    tools:context=".ProgFrag">
+    tools:context=".fragments.Prognostics">
 
     <ImageView
         android:id="@+id/bgWaves"

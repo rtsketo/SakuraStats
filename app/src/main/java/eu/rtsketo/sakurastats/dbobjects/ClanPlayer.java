@@ -1,11 +1,13 @@
-package eu.rtsketo.sakurastats;
+package eu.rtsketo.sakurastats.dbobjects;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
 @Entity
+public
 class ClanPlayer {
+
     @NonNull
     @PrimaryKey
     private String tag;
@@ -38,6 +40,6 @@ class ClanPlayer {
     public void setLegendary(int legendary) { this.legendary = legendary; }
     public void setMagical(int magical) { this.magical = magical; }
 
-    public ClanPlayer() { }
+    public ClanPlayer() { /* Needed by DAO */ }
 
 }

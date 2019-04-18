@@ -1,5 +1,6 @@
-package eu.rtsketo.sakurastats;
+package eu.rtsketo.sakurastats.fragments;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,32 +11,39 @@ import android.widget.ImageView;
 
 import com.qwerjk.better_text.MagicTextView;
 
-import static eu.rtsketo.sakurastats.DBControl.getDB;
-import static eu.rtsketo.sakurastats.Interface.getStoredClan;
-import static eu.rtsketo.sakurastats.Interface.incUseCount;
-import static eu.rtsketo.sakurastats.Interface.setLastClan;
-import static eu.rtsketo.sakurastats.Statics.bounce;
-import static eu.rtsketo.sakurastats.Statics.createDialog;
-import static eu.rtsketo.sakurastats.Statics.decorate;
-import static eu.rtsketo.sakurastats.Statics.getActi;
-import static eu.rtsketo.sakurastats.Statics.getBackThread;
-import static eu.rtsketo.sakurastats.Statics.getCachePool;
-import static eu.rtsketo.sakurastats.Statics.sdp2px;
+import eu.rtsketo.sakurastats.R;
+import eu.rtsketo.sakurastats.control.DAObject;
+import eu.rtsketo.sakurastats.control.DataRoom;
+import eu.rtsketo.sakurastats.control.DialogView;
+import eu.rtsketo.sakurastats.dbobjects.ClanStats;
+import eu.rtsketo.sakurastats.main.Interface;
+import eu.rtsketo.sakurastats.main.Service;
 
-public class SettiFrag extends Fragment {
-    public SettiFrag() {}
-    private MagicTextView clanLabel;
-    private MagicTextView clanName[] = new MagicTextView[5];
-    private ImageView clanBadge[] = new ImageView[5];
-    private ImageView clanEdit[] = new ImageView[5];
-    private ImageView clanSele[] = new ImageView[5];
-    private GeneralDao db = getDB().getDao();
+import static eu.rtsketo.sakurastats.control.ThreadPool.getCachePool;
+import static eu.rtsketo.sakurastats.control.ViewDecor.bounce;
+import static eu.rtsketo.sakurastats.control.ViewDecor.decorate;
+import static eu.rtsketo.sakurastats.hashmaps.SDPMap.sdp2px;
+
+public class AppSettings extends Fragment {
+    public AppSettings() { /* Needed for FragmentManager */ }
+    private DAObject db = DataRoom.getInstance().getDao();
+    private MagicTextView[] clanName = new MagicTextView[5];
+    private ImageView[] clanBadge = new ImageView[5];
+    private ImageView[] clanEdit = new ImageView[5];
+    private ImageView[] clanSele = new ImageView[5];
+    private Interface acti;
     private Thread thread;
+
+    @Override
+    public void onAttach(Context context) {
+        acti = (Interface) getActivity();
+        super.onAttach(context);
+    }
 
     @Override public View onCreateView(LayoutInflater inflater,
                                        ViewGroup container, final Bundle savedInstanceState) {
         View frag = inflater.inflate(R.layout.fragment_settings, container, false);
-        clanLabel = frag.findViewById(R.id.settingsClanLabel);
+        MagicTextView clanLabel = frag.findViewById(R.id.settingsClanLabel);
         clanName[0] = frag.findViewById(R.id.settingsClanName1);
         clanName[1] = frag.findViewById(R.id.settingsClanName2);
         clanName[2] = frag.findViewById(R.id.settingsClanName3);
@@ -77,23 +85,21 @@ public class SettiFrag extends Fragment {
         for (int c = 0; c < 5; c++) {
             final int finalC = c;
             clanSele[c].setOnClickListener(view -> {
-                bounce(view); selectClan(finalC); });
+                bounce(view, acti); selectClan(finalC); });
 
             clanEdit[c].setOnClickListener(view ->
-                    createDialog(Statics.SakuraDialog.INPUT, finalC));}
+                    new DialogView(DialogView.SakuraDialog.INPUT, finalC, acti));}
         return frag;
     }
 
-    public void selectClan(final int finalC) {
-        getActi().runOnUiThread(() -> {
+    public void selectClan(int c) {
+        acti.runOnUiThread(() -> {
             setSelect(false);
-            if (getStoredClan(finalC) != null)
-                if (thread == null) {
+            String cTag = acti.getStoredClan(c);
+            if (cTag != null && thread == null) {
                     thread = new Thread(() -> {
-                        getBackThread().setClan(getStoredClan(finalC));
-                        setLastClan(getStoredClan(finalC));
-                        getBackThread().startThread();
-                        incUseCount();
+                        Service.getThread().start(cTag);
+                        acti.setLastClan(cTag);
                         thread = null; });
                     thread.start(); }});
     }
@@ -101,25 +107,24 @@ public class SettiFrag extends Fragment {
 
     private void setSelect(boolean sele) {
         for (int c = 0; c < 5; c++) {
-            if (sele && getStoredClan(c) != null) {
+            if (acti.getStoredClan(c) != null)
                 clanSele[c].setEnabled(sele);
-                clanSele[c].setColorFilter(null);
-            } else {
-                clanSele[c].setEnabled(false);
-                clanSele[c].setColorFilter(Color.argb(
+            if (sele) clanSele[c].setColorFilter(null);
+            else clanSele[c].setColorFilter(Color.argb(
                         100, 200, 200, 200));
-            }
         }
     }
 
 
     public void refreshStored(final int c) { refreshStored(c, true); }
     public void refreshStored(final int c, final boolean button) {
-        if(getStoredClan(c) != null)
+        if(acti.getStoredClan(c) != null)
             getCachePool().execute(() -> {
                 final int size = sdp2px(9);
-                final ClanStats clan = db.getClanStats(getStoredClan(c));
-                getActi().runOnUiThread(() -> {
+                final ClanStats clan = db.getClanStats(
+                        acti.getStoredClan(c));
+
+                acti.runOnUiThread(() -> {
                     if (button) {
                         clanSele[c].setEnabled(true);
                         clanSele[c].setColorFilter(null); }
@@ -127,16 +132,16 @@ public class SettiFrag extends Fragment {
                     if (clan != null) {
                         decorate(clanName[c], clan.getName(), size);
                         clanBadge[c].setImageResource(
-                                getActi().getResources()
+                                acti.getResources()
                                         .getIdentifier(clan.getBadge(),
-                                                "drawable", getActi()
+                                                "drawable", acti
                                                         .getPackageName()));}
                     else {
                         decorate(clanName[c], "#" +
-                                getStoredClan(c), size, Color.LTGRAY);
+                                acti.getStoredClan(c), size, Color.LTGRAY);
                         clanBadge[c].setImageResource(R.drawable.no_clan);}});});
         else {
-            getActi().runOnUiThread(() -> {
+            acti.runOnUiThread(() -> {
                 clanSele[c].setColorFilter(Color.argb(100,200,200,200));
                 clanSele[c].setEnabled(false);
         if (c<2) decorate(clanName[c], "Edit to Add a Clan", sdp2px(8), Color.LTGRAY);
