@@ -39,11 +39,15 @@ public class Interface extends AppCompatActivity {
     private ImageView progTab, warTab, actiTab, settiTab;
     private MagicTextView[] tab = new MagicTextView[4];
     private SharedPreferences preferences;
-    private ViewPager mViewPager;
     private PlayerActivity actiFrag;
     private WarStatistics warFrag;
-    private Prognostics progFrag;
     private AppSettings settiFrag;
+    private Prognostics progFrag;
+    private ViewPager mViewPager;
+
+    private static final int SECS = 1000;
+    private static final int MINS = 60*SECS;
+    private static final int HRS = 60*MINS;
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
         SectionsPagerAdapter(FragmentManager fm) { super(fm); }
@@ -57,7 +61,7 @@ public class Interface extends AppCompatActivity {
                 default: return null; }}}
 
     public void changeTabTo(int num) {
-        mViewPager.setCurrentItem(num); }
+            mViewPager.setCurrentItem(num); }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,17 +104,22 @@ public class Interface extends AppCompatActivity {
             if (getLastClan() == null)
                 runOnUiThread(() -> new DialogView(
                         DialogView.SakuraDialog.INPUT, this));
-            else Service.getThread(this).start(getLastClan());
+            else Service.getThread(this).start(
+                    getLastClan(), false, true);
         }); }
 
     public ImageView getTab(int c) {
-        ImageView view = null;
         switch (c) {
-                case 0: view = progTab; break;
-                case 1: view = warTab; break;
-                case 2: view = actiTab; break;
-                case 3: view = settiTab; break; }
-        return view; }
+                case 0: return progTab;
+                case 1: return warTab;
+                case 2: return actiTab;
+                case 3: return settiTab;
+                default: throw new
+                        NullPointerException(
+                                "Invalid number passed in getTab().");
+        }
+
+    }
 
     private void initTabs() {
         progTab = findViewById(R.id.progTab);
@@ -135,10 +144,9 @@ public class Interface extends AppCompatActivity {
         decorate(tab[3], "Settings", size);
     }
 
-
     public void setLastUse(String tag) { setLastUse(tag, ""); }
     public boolean getLastUse(String tag) { return getLastUse(tag, ""); }
-    public void setLastForce(int tab) { setLastUse(getTabName(tab), "frag"); }
+    public void setLastForce(int tab) { setLastUse("tab", getTabName(tab)); }
     public void setLastClan(String tag) {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString("ClanTag", tag);
@@ -155,19 +163,23 @@ public class Interface extends AppCompatActivity {
     public boolean getLastUse(String tag, String mod) {
         Long curr = System.currentTimeMillis();
         Long time = preferences.getLong(mod+tag, 0);
-        Long diff = (curr - time);
-        if (mod.equals("")) return diff > 30*60*1000;
-        if (mod.startsWith("batt")) return diff > 24*60*60*1000;
-        if (mod.startsWith("prof")) return diff > 6*60*60*1000;
-        if (mod.startsWith("chest")) return diff > 12*60*60*1000;
-        if (mod.startsWith("frag")) return diff > 15*60*1000;
-        if (mod.startsWith("auto")) return diff > 48*60*60*1000;
-        return (curr - time) > 1800000; }
+        long diff = (curr - time);
 
+        switch (mod) {
+            case "batt": return diff > 24 * HRS;
+            case "prof": return diff > 72 * HRS;
+            case "chest": return diff > 24 * HRS;
+            case "auto": return diff > 48 * HRS;
+            case "wstat": return diff > 48 * HRS;
+            case "prog": return diff > 15 * MINS;
+            case "acti": return diff > 60 * MINS;
+            case "war": return diff > 60 * MINS;
+            default: return diff > 15 * MINS; }
+    }
 
     public int getLastForce(int tab) {
         Long curr = System.currentTimeMillis();
-        Long time = preferences.getLong("frag"+getTabName(tab), 0);
+        Long time = preferences.getLong(getTabName(tab)+"tab", 0);
         long diff = (curr - time) / 1000 / 60;
         return (int) diff; }
 
@@ -235,12 +247,31 @@ public class Interface extends AppCompatActivity {
         this.moveTaskToBack(true);
     }
 
-    public WarStatistics getWarFrag() { waitForFrag(warFrag); return warFrag; }
-    public PlayerActivity getActiFrag() { waitForFrag(actiFrag); return actiFrag; }
-    public Prognostics getProgFrag() { waitForFrag(progFrag); return progFrag; }
-    public AppSettings getSettiFrag() { waitForFrag(settiFrag); return settiFrag; }
-    private void waitForFrag(Fragment frag) {
+    public WarStatistics getWarFrag() {
+        while (warFrag == null)
+            SystemClock.sleep(5);
+        waitForView(warFrag);
+        return warFrag; }
+
+    public PlayerActivity getActiFrag() {
+        while (actiFrag == null)
+            SystemClock.sleep(5);
+        waitForView(actiFrag);
+        return actiFrag; }
+
+    public Prognostics getProgFrag() {
+        while (progFrag == null)
+            SystemClock.sleep(5);
+        waitForView(progFrag);
+        return progFrag; }
+
+    public AppSettings getSettiFrag() {
+        while (settiFrag == null)
+            SystemClock.sleep(5);
+        waitForView(settiFrag);
+        return settiFrag; }
+
+    private void waitForView(Fragment frag) {
         while (frag.getView() == null)
-            SystemClock.sleep(50);
-    }
+            SystemClock.sleep(5); }
 }

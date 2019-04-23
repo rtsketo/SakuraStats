@@ -40,6 +40,7 @@ public class Prognostics extends Fragment {
             loadingOp, wifi, wifiOp;
     private MagicTextView loadView;
     private LinearLayout lineage;
+    private boolean loading;
     private Interface acti;
     private View root;
 
@@ -72,10 +73,9 @@ public class Prognostics extends Fragment {
         getFixedPool().execute(() -> {
             setLoading(true);
             String tag = acti.getLastClan();
-            if (force) {
-                boolean refresh = acti.getLastUse(tag);
+            if (force || acti.getLastUse(tag)) {
                 List<ClanStats> cs = new DataFetch(acti).getClanStats(tag);
-                if (refresh) { setStats(cs); acti.setLastForce(0); }}
+                setStats(cs); acti.setLastForce(0); }
             else setStats(DataRoom.getInstance().getDao()
                     .getClanStatsList(tag));
             setLoading(false); });
@@ -83,21 +83,23 @@ public class Prognostics extends Fragment {
 
     public void setLoading(final boolean loading) {
         final int size = sdp2px(10);
-        acti.runOnUiThread(() -> {
-            if (loading) {
-                loadingAnim.setEnabled(false);
-                loadingAnim.setColorFilter(null);
-                loadView.setVisibility(View.VISIBLE);
-                loadingOp.setVisibility(View.VISIBLE);
-                loadingAnim.setVisibility(View.VISIBLE);
-                decorate(loadView, "Loading...", size);
-                loadingAnim.setImageResource(R.drawable.loading);
-                animateView(loadingAnim, loading);
-            } else {
-                animateView(loadingAnim, loading);
-                blinkView(acti.getTab(0), loading);
-                loadingAnim.setImageResource(R.drawable.refresh);
-                loadingAnim.setColorFilter(Color.argb(100,200,200,200));
+            if (loading && !this.loading)
+                acti.runOnUiThread(() -> {
+                    loadingAnim.setEnabled(false);
+                    loadingAnim.setColorFilter(null);
+                    loadView.setVisibility(View.VISIBLE);
+                    loadingOp.setVisibility(View.VISIBLE);
+                    loadingAnim.setVisibility(View.VISIBLE);
+                    decorate(loadView, "Loading...", size);
+                    loadingAnim.setImageResource(R.drawable.loading);
+                    animateView(loadingAnim, true); });
+            else if (!loading && this.loading) {
+                acti.runOnUiThread(() -> {
+                    animateView(loadingAnim, false);
+                    blinkView(acti.getTab(0), false);
+                    loadingAnim.setImageResource(R.drawable.refresh);
+                    loadingAnim.setColorFilter(Color.argb(100, 200, 200, 200));
+                });
 
                 final Timer timer = new Timer();
                 timer.schedule(new TimerTask() {
@@ -112,11 +114,14 @@ public class Prognostics extends Fragment {
                         else acti.runOnUiThread(() -> {
                             loadView.setVisibility(View.VISIBLE);
                             decorate(loadView, "     "+refresh+"min", size); });
-                    }}, 0, 60000); }});
+                    }}, 0, 60000); }
+        this.loading = loading;
     }
+
 
     public void setStats(List<ClanStats> clans) {
         removeViews();
+        setLoading(true);
         if (clans.size()==5) {
             int counter = 0;
             ClanStats[] stats = new ClanStats[5];
@@ -142,6 +147,8 @@ public class Prognostics extends Fragment {
                 lineage.addView(info);
                 lineage.addView(more); });
         }
+
+        setLoading(false);
     }
 
     private void removeViews() {
@@ -190,8 +197,7 @@ public class Prognostics extends Fragment {
     }
 
     class SortByPrediction implements Comparator<ClanStats> {
-        @Override
-        public int compare(ClanStats a, ClanStats b) {
+        @Override public int compare(ClanStats a, ClanStats b) {
             return (int) ((b.getEstimatedWins()+b.getExtraWins())*100
                     - (a.getEstimatedWins()+a.getExtraWins())*100);
         }

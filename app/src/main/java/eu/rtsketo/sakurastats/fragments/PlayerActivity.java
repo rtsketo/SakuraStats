@@ -44,6 +44,7 @@ import static eu.rtsketo.sakurastats.control.ViewDecor.rotate;
 import static eu.rtsketo.sakurastats.hashmaps.LeagueMap.o2l;
 import static eu.rtsketo.sakurastats.hashmaps.SDPMap.sdp2px;
 import static eu.rtsketo.sakurastats.main.Interface.TAG;
+import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 
@@ -90,8 +91,9 @@ public class PlayerActivity extends Fragment {
 
     private void subscribe(int obs) {
         observers[obs] = true;
-        if (!observers[1 - obs])
-            setLoading(true); }
+        if (!observers[1 - obs]) {
+            setLoading(true);
+            clearList(); }}
 
     private void complete(int obs) {
         observers[obs] = false;
@@ -183,6 +185,7 @@ public class PlayerActivity extends Fragment {
     private PlayerView getPV(String tag) {
         int pvNum = PlayerMap.getInstance()
                 .size() - 1 - playerMap.size();
+        pvNum = max(0,min(49, pvNum));
         PlayerView pv =
                 playerView[pvNum];
         playerMap.put(tag, pv);
@@ -264,7 +267,7 @@ public class PlayerActivity extends Fragment {
         loadingAnim.setOnClickListener(v -> {
             setLoading(true); clearList();
             Service.getThread().start(
-                    acti.getLastClan(), true); });
+                    acti.getLastClan(), true, false); });
         selectSort(0);
     }
 
@@ -295,7 +298,7 @@ public class PlayerActivity extends Fragment {
     public boolean getLoading() { return loading; }
     public void setLoading(final boolean loading) {
         acti.runOnUiThread(() -> {
-            if (loading) {
+            if (loading && !this.loading) {
                 sortSMC.setEnabled(false);
                 sortTime.setEnabled(false);
                 sortMagi.setEnabled(false);
@@ -310,7 +313,7 @@ public class PlayerActivity extends Fragment {
                 sortLege.setColorFilter(Color.argb(100,200,200,200));
                 sortTime.setColorFilter(Color.argb(100,200,200,200));
                 animateView(loadingAnim, loading);
-            } else {
+            } else if (!loading && this.loading){
                 sortSMC.setEnabled(true);
                 sortTime.setEnabled(true);
                 sortMagi.setEnabled(true);
@@ -328,7 +331,7 @@ public class PlayerActivity extends Fragment {
                 final Timer timer = new Timer();
                 timer.schedule(new TimerTask() {
                     @Override public void run() {
-                        final int refresh = 15 - acti.getLastForce(2);
+                        final int refresh = 60 - acti.getLastForce(2);
                         if (refresh < 0) acti.runOnUiThread(() -> {
                             loadView.setVisibility(View.INVISIBLE);
                             loadingAnim.setColorFilter(null);
@@ -337,8 +340,8 @@ public class PlayerActivity extends Fragment {
                         else acti.runOnUiThread(() -> {
                             loadView.setVisibility(View.VISIBLE);
                             decorate(loadView, refresh+"min", size[1]); });
-                    }}, 0, 60000); }});
-        this.loading = loading;
+                    }}, 0, 60000); }
+        this.loading = loading; });
     }
 
     private void blinkView(ImageView tab, boolean loading) {

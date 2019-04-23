@@ -89,7 +89,8 @@ public class DialogView {
                             } else {
                                 acti.setLastClan(finalTag);
                                 acti.setStoredClan(0, finalTag);
-                                Service.getThread(acti).start(finalTag);
+                                Service.getThread(acti)
+                                        .start(finalTag, false, true);
                             }
                             dialog.cancel();
                         } else acti.runOnUiThread(() -> {
@@ -118,7 +119,8 @@ public class DialogView {
                     dialog.cancel(); });
 
                 confirm.setOnClickListener(view -> {
-                    Service.getThread(acti).start(null);
+                    Service.getThread(acti)
+                            .start(null, false, true);
                     bounce(view, acti);
                     dialog.cancel();
                     prevDia.cancel(); });
@@ -167,11 +169,11 @@ public class DialogView {
 
 
     class InputCheck implements TextWatcher {
-        private String clanTagInput;
+        private String clanTagInput = "";
         private EditText editText;
         private Activity activity;
 
-        public InputCheck(EditText et, Activity acti) {
+        InputCheck(EditText et, Activity acti) {
             editText = et; activity = acti; }
 
         @Override public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}

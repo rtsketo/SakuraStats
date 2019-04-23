@@ -11,7 +11,6 @@ import eu.rtsketo.sakurastats.control.DAObject;
 import eu.rtsketo.sakurastats.control.DataFetch;
 import eu.rtsketo.sakurastats.control.DataRoom;
 import eu.rtsketo.sakurastats.dbobjects.ClanPlayer;
-import eu.rtsketo.sakurastats.dbobjects.ClanStats;
 import eu.rtsketo.sakurastats.dbobjects.PlayerStats;
 import eu.rtsketo.sakurastats.hashmaps.PlayerMap;
 import jcrapi.model.Member;
@@ -28,7 +27,10 @@ public class Service {
     private Interface acti;
     private Thread thread;
     private DataFetch df;
+
+    private boolean force;
     private boolean stop;
+    private boolean tab;
 
     private Service(Interface acti) { this.acti = acti; }
 
@@ -43,114 +45,115 @@ public class Service {
             bth = new Service(acti);
         return bth; }
 
-    public void start(String tag) { start(tag, false); }
-    public synchronized void start(String tag, boolean force) {
-        if (thread != null)
-            try { terminate();
-                thread.join(); }
-            catch (InterruptedException e) {
-                Log.e(TAG, "Join failed", e);
-                thread.interrupt(); }
+    public synchronized void start(String tag, boolean force, boolean tab) {
+        getCachePool().execute(() -> {
+            acti.getWarFrag().setLoading(true);
+            acti.getActiFrag().setLoading(true);
+            acti.getProgFrag().setLoading(true);
 
-        df = new DataFetch(acti);
-        thread = new Thread(()-> {
-            List<TopClan> tp = new ArrayList<>();
-            TopClan sakura = new TopClan();
-            sakura.setTag("2YCJRUC");
-            tp.add(sakura);
+            if (thread != null)
+                try { stop = true;
+                    thread.join();
+                    stop = false; }
+                catch (InterruptedException e) {
+                    Log.e(TAG, "Join failed", e);
+                    thread.interrupt(); }
 
-            if (tag != null)
-                collectData(tag, force);
-            else if (acti.getLastClan() != null)
-                collectData(acti.getLastClan(), force);
-            else {
-                tp.addAll(df.getTopClans());
-                for (TopClan clan : tp) {
-                    String cTag = clan.getTag();
-                    if (df.getClanWar(cTag).getState().equals("warDay")) {
-                        acti.setLastClan(cTag);
-                        collectData(cTag, force);
-                        break;
-                    }}}});
+            this.tab = tab;
+            this.force = force;
+            df = new DataFetch(acti);
+            thread = new Thread(()-> {
+                List<TopClan> tp = new ArrayList<>();
+                TopClan sakura = new TopClan();
+                sakura.setTag("2YCJRUC");
+                tp.add(sakura);
 
-        thread.start();
+                if (tag != null)
+                    collectData(tag);
+                else if (acti.getLastClan() != null)
+                    collectData(acti.getLastClan());
+                else {
+                    tp.addAll(df.getTopClans());
+                    for (TopClan clan : tp) {
+                        String cTag = clan.getTag();
+                        if (df.getClanWar(cTag).getState().equals("warDay")) {
+                            acti.setLastClan(cTag);
+                            collectData(cTag);
+                            break;
+                        }}}});
+            thread.start();
+        });
     }
 
-    private void collectData(String cTag, boolean force) {
-        getCachePool().execute(() ->{
-            acti.runOnUiThread(() ->
-                    acti.changeTabTo(1));
-            PlayerMap pm = PlayerMap.getInstance();
-            DAObject db = DataRoom.getInstance().getDao();
-            clearPages();
+    private void collectData(String cTag) {
+        if (tab) acti.runOnUiThread(() ->
+                acti.changeTabTo(1));
+        PlayerMap pm = PlayerMap.getInstance();
+        DAObject db = DataRoom.getInstance().getDao();
+        clearPages();
 
-            List<Member> members;
-            if (acti.getLastUse(cTag) || force)
-                members = df.getMembers(cTag);
-            else {
-                members = new ArrayList<>();
-                for (PlayerStats player : db.getClanPlayerStats(cTag)) {
-                    Member member = new Member();
-                    member.setName(player.getName());
-                    member.setTag(player.getTag());
-                    members.add(member);
-                }
+        List<Member> members;
+        if (acti.getLastUse(cTag) || force)
+            members = df.getMembers(cTag);
+        else {
+            members = new ArrayList<>();
+            for (PlayerStats player : db.getClanPlayerStats(cTag)) {
+                Member member = new Member();
+                member.setName(player.getName());
+                member.setTag(player.getTag());
+                members.add(member);
             }
+        }
 
-            pm.reset(members.size());
-            CountDownLatch psLatch = new CountDownLatch(members.size());
-            List<PlayerStats> ps = new ArrayList<>();
-            List<ClanPlayer> cp = new ArrayList<>();
-            db.resetCurrentPlayers(cTag);
+        pm.reset(members.size());
+        CountDownLatch psLatch = new CountDownLatch(members.size());
+        List<PlayerStats> ps = new ArrayList<>();
+        List<ClanPlayer> cp = new ArrayList<>();
 
-            for (Member member : members)
-                getFixedPool().execute(()-> {
-                    if (getApproval()) {
-                        PlayerStats playerStats = df.getPlayerStats(cTag, member, force);
-                        pm.put(member.getTag(), playerStats);
-                        ps.add(playerStats);
-                    } psLatch.countDown();
-                    updateLoading((int) (members.size() - psLatch.getCount()),
-                            members.size()*3); });
-            waitLatch(psLatch);
+        for (Member member : members)
+            getFixedPool().execute(()-> {
+                if (!stop && member != null) {
+                    PlayerStats playerStats = df.getPlayerStats(cTag, member, force);
+                    pm.put(member.getTag(), playerStats);
+                    ps.add(playerStats);
+                } psLatch.countDown();
+                updateLoading((int) (members.size() - psLatch.getCount()), members.size()); });
+        waitLatch(psLatch);
 
-            Collections.reverse(ps);
-            CountDownLatch cpLatch = new CountDownLatch(ps.size());
-            for (final PlayerStats playerStats : ps)
-                getFixedPool().execute(()->{
-                    if (getApproval()) {
-                        String pTag = playerStats.getTag();
-                        ClanPlayer clanPlayer = df.getPlayerProfile(pTag, force);
-                        pm.put(pTag, clanPlayer);
-                        cp.add(clanPlayer);
-                    } cpLatch.countDown();
-                    updateLoading((int) (ps.size()*2 - cpLatch.getCount()),
-                            ps.size()*3); });
-            waitLatch(cpLatch);
+        Collections.reverse(ps);
+        CountDownLatch cpLatch = new CountDownLatch(ps.size());
+        for (final PlayerStats playerStats : ps)
+            getFixedPool().execute(()->{
+                if (!stop && playerStats != null) {
+                    String pTag = playerStats.getTag();
+                    ClanPlayer clanPlayer = df.getPlayerProfile(pTag, force);
+                    pm.put(pTag, clanPlayer);
+                    cp.add(clanPlayer);
+                } cpLatch.countDown();
+                updateLoading((int) (ps.size()*2 - cpLatch.getCount()), ps.size());
+            });
+        waitLatch(cpLatch);
+        acti.getWarFrag().setLoading(false);
 
-            CountDownLatch acLatch = new CountDownLatch(cp.size());
-            for (final ClanPlayer tempPlayer : cp)
-                getFixedPool().execute(()->{
-                    if (getApproval()) {
-                        String pTag = tempPlayer.getTag();
-                        ClanPlayer clanPlayer = df.getMemberActivity(tempPlayer, force);
-                        pm.put(pTag, clanPlayer);
-                    } acLatch.countDown();
-                    updateLoading((int) (ps.size()*3 - acLatch.getCount()),
-                            ps.size()*3); });
-            waitLatch(acLatch);
-            pm.completeSubs();
+        CountDownLatch acLatch = new CountDownLatch(cp.size());
+        for (final ClanPlayer tempPlayer : cp)
+            getFixedPool().execute(()->{
+                if (!stop && tempPlayer != null) {
+                    String pTag = tempPlayer.getTag();
+                    ClanPlayer clanPlayer = df.getMemberActivity(tempPlayer, force);
+                    pm.put(pTag, clanPlayer);
+                } acLatch.countDown();
+                updateLoading((int) (ps.size()*3 - acLatch.getCount()), ps.size());
+            });
+        waitLatch(acLatch);
+        pm.completeSubs();
 
-            List<ClanStats> cs = df.getClanStats(cTag);
-            acti.getProgFrag().setStats(cs);
-            acti.runOnUiThread(() -> {
-                if (cs.size() == 5)
-                    acti.changeTabTo(0); });
-            acti.setLastForce(0);
-            acti.getProgFrag().setLoading(false);
-            acti.getSettiFrag().refreshStored();
-            acti.incUseCount();
-        });
+        acti.getProgFrag().refresh(false);
+        if (tab) acti.runOnUiThread(() ->
+                acti.changeTabTo(0));
+
+        acti.getSettiFrag().refreshStored();
+        acti.incUseCount();
     }
 
     private void waitLatch(CountDownLatch latch) {
@@ -161,10 +164,11 @@ public class Service {
     }
 
     private void updateLoading(int cur, int max) {
-        acti.getWarFrag().updateLoading(cur, max);
-        acti.getActiFrag().updateLoading(cur, max);
-    }
+        int warMax = 2 * max;
+        int actMax = 3 * max;
 
-    public boolean getApproval() { return !stop; }
-    public void terminate() { stop = true; }
+        if (cur < warMax)
+            acti.getWarFrag().updateLoading(cur, warMax);
+        acti.getActiFrag().updateLoading(cur, actMax);
+    }
 }

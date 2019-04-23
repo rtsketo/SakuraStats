@@ -68,12 +68,11 @@ import static eu.rtsketo.sakurastats.main.Interface.TAG;
 
 @SuppressWarnings("UnstableApiUsage")
 public class DataFetch {
-    private static Api api = new Api("http://api.royaleapi.com/",
-                    "");
+    private static Api api = new Api("");
 
     @SuppressWarnings("FieldCanBeLocal")
     private int retries = 5;
-    private int timeout = 6000;
+    private int timeout = 10000;
     private Map<String, List<ClanWarLog>> clanWars = new HashMap<>();
     private DAObject db = DataRoom.getInstance().getDao();
     private List<ClanStats> clanList;
@@ -82,13 +81,10 @@ public class DataFetch {
     private Interface acti;
     private int sleepTime;
 
-    public DataFetch(Interface activity) {
-        acti = activity;
-    }
+    public DataFetch(Interface activity) { acti = activity; }
 
     private void timeout() {
-        timeout = timeout < 5000?
-                30000 : timeout - 450; }
+        timeout = Math.max(5000, timeout - 500); }
 
     private void sleep() {
         sleepTime = sleepTime > 10000?
@@ -499,8 +495,8 @@ public class DataFetch {
             for (Element element : cards) {
                 Card card = new Card();
                 card.setMaxLevel(13);
-                card.setLevel(Integer.parseInt(
-                        element.ownText().replace("Level ","")));
+                card.setDisplayLevel((Integer.parseInt(
+                        element.ownText().replace("Level ",""))));
                 cardList.add(card);
             } player.setCards(cardList);
 
@@ -720,9 +716,7 @@ public class DataFetch {
             ps.setClan(clanTag);
 
             ps.setChest(findLastWarWin(ps));
-
-            if (ps.getNorma() != .5)
-                acti.setLastUse(member.getTag(), "wstat");
+            acti.setLastUse(member.getTag(), "wstat");
         } else ps = db.getPlayerStats(member.getTag());
 
         ps.setCurrent(true);

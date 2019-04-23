@@ -1,6 +1,5 @@
 package eu.rtsketo.sakurastats.hashmaps;
 
-import android.os.SystemClock;
 import android.util.Pair;
 
 import java.util.HashMap;
@@ -27,7 +26,6 @@ public class PlayerMap {
 
     public int size() { return size; }
     public void put(String tag, Object player) {
-        if (playerMap == null) reset(0);
         Pair<ClanPlayer, PlayerStats> pair = playerMap.get(tag);
 
         if (pair == null)
@@ -50,10 +48,6 @@ public class PlayerMap {
             else playerMap = new HashMap<>(size);
             this.size = size;
         }
-
-        while (acti.getWarFrag() == null ||
-                acti.getActiFrag() == null )
-            SystemClock.sleep(50);
 
         psSub = PublishSubject.create();
         cpSub = PublishSubject.create();

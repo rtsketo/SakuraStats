@@ -42,6 +42,7 @@ import static eu.rtsketo.sakurastats.control.ViewDecor.bounce;
 import static eu.rtsketo.sakurastats.control.ViewDecor.decorate;
 import static eu.rtsketo.sakurastats.control.ViewDecor.rotate;
 import static eu.rtsketo.sakurastats.hashmaps.SDPMap.sdp2px;
+import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 public class WarStatistics extends Fragment {
@@ -79,8 +80,9 @@ public class WarStatistics extends Fragment {
 
     private void subscribe(int obs) {
         observers[obs] = true;
-        if (!observers[1 - obs])
-            setLoading(true); }
+        if (!observers[1 - obs]) {
+            setLoading(true);
+            clearList(); }}
 
     private void complete(int obs) {
         observers[obs] = false;
@@ -132,6 +134,7 @@ public class WarStatistics extends Fragment {
     private PlayerView getPV(String tag) {
         int pvNum = PlayerMap.getInstance()
                 .size() - 1 - playerMap.size();
+        pvNum = max(0,min(49, pvNum));
         PlayerView pv =
                 playerView[pvNum];
         playerMap.put(tag, pv);
@@ -178,7 +181,7 @@ public class WarStatistics extends Fragment {
     public boolean getLoading() { return loading; }
     public void setLoading(final boolean loading) {
         acti.runOnUiThread(() -> {
-            if (loading) {
+            if (loading && !this.loading) {
                 sortRatio.setEnabled(false);
                 sortScore.setEnabled(false);
                 sortTroph.setEnabled(false);
@@ -191,7 +194,7 @@ public class WarStatistics extends Fragment {
                 sortScore.setColorFilter(Color.argb(100,200,200,200));
                 sortTroph.setColorFilter(Color.argb(100,200,200,200));
                 animateView(loadingAnim, loading);
-            } else {
+            } else if (!loading && this.loading){
                 sortRatio.setEnabled(true);
                 sortScore.setEnabled(true);
                 sortTroph.setEnabled(true);
@@ -207,7 +210,7 @@ public class WarStatistics extends Fragment {
                 final Timer timer = new Timer();
                 timer.schedule(new TimerTask() {
                     @Override public void run() {
-                        final int refresh = 15 - acti.getLastForce(1);
+                        final int refresh = 60 - acti.getLastForce(1);
                         if (refresh < 0) acti.runOnUiThread(() -> {
                             loadView.setVisibility(View.INVISIBLE);
                             loadingAnim.setColorFilter(null);
@@ -216,8 +219,8 @@ public class WarStatistics extends Fragment {
                         else acti.runOnUiThread(() -> {
                             loadView.setVisibility(View.VISIBLE);
                             decorate(loadView, refresh+"min", size[0]); });
-                    }}, 0, 60000); }});
-        this.loading = loading;
+                    }}, 0, 60000); }
+        this.loading = loading; });
     }
 
     public void refreshInfo() { info.setVisibility(View.VISIBLE); }
@@ -309,7 +312,7 @@ public class WarStatistics extends Fragment {
 
         rotate(root.findViewById(R.id.warSelection), acti);
         loadingAnim.setOnClickListener(v -> Service.getThread()
-                .start(acti.getLastClan(),true));
+                .start(acti.getLastClan(),true, false));
         selectSort(0);
     }
 

@@ -1,7 +1,9 @@
 package eu.rtsketo.sakurastats.fragments;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -31,8 +33,8 @@ public class AppSettings extends Fragment {
     private ImageView[] clanBadge = new ImageView[5];
     private ImageView[] clanEdit = new ImageView[5];
     private ImageView[] clanSele = new ImageView[5];
+    private View.OnClickListener urlOpener;
     private Interface acti;
-    private Thread thread;
 
     @Override
     public void onAttach(Context context) {
@@ -40,7 +42,9 @@ public class AppSettings extends Fragment {
         super.onAttach(context);
     }
 
-    @Override public View onCreateView(LayoutInflater inflater,
+
+    @Override
+    public View onCreateView(LayoutInflater inflater,
                                        ViewGroup container, final Bundle savedInstanceState) {
         View frag = inflater.inflate(R.layout.fragment_settings, container, false);
         MagicTextView clanLabel = frag.findViewById(R.id.settingsClanLabel);
@@ -81,6 +85,16 @@ public class AppSettings extends Fragment {
         decorate(frag.findViewById(R.id.settingsSupportAPI), "This app wouldn’t have been possible without RoyaleAPI, please consider donating and supporting them.", size);
         decorate(frag.findViewById(R.id.settingsSupportText), "Report any issues, or suggest any ideas to Reddit.", size);
 
+        urlOpener = v -> {
+            String url;
+            if(v.getId() == R.id.settingsSupportReddit)
+                url = "https://www.reddit.com/r/ClashRoyale/comments/aeleie/update_clan_management_app_for_android_sakura/";
+            else url = "https://github.com/rtsketo/SakuraStats";
+
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse(url));
+            startActivity(i); };
+
         refreshStored();
         for (int c = 0; c < 5; c++) {
             final int finalC = c;
@@ -88,22 +102,22 @@ public class AppSettings extends Fragment {
                 bounce(view, acti); selectClan(finalC); });
 
             clanEdit[c].setOnClickListener(view ->
-                    new DialogView(DialogView.SakuraDialog.INPUT, finalC, acti));}
+                    new DialogView(DialogView.SakuraDialog.INPUT, finalC, acti));
+        }
+
+        frag.findViewById(R.id.settingsSupportGitHub).setOnClickListener(urlOpener);
+        frag.findViewById(R.id.settingsSupportReddit).setOnClickListener(urlOpener);
         return frag;
     }
 
     public void selectClan(int c) {
-        acti.runOnUiThread(() -> {
-            setSelect(false);
-            String cTag = acti.getStoredClan(c);
-            if (cTag != null && thread == null) {
-                    thread = new Thread(() -> {
-                        Service.getThread().start(cTag);
-                        acti.setLastClan(cTag);
-                        thread = null; });
-                    thread.start(); }});
+        acti.runOnUiThread(() -> setSelect(false));
+        String cTag = acti.getStoredClan(c);
+        if (cTag != null) {
+            Service.getThread().start(cTag, false, true);
+            acti.setLastClan(cTag);
+        }
     }
-
 
     private void setSelect(boolean sele) {
         for (int c = 0; c < 5; c++) {
@@ -114,7 +128,6 @@ public class AppSettings extends Fragment {
                         100, 200, 200, 200));
         }
     }
-
 
     public void refreshStored(final int c) { refreshStored(c, true); }
     public void refreshStored(final int c, final boolean button) {
