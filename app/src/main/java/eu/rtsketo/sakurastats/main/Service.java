@@ -86,8 +86,6 @@ public class Service {
     }
 
     private void collectData(String cTag) {
-        if (tab) acti.runOnUiThread(() ->
-                acti.changeTabTo(1));
         PlayerMap pm = PlayerMap.getInstance();
         DAObject db = DataRoom.getInstance().getDao();
         clearPages();
@@ -149,9 +147,6 @@ public class Service {
         pm.completeSubs();
 
         acti.getProgFrag().refresh(false);
-        if (tab) acti.runOnUiThread(() ->
-                acti.changeTabTo(0));
-
         acti.getSettiFrag().refreshStored();
         acti.incUseCount();
     }

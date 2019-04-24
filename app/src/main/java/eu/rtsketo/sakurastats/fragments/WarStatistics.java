@@ -8,6 +8,7 @@ import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.v4.app.Fragment;
 import android.transition.TransitionManager;
+import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -42,6 +43,7 @@ import static eu.rtsketo.sakurastats.control.ViewDecor.bounce;
 import static eu.rtsketo.sakurastats.control.ViewDecor.decorate;
 import static eu.rtsketo.sakurastats.control.ViewDecor.rotate;
 import static eu.rtsketo.sakurastats.hashmaps.SDPMap.sdp2px;
+import static eu.rtsketo.sakurastats.main.Interface.TAG;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
@@ -66,21 +68,25 @@ public class WarStatistics extends Fragment {
         return new Observer<PlayerStats>() {
             @Override public void onSubscribe(Disposable d) { subscribe(0); }
             @Override public void onNext(PlayerStats ps) { displayStats(ps); }
-            @Override public void onError(Throwable e) { e.printStackTrace(); }
-            @Override public void onComplete() { complete(0); }};
+            @Override public void onComplete() { complete(0); }
+            @Override public void onError(Throwable e) {
+                Log.e(TAG, "PS Observer failed", e); }};
     }
 
     public Observer<ClanPlayer> cpObserver() {
         return new Observer<ClanPlayer>() {
             @Override public void onSubscribe(Disposable d) { subscribe(1); }
             @Override public void onNext(ClanPlayer cp) { displayStats(cp); }
-            @Override public void onError(Throwable e) { e.printStackTrace(); }
-            @Override public void onComplete() { complete(1); }};
+            @Override public void onComplete() { complete(1); }
+            @Override public void onError(Throwable e) {
+                Log.e(TAG, "CP Observer failed", e); }};
     }
 
     private void subscribe(int obs) {
         observers[obs] = true;
         if (!observers[1 - obs]) {
+            acti.runOnUiThread(() ->
+                    acti.changeTabTo(1));
             setLoading(true);
             clearList(); }}
 

@@ -185,7 +185,7 @@ public class Interface extends AppCompatActivity {
 
     public int getUseCount() {
         int uc = preferences.getInt("useCount", 0);
-        if (uc == 250 || uc == 3000 || uc == 10000)
+        if (uc == 20 || uc == 150 || uc == 500)
             runOnUiThread(() -> new DialogView(
                     DialogView.SakuraDialog.RATEQUEST, this));
         return uc; }

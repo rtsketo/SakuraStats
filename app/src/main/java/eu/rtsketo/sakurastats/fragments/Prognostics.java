@@ -74,8 +74,14 @@ public class Prognostics extends Fragment {
             setLoading(true);
             String tag = acti.getLastClan();
             if (force || acti.getLastUse(tag)) {
-                List<ClanStats> cs = new DataFetch(acti).getClanStats(tag);
-                setStats(cs); acti.setLastForce(0); }
+                List<ClanStats> cs =
+                        new DataFetch(acti)
+                                .getClanStats(tag);
+                setStats(cs);
+                acti.setLastForce(0);
+                if (cs.size() == 5)
+                    acti.runOnUiThread(() ->
+                        acti.changeTabTo(0)); }
             else setStats(DataRoom.getInstance().getDao()
                     .getClanStatsList(tag));
             setLoading(false); });

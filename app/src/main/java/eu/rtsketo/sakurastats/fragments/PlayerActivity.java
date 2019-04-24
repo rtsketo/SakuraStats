@@ -77,7 +77,7 @@ public class PlayerActivity extends Fragment {
             @Override public void onNext(PlayerStats ps) { displayStats(ps); }
             @Override public void onComplete() { complete(0); }
             @Override public void onError(Throwable e) {
-                Log.e(TAG, "PS Observer", e); }};
+                Log.e(TAG, "PS Observer failed", e); }};
     }
 
     public Observer<ClanPlayer> cpObserver() {
@@ -86,7 +86,7 @@ public class PlayerActivity extends Fragment {
             @Override public void onNext(ClanPlayer cp) { displayStats(cp); }
             @Override public void onComplete() { complete(1); }
             @Override public void onError(Throwable e) {
-                Log.e(TAG, "CP Observer", e); }};
+                Log.e(TAG, "CP Observer failed", e); }};
     }
 
     private void subscribe(int obs) {
