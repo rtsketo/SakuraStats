@@ -12,18 +12,15 @@
 
 &nbsp;
 
-
-
 ##### Features
 
-* [***War Prognostics***] What are the chances of winning the current war!
-* [***Wars Participated***] How many wars the player have participated in.
-* [***Missed Final Battles***] How many final battles the player have missed.
-* [***Last Battle Activity***] How many days ago was the player’s last battle.
-* [***War Win Ratio***] How many wars a player have won out of those they have played.
-* [***Clan War Chest***] Best clan war chest acquired by the player in the current war season.
-* [***Card Levels Score***] The overall score of a player’s card collection based on their cards' level.
-
+* [***War Prognostics***] *What are the chances of winning the current war*!
+* [***Wars Participated***] *How many wars the player have participated in*.
+* [***Missed Final Battles***] *How many final battles the player have missed*.
+* [***Last Battle Activity***] *How many days ago was the player’s last battle*.
+* [***War Win Ratio***] *How many wars a player have won out of those they have played*.
+* [***Clan War Chest***] *Best clan war chest acquired by the player in the current war season*.
+* [***Card Levels Score***] *The overall score of a player’s card collection based on their cards' level*.
 
 
 &nbsp;
@@ -35,8 +32,6 @@
 
 
 &nbsp;
-
-
 
 ##### Thanks To
 * [*Java CR-API Connector*](https://github.com/mlieshoff/jcrapi) by mlieshoff
