@@ -34,5 +34,5 @@
 &nbsp;
 
 ##### Thanks To
-* [*Java CR-API Connector*](https://github.com/mlieshoff/jcrapi) by mlieshoff
-* [*RoyaleAPI*](https://royaleapi.com/) by SML and Selfish
+* **mlieshoff** for [*Java CR-API Connector*](https://github.com/mlieshoff/jcrapi)
+* **SML** and **Selfish** for [*RoyaleAPI*](https://royaleapi.com/)
