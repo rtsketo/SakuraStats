@@ -9,9 +9,9 @@
 
 ##### Links
 
-&nbsp;&nbsp;&nbsp;&nbsp;Download: [[Google Play]](https://play.google.com/store/apps/details?id=eu.rtsketo.sakurastats)
+* *Download*: [[Google Play]](https://play.google.com/store/apps/details?id=eu.rtsketo.sakurastats)
 
-&nbsp;&nbsp;&nbsp;&nbsp;Screenshos: [[1]](https://i.imgur.com/mAt0LnE.png)  [[2]](https://i.imgur.com/pyBMDuf.png)  [[3]](https://i.imgur.com/KKm89AT.png)
+* *Screenshos*: [[1]](https://i.imgur.com/mAt0LnE.png)  [[2]](https://i.imgur.com/pyBMDuf.png)  [[3]](https://i.imgur.com/KKm89AT.png)
 
 
 
