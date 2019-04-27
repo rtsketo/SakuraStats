@@ -5,8 +5,13 @@
 
 &nbsp;&nbsp;&nbsp;&nbsp;One the main unique features of the app is the war forecast, in which the app can predict with moderately accuracy the outcome of the current clan war. This could be useful in notifying your clanmates early of a potential loss and making then extra cautious when building a deck or playing the final battle.
 
-[[Google Play]](https://play.google.com/store/apps/details?id=eu.rtsketo.sakurastats)
- [[1]](https://i.imgur.com/mAt0LnE.png)  [[2]](https://i.imgur.com/pyBMDuf.png)  [[3]](https://i.imgur.com/KKm89AT.png)
+&nbsp;
+
+##### Links
+
+&nbsp;&nbsp;&nbsp;&nbsp;Download: [[Google Play]](https://play.google.com/store/apps/details?id=eu.rtsketo.sakurastats)
+
+&nbsp;&nbsp;&nbsp;&nbsp;Screenshos: [[1]](https://i.imgur.com/mAt0LnE.png)  [[2]](https://i.imgur.com/pyBMDuf.png)  [[3]](https://i.imgur.com/KKm89AT.png)
 
 
 
