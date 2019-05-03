@@ -5,7 +5,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -28,7 +27,7 @@ import eu.rtsketo.sakurastats.control.DataRoom;
 import eu.rtsketo.sakurastats.dbobjects.ClanStats;
 import eu.rtsketo.sakurastats.main.Interface;
 
-import static eu.rtsketo.sakurastats.control.ThreadPool.getFixedPool;
+import static eu.rtsketo.sakurastats.control.ThreadPool.getCachePool;
 import static eu.rtsketo.sakurastats.control.ViewDecor.animateView;
 import static eu.rtsketo.sakurastats.control.ViewDecor.blinkView;
 import static eu.rtsketo.sakurastats.control.ViewDecor.decorate;
@@ -70,7 +69,7 @@ public class Prognostics extends Fragment {
     }
 
     public void refresh(final boolean force) {
-        getFixedPool().execute(() -> {
+        getCachePool().execute(() -> {
             setLoading(true);
             String tag = acti.getLastClan();
             if (force || acti.getLastUse(tag)) {
@@ -83,8 +82,7 @@ public class Prognostics extends Fragment {
                     acti.runOnUiThread(() ->
                         acti.changeTabTo(0)); }
             else setStats(DataRoom.getInstance().getDao()
-                    .getClanStatsList(tag));
-            setLoading(false); });
+                    .getClanStatsList(tag)); });
     }
 
     public void setLoading(final boolean loading) {
@@ -98,7 +96,9 @@ public class Prognostics extends Fragment {
                     loadingAnim.setVisibility(View.VISIBLE);
                     decorate(loadView, "Loading...", size);
                     loadingAnim.setImageResource(R.drawable.loading);
-                    animateView(loadingAnim, true); });
+                    animateView(loadingAnim, true);
+                    blinkView(acti.getTab(0), true); });
+
             else if (!loading && this.loading) {
                 acti.runOnUiThread(() -> {
                     animateView(loadingAnim, false);
@@ -127,7 +127,6 @@ public class Prognostics extends Fragment {
 
     public void setStats(List<ClanStats> clans) {
         removeViews();
-        setLoading(true);
         if (clans.size()==5) {
             int counter = 0;
             ClanStats[] stats = new ClanStats[5];
@@ -158,7 +157,6 @@ public class Prognostics extends Fragment {
     }
 
     private void removeViews() {
-        while (lineage == null) SystemClock.sleep(500);
         acti.runOnUiThread(() -> lineage.removeAllViews()); }
 
     private void addClan(ClanStats clan) {

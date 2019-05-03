@@ -36,7 +36,7 @@ import eu.rtsketo.sakurastats.main.Service;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
-import static eu.rtsketo.sakurastats.control.ThreadPool.getFixedPool;
+import static eu.rtsketo.sakurastats.control.ThreadPool.getCachePool;
 import static eu.rtsketo.sakurastats.control.ViewDecor.animateView;
 import static eu.rtsketo.sakurastats.control.ViewDecor.blinkView;
 import static eu.rtsketo.sakurastats.control.ViewDecor.bounce;
@@ -85,8 +85,9 @@ public class WarStatistics extends Fragment {
     private void subscribe(int obs) {
         observers[obs] = true;
         if (!observers[1 - obs]) {
-            acti.runOnUiThread(() ->
-                    acti.changeTabTo(1));
+            acti.runOnUiThread(() -> {
+                acti.changeTabTo(1);
+                info.setVisibility(View.VISIBLE); });
             setLoading(true);
             clearList(); }}
 
@@ -110,13 +111,21 @@ public class WarStatistics extends Fragment {
             final String scoreText = cp.getScore() == 9001 ?
                     "max" : String.valueOf(cp.getScore());
 
+            String role = cp.getRole() != null? cp.getRole() : "";
+            switch (role) {
+                case "coLeader":    role = "Co-Leader "; break;
+                case "leader":      role = "Leader     "; break;
+                case "elder":       role = "Elder         "; break;
+                default:            role = "Member    ";
+            }
+
+            String finalRole = role;
             acti.runOnUiThread(() -> {
                 decorate(finalPV.score, scoreText, size[0]);
                 decorate(finalPV.troph, cp.getTrophies(), size[1]);
-                decorate(finalPV.tag, "#" + tagString, size[1],
+                decorate(finalPV.tag, finalRole, size[1],
                         Color.WHITE, maxy[1]);
-                finalPV.frame.setVisibility(View.VISIBLE);
-            });
+                finalPV.frame.setVisibility(View.VISIBLE); });
         }
 
         if (ps != null) {
@@ -130,8 +139,6 @@ public class WarStatistics extends Fragment {
                 decorate(finalPV.ratio, ratioText, size[1]);
                 decorate(finalPV.name, ps.getName(), size[0],
                         Color.WHITE, maxy[0]);
-                decorate(finalPV.tag, "#" + tagString, size[1],
-                        Color.WHITE, maxy[1]);
                 finalPV.frame.setVisibility(View.VISIBLE); });
         }
     }
@@ -148,59 +155,63 @@ public class WarStatistics extends Fragment {
     }
 
     public void refreshList(final int choice) {
-        getFixedPool().execute(() -> {
-            PlayerMap pm = PlayerMap.getInstance();
-            setLoading(true);
-            clearList();
+        PlayerMap pm = PlayerMap.getInstance();
+        setLoading(true);
+        clearList();
 
-            List tempList;
-            if(choice == 3) {
-                List<PlayerStats> tempPS = new ArrayList<>();
-                for (Map.Entry<String, Pair<ClanPlayer, PlayerStats>>
-                        player : pm.getAll().entrySet())
-                    if (player.getValue().first != null)
-                        tempPS.add(player.getValue().second);
-                Collections.sort(tempPS, new SortByRatio());
-                tempList = tempPS;
-            } else {
-                List<ClanPlayer> tempCP = new ArrayList<>();
-                for (Map.Entry<String, Pair<ClanPlayer, PlayerStats>>
-                        player : pm.getAll().entrySet())
-                    if (player.getValue().first != null)
-                        tempCP.add(player.getValue().first);
+        List tempList;
+        if(choice == 3) {
+            List<PlayerStats> tempPS = new ArrayList<>();
+            for (Map.Entry<String, Pair<ClanPlayer, PlayerStats>>
+                    player : pm.getAll().entrySet())
+                if (player.getValue().first != null)
+                    tempPS.add(player.getValue().second);
+            Collections.sort(tempPS, new SortByRatio());
+            tempList = tempPS;
+        } else {
+            List<ClanPlayer> tempCP = new ArrayList<>();
+            for (Map.Entry<String, Pair<ClanPlayer, PlayerStats>>
+                    player : pm.getAll().entrySet())
+                if (player.getValue().first != null)
+                    tempCP.add(player.getValue().first);
 
-                if (choice == 1) Collections.sort(tempCP, new SortByTrophies());
-                else if (choice == 2) Collections.sort(tempCP, new SortByScore());
-                tempList = tempCP;
-            }
+            if (choice == 1) Collections.sort(tempCP, new SortByTrophies());
+            else if (choice == 2) Collections.sort(tempCP, new SortByScore());
+            tempList = tempCP;
+        }
 
-            for (int c = min(tempList.size() - 1,49); c >= 0; c--) {
-                String tag; SystemClock.sleep(20);
-                if (tempList.get(c) instanceof PlayerStats)
-                    tag = ((PlayerStats) tempList.get(c)).getTag();
-                else tag = ((ClanPlayer) tempList.get(c)).getTag();
-                Pair<ClanPlayer, PlayerStats> pair = pm.get(tag);
-                displayStats(pair.second, pair.first); }
-            setLoading(false); });
+        for (int c = min(tempList.size() - 1,49); c >= 0; c--) {
+            String tag; SystemClock.sleep(20);
+            if (tempList.get(c) instanceof PlayerStats)
+                tag = ((PlayerStats) tempList.get(c)).getTag();
+            else tag = ((ClanPlayer) tempList.get(c)).getTag();
+            Pair<ClanPlayer, PlayerStats> pair = pm.get(tag);
+            if (pair != null) displayStats(pair.second, pair.first); }
+
+        setLoading(false);
     }
+
 
     public boolean getLoading() { return loading; }
     public void setLoading(final boolean loading) {
-        acti.runOnUiThread(() -> {
-            if (loading && !this.loading) {
+        if (loading && !this.loading)
+            acti.runOnUiThread(() -> {
                 sortRatio.setEnabled(false);
                 sortScore.setEnabled(false);
                 sortTroph.setEnabled(false);
                 loadingAnim.setEnabled(false);
                 loadingAnim.setColorFilter(null);
                 loadView.setVisibility(View.VISIBLE);
+                animateView(loadingAnim, true);
+                blinkView(acti.getTab(1), true);
                 decorate(loadView, "Loading...", size[0]);
                 loadingAnim.setImageResource(R.drawable.loading);
                 sortRatio.setColorFilter(Color.argb(100,200,200,200));
                 sortScore.setColorFilter(Color.argb(100,200,200,200));
-                sortTroph.setColorFilter(Color.argb(100,200,200,200));
-                animateView(loadingAnim, loading);
-            } else if (!loading && this.loading){
+                sortTroph.setColorFilter(Color.argb(100,200,200,200)); });
+
+        else if (!loading && this.loading) {
+            acti.runOnUiThread(() -> {
                 sortRatio.setEnabled(true);
                 sortScore.setEnabled(true);
                 sortTroph.setEnabled(true);
@@ -208,10 +219,10 @@ public class WarStatistics extends Fragment {
                 sortRatio.setColorFilter(null);
                 sortScore.setColorFilter(null);
                 sortTroph.setColorFilter(null);
-                animateView(loadingAnim, loading);
+                animateView(loadingAnim, false);
+                blinkView(acti.getTab(1), false);
                 loadingAnim.setImageResource(R.drawable.refresh);
-                loadingAnim.setColorFilter(Color.argb(100,200,200,200));
-                blinkView(acti.getTab(1), loading);
+                loadingAnim.setColorFilter(Color.argb(100,200,200,200)); });
 
                 final Timer timer = new Timer();
                 timer.schedule(new TimerTask() {
@@ -226,10 +237,8 @@ public class WarStatistics extends Fragment {
                             loadView.setVisibility(View.VISIBLE);
                             decorate(loadView, refresh+"min", size[0]); });
                     }}, 0, 60000); }
-        this.loading = loading; });
+        this.loading = loading;
     }
-
-    public void refreshInfo() { info.setVisibility(View.VISIBLE); }
     public void clearList() {
         playerMap.clear();
         acti.runOnUiThread(() -> {
@@ -264,6 +273,8 @@ public class WarStatistics extends Fragment {
         sortTroph.setOnClickListener(view -> { bounce(view, acti); selectSort(1); });
         sortScore.setOnClickListener(view -> { bounce(view, acti); selectSort(2); });
         sortRatio.setOnClickListener(view -> { bounce(view, acti); selectSort(3); });
+        loadingAnim.setOnClickListener(v -> { bounce(v, acti);
+        Service.getThread().start(acti.getLastClan(),true, false); });
 
         initFrames();
         return root;
@@ -311,38 +322,38 @@ public class WarStatistics extends Fragment {
                 decorate(playerView[finalC].ratio, "???",size[1]);
                 decorate(playerView[finalC].name, "???", size[0],
                         Color.WHITE, maxy[0]);
-                decorate(playerView[finalC].tag, "#???", size[1],
-                        Color.WHITE, maxy[1]);
+                decorate(playerView[finalC].tag, "???         " +
+                                "      ", size[1], Color.WHITE, maxy[1]);
                 lineage.addView(frame); });
         }
 
         rotate(root.findViewById(R.id.warSelection), acti);
-        loadingAnim.setOnClickListener(v -> Service.getThread()
-                .start(acti.getLastClan(),true, false));
         selectSort(0);
     }
 
     public synchronized void selectSort(final int choice) {
-        final ConstraintSet conSet = new ConstraintSet();
-        int posView = ConstraintSet.START, idView = 0,
-                disView = 8, seleVis = View.VISIBLE;
-        switch(choice) {
-            case 1: idView = R.id.sortScore; break;
-            case 2: idView = R.id.sortRatio; break;
-            case 3: idView = R.id.warBar;
-                posView = ConstraintSet.END;
-                disView = 3; break;
-            case 0: seleVis = View.INVISIBLE;
-                idView = R.id.loadingAnim;
-        }
+        getCachePool().execute(() -> {
+            final ConstraintSet conSet = new ConstraintSet();
+            int posView = ConstraintSet.START, idView,
+                    disView = 8, seleVis = View.VISIBLE;
 
-        conSet.clone(warBar);
-        conSet.connect(R.id.warSelection,
-                ConstraintSet.END, idView, posView, sdp2px(disView));
-        conSet.setVisibility(R.id.warSelection, seleVis);
-        TransitionManager.beginDelayedTransition(warBar);
-        acti.runOnUiThread(() -> conSet.applyTo(warBar));
-        if (choice > 0) refreshList(choice);
+            switch(choice) {
+                case 1: idView = R.id.sortScore; break;
+                case 2: idView = R.id.sortRatio; break;
+                case 3: idView = R.id.warBar;
+                    posView = ConstraintSet.END;
+                    disView = 3; break;
+                default: seleVis = View.INVISIBLE;
+                    idView = R.id.loadingAnim;
+            }
+
+            conSet.clone(warBar);
+            conSet.connect(R.id.warSelection,
+                    ConstraintSet.END, idView, posView, sdp2px(disView));
+            conSet.setVisibility(R.id.warSelection, seleVis);
+            TransitionManager.beginDelayedTransition(warBar);
+            acti.runOnUiThread(() -> conSet.applyTo(warBar));
+            if (choice > 0) refreshList(choice); });
     }
 
     public ImageView getWifi() {

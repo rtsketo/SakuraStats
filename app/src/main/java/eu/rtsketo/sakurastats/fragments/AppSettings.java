@@ -33,7 +33,6 @@ public class AppSettings extends Fragment {
     private ImageView[] clanBadge = new ImageView[5];
     private ImageView[] clanEdit = new ImageView[5];
     private ImageView[] clanSele = new ImageView[5];
-    private View.OnClickListener urlOpener;
     private Interface acti;
 
     @Override
@@ -74,20 +73,20 @@ public class AppSettings extends Fragment {
         decorate(frag.findViewById(R.id.settingsLegend), "Legend", sdp2px(9));
         decorate(frag.findViewById(R.id.settingsSupport), "Support", sdp2px(9));
         decorate(frag.findViewById(R.id.settingsLegend1), "The current number of won battles.", size);
-        decorate(frag.findViewById(R.id.settingsLegend2), "The estimated number of battles that might be won in this war, based on the statistics of each player.", size);
+        decorate(frag.findViewById(R.id.settingsLegend2), "The estimated battles that might be won in this war, based on the statistics of each player.", size);
         decorate(frag.findViewById(R.id.settingsLegend3), "A score based on the current levels of the cards each player has. From zero to over 9000!", size);
-        decorate(frag.findViewById(R.id.settingsLegend4), "Normalized win ratio of final battles of each player. Everyone starts at a 50% chance of winning a battle, it becomes more accurate with time.", size);
-        decorate(frag.findViewById(R.id.settingsLegend5), "The chances of getting one or more wins than the estimated number.", size);
-        decorate(frag.findViewById(R.id.settingsLegend6), "The number of stored wars the player has participated in.", size);
-        decorate(frag.findViewById(R.id.settingsLegend7), "The number of stored final battles the player has missed.", size);
-        decorate(frag.findViewById(R.id.settingsLegend8), "The average number of cards the player collects per war.", size);
-        decorate(frag.findViewById(R.id.settingsLegend9), "The actual win ratio of player's stored battles.", size);
+        decorate(frag.findViewById(R.id.settingsLegend4), "Normalized win ratio of final battles of each player. Everyone starts at 50%.", size);
+        decorate(frag.findViewById(R.id.settingsLegend5), "The chances of the clan getting one or more wins than the estimated.", size);
+        decorate(frag.findViewById(R.id.settingsLegend6), "The number of wars the player has participated in.", size);
+        decorate(frag.findViewById(R.id.settingsLegend7), "The number of final battles the player has missed.", size);
+        decorate(frag.findViewById(R.id.settingsLegend8), "The best war chest a player has acquired in this season.", size);
+        decorate(frag.findViewById(R.id.settingsLegend9), "The actual win ratio of a player. It starts as 0%.", size);
         decorate(frag.findViewById(R.id.settingsSupportAPI), "This app wouldn’t have been possible without RoyaleAPI, please consider donating and supporting them.", size);
         decorate(frag.findViewById(R.id.settingsSupportText), "Report any issues, or suggest any ideas to Reddit.", size);
 
-        urlOpener = v -> {
+        View.OnClickListener urlOpener = v -> {
             String url;
-            if(v.getId() == R.id.settingsSupportReddit)
+            if (v.getId() == R.id.settingsSupportReddit)
                 url = "https://www.reddit.com/r/ClashRoyale/comments/aeleie/update_clan_management_app_for_android_sakura/";
             else url = "https://github.com/rtsketo/SakuraStats";
 
@@ -157,12 +156,12 @@ public class AppSettings extends Fragment {
             acti.runOnUiThread(() -> {
                 clanSele[c].setColorFilter(Color.argb(100,200,200,200));
                 clanSele[c].setEnabled(false);
-        if (c<2) decorate(clanName[c], "Edit to Add a Clan", sdp2px(8), Color.LTGRAY);
+        if (c<5) decorate(clanName[c], "Edit to Add a Clan", sdp2px(8), Color.LTGRAY);
         else decorate(clanName[c], "Not yet Available!", sdp2px(6), Color.GRAY); });
         }
     }
 
     public void refreshStored() {
-        for (int c = 0; c < 2; c++)
+        for (int c = 0; c < 5; c++)
             refreshStored(c); }
 }

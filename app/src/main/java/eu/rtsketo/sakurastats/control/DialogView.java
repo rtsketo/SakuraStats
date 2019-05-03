@@ -80,7 +80,7 @@ public class DialogView {
                     final String finalTag = tag;
                     getCachePool().execute(() -> {
                         DataFetch df = new DataFetch(acti);
-                        if (df.checkClan(finalTag)) {
+                        if (finalTag.length() > 2 && df.checkClan(finalTag)) {
                             if(count > -1) {
                                 acti.setStoredClan(count, finalTag);
                                 acti.getSettiFrag().selectClan(count);

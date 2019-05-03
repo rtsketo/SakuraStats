@@ -38,6 +38,7 @@ import io.reactivex.disposables.Disposable;
 
 import static eu.rtsketo.sakurastats.control.ThreadPool.getCachePool;
 import static eu.rtsketo.sakurastats.control.ViewDecor.animateView;
+import static eu.rtsketo.sakurastats.control.ViewDecor.blinkView;
 import static eu.rtsketo.sakurastats.control.ViewDecor.bounce;
 import static eu.rtsketo.sakurastats.control.ViewDecor.decorate;
 import static eu.rtsketo.sakurastats.control.ViewDecor.rotate;
@@ -93,6 +94,8 @@ public class PlayerActivity extends Fragment {
         observers[obs] = true;
         if (!observers[1 - obs]) {
             setLoading(true);
+            acti.runOnUiThread(()->
+                    info.setVisibility(View.VISIBLE));
             clearList(); }}
 
     private void complete(int obs) {
@@ -116,24 +119,12 @@ public class PlayerActivity extends Fragment {
             String lastBattle =
                     lastBattleText(cp.getLast());
 
-            String roleString;
-            switch (cp.getRole()) {
-                case "coLeader": roleString = "Co-Leader"; break;
-                case "leader": roleString = "Leader"; break;
-                case "elder": roleString = "Elder"; break;
-                default: roleString = "Member";
-            }
-
-            final String finalRoleString = roleString;
-            final String finalLastBattle = lastBattle;
-
             acti.runOnUiThread(() -> {
-                decorate(pv.role, finalRoleString, size[1]);
-                decorate(pv.time, finalLastBattle, size[1]);
+                decorate(pv.role, "#"+cp.getTag(), size[1]);
                 decorate(pv.lege, cp.getLegendary(), size[1]);
                 decorate(pv.smc, cp.getSmc(), size[1]);
-                pv.frame.setVisibility(View.VISIBLE);
-            });
+                decorate(pv.time, lastBattle, size[1]);
+                pv.frame.setVisibility(View.VISIBLE); });
         }
 
         if (ps != null) {
@@ -160,8 +151,7 @@ public class PlayerActivity extends Fragment {
                 pv.warChest.setImageResource(finalLeagueEmblem);
                 decorate(pv.magi, finalChestString, size[1]);
                 decorate(pv.name, ps.getName(), size[0], Color.WHITE, maxy);
-                pv.frame.setVisibility(View.VISIBLE);
-            });
+                pv.frame.setVisibility(View.VISIBLE); });
          }
     }
 
@@ -219,6 +209,8 @@ public class PlayerActivity extends Fragment {
         sortSMC.setOnClickListener(view -> { bounce(view, acti); selectSort(2); });
         sortLege.setOnClickListener(view -> { bounce(view, acti); selectSort( 3); });
         sortMagi.setOnClickListener(view -> { bounce(view, acti); selectSort( 4); });
+        loadingAnim.setOnClickListener(v -> { bounce(v, acti);
+           Service.getThread().start(acti.getLastClan(), true, false); });
 
         initFrames();
         return root;
@@ -254,7 +246,7 @@ public class PlayerActivity extends Fragment {
             PlayerView finalPV = playerView[c];
             acti.runOnUiThread(() -> {
                 decorate(frame.findViewById(R.id.lastBattle), "Last battle:", size[0]);
-                    decorate(finalPV.role, "???", size[1]);
+                    decorate(finalPV.role, "#???", size[1]);
                     decorate(finalPV.time, "???", size[1]);
                     decorate(finalPV.lege, "???", size[1]);
                     decorate(finalPV.smc, "???", size[1]);
@@ -264,41 +256,38 @@ public class PlayerActivity extends Fragment {
         }
 
         rotate(root.findViewById(R.id.actiSelection), acti);
-        loadingAnim.setOnClickListener(v -> {
-            setLoading(true); clearList();
-            Service.getThread().start(
-                    acti.getLastClan(), true, false); });
         selectSort(0);
     }
 
     public synchronized void selectSort(final int choice) {
-        final ConstraintSet conSet = new ConstraintSet();
-        int posView = ConstraintSet.START, idView = 0,
-                seleVis = View.VISIBLE;
+        getCachePool().execute(()-> {
+            final ConstraintSet conSet = new ConstraintSet();
+            int posView = ConstraintSet.START, idView,
+                    seleVis = View.VISIBLE;
 
-        switch(choice) {
-            case 2: idView = R.id.sortLege; break;
-            case 3: idView = R.id.sortMagi; break;
-            case 4: idView = R.id.sortTime; break;
-            case 1: idView = R.id.actiBar;
-                posView = ConstraintSet.END; break;
-            case 0: seleVis = View.INVISIBLE;
-                idView = R.id.actiBar;
-        }
+            switch(choice) {
+                case 2: idView = R.id.sortLege; break;
+                case 3: idView = R.id.sortMagi; break;
+                case 4: idView = R.id.sortTime; break;
+                case 1: idView = R.id.actiBar;
+                    posView = ConstraintSet.END; break;
+                default: seleVis = View.INVISIBLE;
+                    idView = R.id.actiBar;
+            }
 
-        conSet.clone(actiBar);
-        conSet.connect(R.id.actiSelection,
-                ConstraintSet.END, idView, posView, sdp2px(2));
-        conSet.setVisibility(R.id.actiSelection, seleVis);
-        TransitionManager.beginDelayedTransition(actiBar);
-        acti.runOnUiThread(() -> conSet.applyTo(actiBar));
-        if (choice > 0) refreshList(choice);
+            conSet.clone(actiBar);
+            conSet.connect(R.id.actiSelection,
+                    ConstraintSet.END, idView, posView, sdp2px(2));
+            conSet.setVisibility(R.id.actiSelection, seleVis);
+            TransitionManager.beginDelayedTransition(actiBar);
+            acti.runOnUiThread(() -> conSet.applyTo(actiBar));
+            if (choice > 0) refreshList(choice); });
     }
 
     public boolean getLoading() { return loading; }
     public void setLoading(final boolean loading) {
-        acti.runOnUiThread(() -> {
-            if (loading && !this.loading) {
+        if (loading && !this.loading)
+            acti.runOnUiThread(() -> {
                 sortSMC.setEnabled(false);
                 sortTime.setEnabled(false);
                 sortMagi.setEnabled(false);
@@ -306,14 +295,17 @@ public class PlayerActivity extends Fragment {
                 loadingAnim.setEnabled(false);
                 loadingAnim.setColorFilter(null);
                 loadView.setVisibility(View.VISIBLE);
+                animateView(loadingAnim, true);
+                blinkView(acti.getTab(2), true);
                 decorate(loadView, "Loading...", size[1]);
                 loadingAnim.setImageResource(R.drawable.loading);
                 sortSMC.setColorFilter(Color.argb(100,200,200,200));
                 sortMagi.setColorFilter(Color.argb(100,200,200,200));
                 sortLege.setColorFilter(Color.argb(100,200,200,200));
-                sortTime.setColorFilter(Color.argb(100,200,200,200));
-                animateView(loadingAnim, loading);
-            } else if (!loading && this.loading){
+                sortTime.setColorFilter(Color.argb(100,200,200,200)); });
+
+        else if (!loading && this.loading){
+            acti.runOnUiThread(() -> {
                 sortSMC.setEnabled(true);
                 sortTime.setEnabled(true);
                 sortMagi.setEnabled(true);
@@ -323,10 +315,10 @@ public class PlayerActivity extends Fragment {
                 sortLege.setColorFilter(null);
                 sortTime.setColorFilter(null);
                 info.setVisibility(View.GONE);
-                animateView(loadingAnim, loading);
+                animateView(loadingAnim, false);
+                blinkView(acti.getTab(2), false);
                 loadingAnim.setImageResource(R.drawable.refresh);
-                loadingAnim.setColorFilter(Color.argb(100,200,200,200));
-                blinkView(acti.getTab(2), loading);
+                loadingAnim.setColorFilter(Color.argb(100,200,200,200)); });
 
                 final Timer timer = new Timer();
                 timer.schedule(new TimerTask() {
@@ -341,57 +333,51 @@ public class PlayerActivity extends Fragment {
                             loadView.setVisibility(View.VISIBLE);
                             decorate(loadView, refresh+"min", size[1]); });
                     }}, 0, 60000); }
-        this.loading = loading; });
+        this.loading = loading;
     }
 
-    private void blinkView(ImageView tab, boolean loading) {
-    }
-
-    public void refreshInfo() { info.setVisibility(View.VISIBLE); }
     public void refreshList(final int choice) {
-        getCachePool().execute(() -> {
-            PlayerMap pm = PlayerMap.getInstance();
-            setLoading(true);
-            clearList();
+        PlayerMap pm = PlayerMap.getInstance();
+        setLoading(true);
+        clearList();
 
-            List<PlayerStats> tempPS = new ArrayList<>();
-            if (choice == 0 || choice == 4) {
-                for (Map.Entry<String, Pair<ClanPlayer, PlayerStats>>
-                        player : pm.getAll().entrySet())
-                    if (player.getValue().first != null)
-                        tempPS.add(player.getValue().second);
-                Collections.sort(tempPS, new SortByWar());
+        List<PlayerStats> tempPS = new ArrayList<>();
+        if (choice == 0 || choice == 4) {
+            for (Map.Entry<String, Pair<ClanPlayer, PlayerStats>>
+                    player : pm.getAll().entrySet())
+                if (player.getValue().first != null)
+                    tempPS.add(player.getValue().second);
+            Collections.sort(tempPS, new SortByWar());
 
-                if (!tempPS.isEmpty())
-                    maxChest = tempPS.get(0).getChest(); }
+            if (!tempPS.isEmpty())
+                maxChest = tempPS.get(0).getChest(); }
 
-            if (choice != 4) {
-                List<ClanPlayer> tempCP = new ArrayList<>();
-                for (Map.Entry<String, Pair<ClanPlayer, PlayerStats>>
-                        player : pm.getAll().entrySet())
-                    if (player.getValue().first != null)
-                        tempCP.add(player.getValue().first);
+        if (choice != 4) {
+            List<ClanPlayer> tempCP = new ArrayList<>();
+            for (Map.Entry<String, Pair<ClanPlayer, PlayerStats>>
+                    player : pm.getAll().entrySet())
+                if (player.getValue().first != null)
+                    tempCP.add(player.getValue().first);
 
-                switch (choice) {
-                    case 1: Collections.sort(tempCP, new SortByTime()); break;
-                    case 2: Collections.sort(tempCP, new SortBySMC()); break;
-                    case 3: Collections.sort(tempCP, new SortByLege()); break;
-                    default: break; }
+            switch (choice) {
+                case 1: Collections.sort(tempCP, new SortByTime()); break;
+                case 2: Collections.sort(tempCP, new SortBySMC()); break;
+                case 3: Collections.sort(tempCP, new SortByLege()); break;
+                default: break; }
 
-                for (int c = min(tempCP.size()-1,49); c >= 0 ; c--) {
-                    SystemClock.sleep(20);
-                    String tag = tempCP.get(c).getTag();
-                    Pair<ClanPlayer, PlayerStats> pair = pm.get(tag);
-                    displayStats(pair.second, pair.first); }
+            for (int c = min(tempCP.size()-1,49); c >= 0 ; c--) {
+                SystemClock.sleep(20);
+                String tag = tempCP.get(c).getTag();
+                Pair<ClanPlayer, PlayerStats> pair = pm.get(tag);
+                displayStats(pair.second, pair.first); }
 
-            } else for (int c = min(tempPS.size() - 1,49); c >= 0; c--) {
-                    SystemClock.sleep(20);
-                    String tag = tempPS.get(c).getTag();
-                    Pair<ClanPlayer, PlayerStats> pair = pm.get(tag);
-                    displayStats(pair.second, pair.first); }
+        } else for (int c = min(tempPS.size() - 1,49); c >= 0; c--) {
+                SystemClock.sleep(20);
+                String tag = tempPS.get(c).getTag();
+                Pair<ClanPlayer, PlayerStats> pair = pm.get(tag);
+                if (pair != null) displayStats(pair.second, pair.first); }
 
-
-            setLoading(false); });
+        setLoading(false);
     }
 
     public void clearList() {

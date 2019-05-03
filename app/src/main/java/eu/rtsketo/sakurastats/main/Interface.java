@@ -249,29 +249,29 @@ public class Interface extends AppCompatActivity {
 
     public WarStatistics getWarFrag() {
         while (warFrag == null)
-            SystemClock.sleep(5);
+            SystemClock.sleep(500);
         waitForView(warFrag);
         return warFrag; }
 
     public PlayerActivity getActiFrag() {
         while (actiFrag == null)
-            SystemClock.sleep(5);
+            SystemClock.sleep(500);
         waitForView(actiFrag);
         return actiFrag; }
 
     public Prognostics getProgFrag() {
         while (progFrag == null)
-            SystemClock.sleep(5);
+            SystemClock.sleep(500);
         waitForView(progFrag);
         return progFrag; }
 
     public AppSettings getSettiFrag() {
         while (settiFrag == null)
-            SystemClock.sleep(5);
+            SystemClock.sleep(500);
         waitForView(settiFrag);
         return settiFrag; }
 
     private void waitForView(Fragment frag) {
         while (frag.getView() == null)
-            SystemClock.sleep(5); }
+            SystemClock.sleep(500); }
 }

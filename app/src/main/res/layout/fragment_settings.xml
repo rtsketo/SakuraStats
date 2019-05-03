@@ -9,6 +9,7 @@
     tools:context=".fragments.AppSettings">
 
     <LinearLayout
+        android:id="@+id/linearLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -147,9 +148,7 @@
                 android:layout_marginStart="@dimen/_12sdp"
                 android:layout_marginTop="@dimen/_6sdp"
                 android:layout_marginEnd="@dimen/_12sdp"
-                android:layout_marginBottom="@dimen/_12sdp"
                 android:background="@drawable/frame_inner"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
@@ -209,7 +208,7 @@
                 android:layout_marginTop="@dimen/_6sdp"
                 android:layout_marginEnd="@dimen/_12sdp"
                 android:background="@drawable/frame_inner"
-                android:visibility="gone"
+                android:visibility="visible"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
@@ -269,7 +268,7 @@
                 android:layout_marginTop="@dimen/_6sdp"
                 android:layout_marginEnd="@dimen/_12sdp"
                 android:background="@drawable/frame_inner"
-                android:visibility="gone"
+                android:visibility="visible"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
@@ -330,7 +329,7 @@
                 android:layout_marginEnd="@dimen/_12sdp"
                 android:layout_marginBottom="@dimen/_12sdp"
                 android:background="@drawable/frame_inner"
-                android:visibility="gone"
+                android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
@@ -545,7 +544,8 @@
             </android.support.constraint.ConstraintLayout>
 
             <android.support.constraint.ConstraintLayout
-                android:id="@+id/constraintLayout14"
+
+                android:id="@+id/constraintLayout13"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/_12sdp"
@@ -553,8 +553,9 @@
                 android:layout_marginEnd="@dimen/_12sdp"
                 android:background="@drawable/frame_inner"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/constraintLayout20">
+                app:layout_constraintTop_toBottomOf="@+id/constraintLayout14">
 
                 <com.qwerjk.better_text.MagicTextView
                     android:id="@+id/settingsLegend3"
@@ -585,7 +586,7 @@
             </android.support.constraint.ConstraintLayout>
 
             <android.support.constraint.ConstraintLayout
-                android:id="@+id/constraintLayout13"
+                android:id="@+id/constraintLayout14"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/_12sdp"
@@ -593,9 +594,8 @@
                 android:layout_marginEnd="@dimen/_12sdp"
                 android:background="@drawable/frame_inner"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/constraintLayout14">
+                app:layout_constraintTop_toBottomOf="@+id/constraintLayout20">
 
                 <com.qwerjk.better_text.MagicTextView
                     android:id="@+id/settingsLegend4"
@@ -636,7 +636,7 @@
                 android:background="@drawable/frame_inner"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/constraintLayout13">
+                app:layout_constraintTop_toBottomOf="@+id/constraintLayout18">
 
                 <com.qwerjk.better_text.MagicTextView
                     android:id="@+id/settingsLegend5"
@@ -677,7 +677,7 @@
                 android:background="@drawable/frame_inner"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/constraintLayout16">
+                app:layout_constraintTop_toBottomOf="@+id/constraintLayout19">
 
                 <com.qwerjk.better_text.MagicTextView
                     android:id="@+id/settingsLegend6"
@@ -758,16 +758,16 @@
                 android:layout_marginTop="@dimen/_6sdp"
                 android:layout_marginEnd="@dimen/_12sdp"
                 android:background="@drawable/frame_inner"
-                android:visibility="gone"
+                android:visibility="visible"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/constraintLayout18">
+                app:layout_constraintTop_toBottomOf="@+id/constraintLayout13">
 
                 <com.qwerjk.better_text.MagicTextView
                     android:id="@+id/settingsLegend8"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/_15sdp"
+                    android:layout_marginStart="@dimen/_12sdp"
                     android:layout_marginTop="@dimen/_2sdp"
                     android:layout_marginEnd="@dimen/_6sdp"
                     android:layout_marginBottom="@dimen/_3sdp"
@@ -780,15 +780,15 @@
 
                 <ImageView
                     android:id="@+id/cardImage2"
-                    android:layout_width="@dimen/_12sdp"
-                    android:layout_height="@dimen/_12sdp"
-                    android:layout_marginStart="@dimen/_9sdp"
-                    android:layout_marginTop="@dimen/_9sdp"
-                    android:layout_marginBottom="@dimen/_9sdp"
+                    android:layout_width="@dimen/_18sdp"
+                    android:layout_height="@dimen/_18sdp"
+                    android:layout_marginStart="@dimen/_6sdp"
+                    android:layout_marginTop="@dimen/_6sdp"
+                    android:layout_marginBottom="@dimen/_6sdp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@drawable/cr_cards"
+                    app:srcCompat="@drawable/clanwar_chest"
                     tools:ignore="ContentDescription" />
             </android.support.constraint.ConstraintLayout>
 
@@ -804,7 +804,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/constraintLayout19">
+                app:layout_constraintTop_toBottomOf="@+id/constraintLayout16">
 
                 <com.qwerjk.better_text.MagicTextView
                     android:id="@+id/settingsLegend9"

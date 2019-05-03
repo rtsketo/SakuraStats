@@ -30,7 +30,6 @@ public class Service {
 
     private boolean force;
     private boolean stop;
-    private boolean tab;
 
     private Service(Interface acti) { this.acti = acti; }
 
@@ -47,10 +46,6 @@ public class Service {
 
     public synchronized void start(String tag, boolean force, boolean tab) {
         getCachePool().execute(() -> {
-            acti.getWarFrag().setLoading(true);
-            acti.getActiFrag().setLoading(true);
-            acti.getProgFrag().setLoading(true);
-
             if (thread != null)
                 try { stop = true;
                     thread.join();
@@ -59,7 +54,6 @@ public class Service {
                     Log.e(TAG, "Join failed", e);
                     thread.interrupt(); }
 
-            this.tab = tab;
             this.force = force;
             df = new DataFetch(acti);
             thread = new Thread(()-> {
@@ -81,6 +75,8 @@ public class Service {
                             collectData(cTag);
                             break;
                         }}}});
+
+            thread.setPriority(Thread.MIN_PRIORITY);
             thread.start();
         });
     }

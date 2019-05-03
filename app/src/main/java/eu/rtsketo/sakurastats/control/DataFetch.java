@@ -1,6 +1,7 @@
 package eu.rtsketo.sakurastats.control;
 
 import android.annotation.SuppressLint;
+import android.os.SystemClock;
 import android.util.Log;
 import android.util.Pair;
 
@@ -17,6 +18,8 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.SimpleDateFormat;
@@ -27,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import eu.rtsketo.sakurastats.dbobjects.ClanPlayer;
@@ -68,11 +72,11 @@ import static eu.rtsketo.sakurastats.main.Interface.TAG;
 
 @SuppressWarnings("UnstableApiUsage")
 public class DataFetch {
-    private static Api api = new Api("http://api.royaleapi.com/",
-            );
+    // Make api == null if you don't have a dev key.
+    private static Api api = new Api("http://api.royaleapi.com/", /* Enter here your dev key */);
 
     @SuppressWarnings("FieldCanBeLocal")
-    private int retries = 5;
+    private int retries = 100;
     private int timeout = 10000;
     private Map<String, List<ClanWarLog>> clanWars = new HashMap<>();
     private DAObject db = DataRoom.getInstance().getDao();
@@ -81,6 +85,8 @@ public class DataFetch {
     private String mainTag;
     private Interface acti;
     private int sleepTime;
+    private boolean internet;
+    private long lastCheck;
 
     public DataFetch(Interface activity) { acti = activity; }
 
@@ -88,19 +94,15 @@ public class DataFetch {
         timeout = Math.max(5000, timeout - 500); }
 
     private void sleep() {
+        while (!hasInternet())
+            SystemClock.sleep(3000);
+
         sleepTime = sleepTime > 10000?
                 0 : sleepTime + 150;
-        sleep(sleepTime); }
-
-    private void sleep(int time) {
-        try { Thread.sleep(time); }
-        catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            Log.e(TAG, "Sleep failed", e); }
-    }
+        SystemClock.sleep(sleepTime); }
 
     private void cought(Exception e) {
-        Log.w(TAG, "Data fetching", e);
+        Log.w(TAG, "Data fetching failed!", e);
         acti.badConnection(); }
 
      boolean checkClan(final String tag) {
@@ -152,26 +154,33 @@ public class DataFetch {
 
     private PlayerStats getWarStats(final String tag) {
         Document doc = null;
-        PlayerStats ps = null;
-        for (int c = 0; c < retries || doc == null; c++) {
-        try {
-            doc = getPage("https://royaleapi.com/inc/player/cw_history?player_tag="+tag);
-            double wins = doc.select(".won_all").size() - 1
-                    + (doc.select(".won_one").size() - 1) * .5;
-            int missed = doc.select(".missed").size() - 1;
-            int wars = doc.select(".war_hit").size();
+        PlayerStats ps = new PlayerStats();
+        for (int c = 0; c < retries || doc == null; c++) try {
+                doc = getPage("https://royaleapi.com/inc/player/cw_history?player_tag="+tag);
+                double wins = doc.select(".won_all").size() - 1
+                        + (doc.select(".won_one").size() - 1) * .5;
+                int missed = doc.select(".missed").size() - 1;
+                int wars = doc.select(".war_hit").size();
 
-            double ratio = wars == 0? 0 :  wins / wars;
-            double norma = (1.0 + wins)/(2.0 + wars);
+                double ratio = wars == 0? 0 :  wins / wars;
+                double norma = (1.0 + wins)/(2.0 + wars);
 
-            ps = new PlayerStats();
-            ps.setWins((int)wins);
-            ps.setMissed(missed);
-            ps.setRatio(ratio);
-            ps.setNorma(norma);
-            ps.setWars(wars);
-            ps.setTag(tag);
-        } catch (IOException ex) { cought(ex); sleep(); }}
+                ps.setWins((int)wins);
+                ps.setMissed(missed);
+                ps.setRatio(ratio);
+                ps.setNorma(norma);
+                ps.setWars(wars);
+                ps.setTag(tag); }
+            catch (IOException ex) { cought(ex); sleep(); }
+
+            finally {
+                ps.setWins(0);
+                ps.setMissed(0);
+                ps.setRatio(0);
+                ps.setNorma(.5);
+                ps.setWars(0);
+                ps.setTag(tag); }
+
         return ps;
     }
 
@@ -239,7 +248,6 @@ public class DataFetch {
             chestNum = extractNum(ele);
             cc.setMegaLightning(Integer.parseInt(chestNum));
             chestCycle = cc;
-            sleep(300);
         } catch (IOException ex) { cought(ex); sleep(); return getPlayerChests(tag); }
         return chestCycle;
     }
@@ -447,8 +455,11 @@ public class DataFetch {
                             .replace("/war/log","");
                     int warTrophies = Integer.parseInt(
                             stand.selectFirst("td.trophy").ownText());
+                    int trophyChange = Integer.parseInt(
+                            stand.selectFirst("td.trophy_change").ownText());
 
                     ClanWarLogStanding cwls = new ClanWarLogStanding();
+                    cwls.setWarTrophiesChange(trophyChange);
                     cwls.setWarTrophies(warTrophies);
                     cwls.setTag(clanTag);
                     cwlsList.add(cwls); }
@@ -509,10 +520,10 @@ public class DataFetch {
                 role = roleElement.ownText();
 
             switch (role) {
-                case "Member": role = "member"; break;
                 case "Co-leader": role = "coLeader"; break;
                 case "Leader": role = "leader"; break;
                 case "Elder": role = "elder"; break;
+                default: role = "member";
             }
 
             ProfileClan pClan = new ProfileClan();
@@ -617,10 +628,17 @@ public class DataFetch {
             if(maxParticipants < clan.getParticipants())
                 maxParticipants = clan.getParticipants();
 
+        CountDownLatch latch = new CountDownLatch(4);
         for (final ClanWarStanding clan : standings)
             if (!clan.getTag().equals(mainClan.getClan().getTag()))
-                getFixedPool().execute(() -> clanList.add(getClan(clan.getTag())));
-            while (clanList.size() < 4) sleep(500);
+                getFixedPool().execute(() -> {
+                    clanList.add(getClan(clan.getTag()));
+                    latch.countDown(); });
+
+        try { latch.await(); }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            Log.e(TAG,"Latch failed.", e); }
 
         return maxParticipants - mainClan.getClan().getBattlesPlayed();
     }
@@ -753,7 +771,9 @@ public class DataFetch {
             for (ClanWarLogParticipant dayPlayer : dayLog.getParticipants())
                 if (dayPlayer.getTag().equals(player.getTag())) {
                     int warTroph = dayLog.getStandings()
-                            .get(0).getWarTrophies();
+                            .get(0).getWarTrophies()
+                            - dayLog.getStandings()
+                            .get(0).getWarTrophiesChange();
 
                     int league = 4;
                     if (warTroph > 2999) league = 1;
@@ -935,6 +955,32 @@ public class DataFetch {
 
         db.insertPlayerStats(newPlayer);
         return newPlayer;
+    }
+
+    private boolean hasInternet() {
+        if (System.currentTimeMillis() - lastCheck > 10000) {
+            internet = testSite("google.com")
+                    || testSite("amazon.com")
+                    || testSite("yahoo.com");
+            lastCheck = System.currentTimeMillis(); }
+        return internet;
+    }
+
+    private boolean testSite(String site) {
+        Socket sock = new Socket();
+        InetSocketAddress addr =
+                new InetSocketAddress(site,80);
+        try {
+            sock.connect(addr,5000);
+            return true;
+        } catch (IOException e) {
+            return false;
+        } finally {
+            try { sock.close(); }
+            catch (IOException e) {
+                Log.e(TAG, "Socket didn't close.", e);
+            }
+        }
     }
 
 }
