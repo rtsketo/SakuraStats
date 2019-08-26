@@ -369,7 +369,7 @@ public class PlayerActivity extends Fragment {
                 SystemClock.sleep(20);
                 String tag = tempCP.get(c).getTag();
                 Pair<ClanPlayer, PlayerStats> pair = pm.get(tag);
-                displayStats(pair.second, pair.first); }
+                if (pair != null) displayStats(pair.second, pair.first); }
 
         } else for (int c = min(tempPS.size() - 1,49); c >= 0; c--) {
                 SystemClock.sleep(20);

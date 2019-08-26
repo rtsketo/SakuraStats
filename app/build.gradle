@@ -17,13 +17,13 @@ android {
         applicationId "eu.rtsketo.sakurastats"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 1206
-        versionName "1.2.06"
+        versionCode 1212
+        versionName "1.2.12"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -34,16 +34,16 @@ android {
     }
 }
 
-configurations.all {
-    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-        def requested = details.requested
-        if (requested.group == "com.android.support") {
-            if (!requested.name.startsWith("multidex")) {
-                details.useVersion "26.+"
-            }
-        }
-    }
-}
+//configurations.all {
+//    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+//        def requested = details.requested
+//        if (requested.group == "com.android.support") {
+//            if (!requested.name.startsWith("multidex")) {
+//                details.useVersion "26.+"
+//            }
+//        }
+//    }
+//}
 
 dependencies {
     implementation 'com.android.support:multidex:1.0.3'

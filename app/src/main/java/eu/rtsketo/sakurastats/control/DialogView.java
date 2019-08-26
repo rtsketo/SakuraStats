@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.Window;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.qwerjk.better_text.MagicTextView;
 
@@ -185,11 +186,10 @@ public class DialogView {
                 tag = "#"+tag.toUpperCase()
                         .replace("O", "0")
                         .replaceAll("[^0289CGJLPQRUVY]", "");
+
                 clanTagInput = tag;
-                final String finalTag = tag;
-                activity.runOnUiThread(() -> {
-                    editText.setText(finalTag);
-                    editText.setSelection(finalTag.length()); });
+                editText.setText(tag, TextView.BufferType.EDITABLE);
+                editText.setSelection(tag.length());
             }
         }
     }

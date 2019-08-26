@@ -18,10 +18,10 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,6 +63,7 @@ import jcrapi.request.PlayerChestsRequest;
 import jcrapi.request.ProfileRequest;
 import jcrapi.request.TopClansRequest;
 
+import static eu.rtsketo.sakurastats.control.APIDevKey.devKey;
 import static eu.rtsketo.sakurastats.control.ThreadPool.getCachePool;
 import static eu.rtsketo.sakurastats.control.ThreadPool.getFixedPool;
 import static eu.rtsketo.sakurastats.hashmaps.LeagueMap.l2o;
@@ -72,8 +73,8 @@ import static eu.rtsketo.sakurastats.main.Interface.TAG;
 
 @SuppressWarnings("UnstableApiUsage")
 public class DataFetch {
-    // Make api == null if you don't have a dev key.
-    private static Api api = new Api("http://api.royaleapi.com/", /* Enter here your dev key */);
+    // Make api == null if you don't have a developer key.
+    private static Api api = new Api("http://api.royaleapi.com/", devKey);
 
     @SuppressWarnings("FieldCanBeLocal")
     private int retries = 100;
@@ -95,10 +96,10 @@ public class DataFetch {
 
     private void sleep() {
         while (!hasInternet())
-            SystemClock.sleep(3000);
+            SystemClock.sleep(500);
 
-        sleepTime = sleepTime > 10000?
-                0 : sleepTime + 150;
+        sleepTime = sleepTime > 5000?
+                50 : sleepTime + 50;
         SystemClock.sleep(sleepTime); }
 
     private void cought(Exception e) {
@@ -153,33 +154,36 @@ public class DataFetch {
     }
 
     private PlayerStats getWarStats(final String tag) {
-        Document doc = null;
-        PlayerStats ps = new PlayerStats();
-        for (int c = 0; c < retries || doc == null; c++) try {
-                doc = getPage("https://royaleapi.com/inc/player/cw_history?player_tag="+tag);
-                double wins = doc.select(".won_all").size() - 1
-                        + (doc.select(".won_one").size() - 1) * .5;
-                int missed = doc.select(".missed").size() - 1;
-                int wars = doc.select(".war_hit").size();
+        PlayerStats ps = null;
+        for (int c = 0; c < retries && ps == null; c++) try {
+            Document doc = getPage("https://royaleapi.com/inc/player/cw_history/" + tag);
 
-                double ratio = wars == 0? 0 :  wins / wars;
-                double norma = (1.0 + wins)/(2.0 + wars);
+            double wins = doc.select(".won_all").size() - 1
+                    + (doc.select(".won_one").size() - 1) * .5;
+            int missed = doc.select(".missed").size() - 1;
+            int wars = doc.select(".war_hit").size();
 
-                ps.setWins((int)wins);
-                ps.setMissed(missed);
-                ps.setRatio(ratio);
-                ps.setNorma(norma);
-                ps.setWars(wars);
-                ps.setTag(tag); }
-            catch (IOException ex) { cought(ex); sleep(); }
+            double ratio = wars == 0? 0 :  wins / wars;
+            double norma = (1.0 + wins)/(2.0 + wars);
 
-            finally {
-                ps.setWins(0);
-                ps.setMissed(0);
-                ps.setRatio(0);
-                ps.setNorma(.5);
-                ps.setWars(0);
-                ps.setTag(tag); }
+            ps = new PlayerStats();
+            ps.setWins((int)wins);
+            ps.setMissed(missed);
+            ps.setRatio(ratio);
+            ps.setNorma(norma);
+            ps.setWars(wars);
+            ps.setTag(tag); }
+        catch (Exception ex) { cought(ex); sleep(); }
+
+        if (ps == null) {
+            ps = new PlayerStats();
+            ps.setWins(0);
+            ps.setMissed(0);
+            ps.setRatio(0);
+            ps.setNorma(.5);
+            ps.setWars(0);
+            ps.setTag(tag);
+        }
 
         return ps;
     }
@@ -957,30 +961,22 @@ public class DataFetch {
         return newPlayer;
     }
 
-    private boolean hasInternet() {
-        if (System.currentTimeMillis() - lastCheck > 10000) {
-            internet = testSite("google.com")
-                    || testSite("amazon.com")
-                    || testSite("yahoo.com");
+    private synchronized boolean hasInternet() {
+        if (System.currentTimeMillis() - lastCheck > 30000) {
+            internet = testSite("www.google.com")
+                    || testSite("www.amazon.com")
+                    || testSite("www.yahoo.com");
             lastCheck = System.currentTimeMillis(); }
         return internet;
     }
 
     private boolean testSite(String site) {
-        Socket sock = new Socket();
-        InetSocketAddress addr =
-                new InetSocketAddress(site,80);
         try {
-            sock.connect(addr,5000);
-            return true;
-        } catch (IOException e) {
-            return false;
-        } finally {
-            try { sock.close(); }
-            catch (IOException e) {
-                Log.e(TAG, "Socket didn't close.", e);
-            }
-        }
+            final InetAddress address =
+                    InetAddress.getByName(site);
+            return !address.equals("");
+        } catch (UnknownHostException e) {
+            Log.e(TAG, "No internet!", e);}
+        return false;
     }
-
 }
