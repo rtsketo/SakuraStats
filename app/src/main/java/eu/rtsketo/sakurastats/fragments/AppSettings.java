@@ -1,9 +1,7 @@
 package eu.rtsketo.sakurastats.fragments;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -11,9 +9,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.heinrichreimersoftware.androidissuereporter.IssueReporterLauncher;
 import com.qwerjk.better_text.MagicTextView;
 
 import eu.rtsketo.sakurastats.R;
+import eu.rtsketo.sakurastats.control.APIDevKey;
 import eu.rtsketo.sakurastats.control.DAObject;
 import eu.rtsketo.sakurastats.control.DataRoom;
 import eu.rtsketo.sakurastats.control.DialogView;
@@ -81,18 +81,7 @@ public class AppSettings extends Fragment {
         decorate(frag.findViewById(R.id.settingsLegend7), "The number of final battles the player has missed.", size);
         decorate(frag.findViewById(R.id.settingsLegend8), "The best war chest a player has acquired in this season.", size);
         decorate(frag.findViewById(R.id.settingsLegend9), "The actual win ratio of a player. It starts as 0%.", size);
-        decorate(frag.findViewById(R.id.settingsSupportAPI), "This app wouldn’t have been possible without RoyaleAPI, please consider donating and supporting them.", size);
-        decorate(frag.findViewById(R.id.settingsSupportText), "Report any issues, or suggest any ideas to Reddit.", size);
-
-        View.OnClickListener urlOpener = v -> {
-            String url;
-            if (v.getId() == R.id.settingsSupportReddit)
-                url = "https://www.reddit.com/r/ClashRoyale/comments/aeleie/update_clan_management_app_for_android_sakura/";
-            else url = "https://github.com/rtsketo/SakuraStats";
-
-            Intent i = new Intent(Intent.ACTION_VIEW);
-            i.setData(Uri.parse(url));
-            startActivity(i); };
+        decorate(frag.findViewById(R.id.settingsSupportText), "Suggest new ideas!\n\nRequest a feature or\nreport any issue to GitHub.", size);
 
         refreshStored();
         for (int c = 0; c < 5; c++) {
@@ -104,8 +93,8 @@ public class AppSettings extends Fragment {
                     new DialogView(DialogView.SakuraDialog.INPUT, finalC, acti));
         }
 
-        frag.findViewById(R.id.settingsSupportGitHub).setOnClickListener(urlOpener);
-        frag.findViewById(R.id.settingsSupportReddit).setOnClickListener(urlOpener);
+        frag.findViewById(R.id.settingsSupportGitHub)
+                .setOnClickListener(v -> reportIssue(v.getContext()));
         return frag;
     }
 
@@ -164,4 +153,13 @@ public class AppSettings extends Fragment {
     public void refreshStored() {
         for (int c = 0; c < 5; c++)
             refreshStored(c); }
+
+    public final void reportIssue(Context context) {
+        IssueReporterLauncher.forTarget("rtsketo", "SakuraStats")
+                .guestToken(APIDevKey.gitKey)
+                .guestEmailRequired(true)
+                .minDescriptionLength(20)
+                .homeAsUpEnabled(true)
+                .launch(context);
+    }
 }
