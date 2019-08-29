@@ -22,7 +22,7 @@ import eu.rtsketo.sakurastats.R;
 import eu.rtsketo.sakurastats.main.Interface;
 import eu.rtsketo.sakurastats.main.Service;
 
-import static android.support.v4.content.ContextCompat.startActivity;
+import static androidx.core.content.ContextCompat.startActivity;
 import static eu.rtsketo.sakurastats.control.ThreadPool.getCachePool;
 import static eu.rtsketo.sakurastats.control.ViewDecor.bounce;
 import static eu.rtsketo.sakurastats.control.ViewDecor.decorate;

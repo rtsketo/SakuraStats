@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout11"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -81,7 +81,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraintLayout4"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -137,9 +137,9 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:ignore="ContentDescription" />
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraintLayout8"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -196,9 +196,9 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:ignore="ContentDescription" />
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraintLayout9"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -256,9 +256,9 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:ignore="ContentDescription" />
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraintLayout7"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -316,9 +316,9 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:ignore="ContentDescription" />
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraintLayout5"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -378,11 +378,11 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:ignore="ContentDescription" />
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout21"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -449,7 +449,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraintLayout29"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -463,7 +463,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/settingsSupport">
 
-                <android.support.design.widget.FloatingActionButton
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/settingsSupportGitHub"
                     android:layout_width="@dimen/_36sdp"
                     android:layout_height="@dimen/_36sdp"
@@ -500,11 +500,11 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <android.support.constraint.ConstraintLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/constraintLayout12"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -573,7 +573,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraintLayout10"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -616,9 +616,9 @@
                     app:layout_constraintTop_toTopOf="parent"
                     tools:ignore="ContentDescription" />
 
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraintLayout20"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -659,9 +659,9 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:ignore="ContentDescription" />
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
 
                 android:id="@+id/constraintLayout13"
                 android:layout_width="0dp"
@@ -701,9 +701,9 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:srcCompat="@drawable/cr_cards"
                     tools:ignore="ContentDescription" />
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraintLayout14"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -742,9 +742,9 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:srcCompat="@drawable/cr_ratio"
                     tools:ignore="ContentDescription" />
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraintLayout16"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -783,9 +783,9 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:ignore="ContentDescription" />
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraintLayout17"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -824,9 +824,9 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:srcCompat="@drawable/cr_war"
                     tools:ignore="ContentDescription" />
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraintLayout18"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -866,9 +866,9 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:srcCompat="@drawable/absent_alpha"
                     tools:ignore="ContentDescription" />
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraintLayout19"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -908,9 +908,9 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:srcCompat="@drawable/clanwar_chest"
                     tools:ignore="ContentDescription" />
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <android.support.constraint.ConstraintLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraintLayout15"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -951,9 +951,9 @@
                     app:layout_constraintTop_toTopOf="parent"
                     app:srcCompat="@drawable/cr_wins"
                     tools:ignore="ContentDescription" />
-            </android.support.constraint.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-        </android.support.constraint.ConstraintLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </LinearLayout>
 

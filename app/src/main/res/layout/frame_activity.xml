@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/warFrame"
@@ -55,7 +55,7 @@
         app:srcCompat="@drawable/frame_outter"
         tools:ignore="ContentDescription" />
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/_12sdp"
@@ -86,9 +86,9 @@
             android:layout_marginTop="@dimen/_2sdp"
             app:layout_constraintStart_toStartOf="@+id/namae"
             app:layout_constraintTop_toBottomOf="@+id/namae" />
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout3"
         android:layout_width="@dimen/_122sdp"
         android:layout_height="wrap_content"
@@ -158,7 +158,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="ContentDescription" />
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.qwerjk.better_text.MagicTextView
         android:id="@+id/lastBattle"
@@ -179,4 +179,4 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

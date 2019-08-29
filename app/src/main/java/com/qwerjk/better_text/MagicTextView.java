@@ -17,11 +17,12 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.support.v7.widget.AppCompatTextView;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Pair;
 import android.view.View;
+
+import androidx.appcompat.widget.AppCompatTextView;
 
 import java.util.ArrayList;
 import java.util.WeakHashMap;

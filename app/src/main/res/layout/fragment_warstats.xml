@@ -1,4 +1,4 @@
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/warFrag"
@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_temp">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/warBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -115,7 +115,7 @@
             app:srcCompat="@drawable/cr_ratio"
             tools:ignore="ContentDescription" />
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ScrollView
         android:id="@+id/scrollView"
@@ -142,4 +142,4 @@
         </LinearLayout>
     </ScrollView>
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

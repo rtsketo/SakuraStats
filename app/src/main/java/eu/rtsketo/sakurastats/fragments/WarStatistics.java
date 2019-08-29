@@ -4,9 +4,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.constraint.ConstraintLayout;
-import android.support.constraint.ConstraintSet;
-import android.support.v4.app.Fragment;
 import android.transition.TransitionManager;
 import android.util.Log;
 import android.util.Pair;
@@ -15,6 +12,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.fragment.app.Fragment;
 
 import com.qwerjk.better_text.MagicTextView;
 

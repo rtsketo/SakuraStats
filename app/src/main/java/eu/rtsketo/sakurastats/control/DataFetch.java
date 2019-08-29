@@ -209,9 +209,9 @@ public class DataFetch {
      public List<TopClan> getTopClans() {
         List<TopClan> topClans = null;
         try { TimeLimiter limiter = SimpleTimeLimiter.create(getCachePool());
+            TopClansRequest tcp = TopClansRequest.builder().build();
             topClans = limiter.callWithTimeout(() ->
-                    api.getTopClans(TopClansRequest.builder()
-                            .build()), timeout, TimeUnit.MILLISECONDS); }
+                    api.getTopClans(tcp), timeout, TimeUnit.MILLISECONDS); }
         catch (Exception ex) { cought(ex); timeout(); }
         if (topClans == null) try {
             List<TopClan> clans = new ArrayList<>();

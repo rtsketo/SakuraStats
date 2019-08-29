@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/warFrame"
@@ -71,7 +71,7 @@
         app:srcCompat="@drawable/frame_outter"
         tools:ignore="ContentDescription" />
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout6"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -128,9 +128,9 @@
             app:layout_constraintVertical_bias="0.0"
             app:srcCompat="@drawable/cr_trophy_2"
             tools:ignore="ContentDescription" />
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/playerStats"
         android:layout_width="@dimen/_128sdp"
         android:layout_height="wrap_content"
@@ -265,7 +265,7 @@
             app:layout_constraintBottom_toBottomOf="@+id/normaImage"
             app:layout_constraintStart_toEndOf="@+id/normaImage"
             app:layout_constraintTop_toTopOf="@+id/normaImage" />
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.qwerjk.better_text.MagicTextView
         android:id="@+id/rank"
@@ -285,4 +285,4 @@
         tools:ignore="RtlSymmetry" />
 
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
