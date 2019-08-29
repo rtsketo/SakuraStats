@@ -17,8 +17,8 @@ android {
         applicationId "eu.rtsketo.sakurastats"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 1213
-        versionName "1.2.13"
+        versionCode 1214
+        versionName "1.2.14"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

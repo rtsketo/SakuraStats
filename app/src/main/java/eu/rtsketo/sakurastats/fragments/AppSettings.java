@@ -13,7 +13,6 @@ import com.heinrichreimersoftware.androidissuereporter.IssueReporterLauncher;
 import com.qwerjk.better_text.MagicTextView;
 
 import eu.rtsketo.sakurastats.R;
-import eu.rtsketo.sakurastats.control.APIDevKey;
 import eu.rtsketo.sakurastats.control.DAObject;
 import eu.rtsketo.sakurastats.control.DataRoom;
 import eu.rtsketo.sakurastats.control.DialogView;
@@ -21,6 +20,7 @@ import eu.rtsketo.sakurastats.dbobjects.ClanStats;
 import eu.rtsketo.sakurastats.main.Interface;
 import eu.rtsketo.sakurastats.main.Service;
 
+import static eu.rtsketo.sakurastats.control.APIDevKey.gitKey;
 import static eu.rtsketo.sakurastats.control.ThreadPool.getCachePool;
 import static eu.rtsketo.sakurastats.control.ViewDecor.bounce;
 import static eu.rtsketo.sakurastats.control.ViewDecor.decorate;
@@ -156,10 +156,15 @@ public class AppSettings extends Fragment {
 
     public final void reportIssue(Context context) {
         IssueReporterLauncher.forTarget("rtsketo", "SakuraStats")
-                .guestToken(APIDevKey.gitKey)
+                .putExtraInfo("Clan_Tag_1", acti.getStoredClan(0))
+                .putExtraInfo("Clan_Tag_2", acti.getStoredClan(1))
+                .putExtraInfo("Clan_Tag_3", acti.getStoredClan(2))
+                .putExtraInfo("Clan_Tag_4", acti.getStoredClan(3))
+                .putExtraInfo("Clan_Tag_5", acti.getStoredClan(4))
                 .guestEmailRequired(true)
                 .minDescriptionLength(20)
                 .homeAsUpEnabled(true)
+                .guestToken(gitKey)
                 .launch(context);
     }
 }
