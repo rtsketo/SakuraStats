@@ -12,8 +12,8 @@ import eu.rtsketo.sakurastats.dbobjects.PlayerStats;
 import eu.rtsketo.sakurastats.dbobjects.WarDay;
 
 @SuppressWarnings("SingletonPattern")
-@Database(entities = {WarDay.class, PlayerStats.class,
-        ClanStats.class, ClanPlayer.class}, version = 1)
+@Database(entities = {WarDay.class, PlayerStats.class, ClanStats.class,
+        ClanPlayer.class}, exportSchema = false, version = 1)
 public abstract class DataRoom extends RoomDatabase {
     public abstract DAObject getDao();
     private static DataRoom instance;

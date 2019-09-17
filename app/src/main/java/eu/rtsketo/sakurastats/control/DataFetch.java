@@ -63,7 +63,6 @@ import jcrapi.request.PlayerChestsRequest;
 import jcrapi.request.ProfileRequest;
 import jcrapi.request.TopClansRequest;
 
-import static eu.rtsketo.sakurastats.control.APIDevKey.devKey;
 import static eu.rtsketo.sakurastats.control.ThreadPool.getCachePool;
 import static eu.rtsketo.sakurastats.control.ThreadPool.getFixedPool;
 import static eu.rtsketo.sakurastats.hashmaps.LeagueMap.l2o;
@@ -74,7 +73,10 @@ import static eu.rtsketo.sakurastats.main.Interface.TAG;
 @SuppressWarnings("UnstableApiUsage")
 public class DataFetch {
     // Make api == null if you don't have a developer key.
-    private static Api api = new Api("http://api.royaleapi.com/", devKey);
+    // private static Api api = new Api("https://api.royaleapi.com/", devKey);
+
+    // It's temporarly null, untile the API is updated to v2.
+    private static Api api = null;
 
     @SuppressWarnings("FieldCanBeLocal")
     private int retries = 100;
@@ -437,6 +439,7 @@ public class DataFetch {
                         }
 
             int[] season = new int[10];
+            @SuppressWarnings("unchecked")
             List<ClanWarLogStanding>[] standList = new List[10];
             Elements eles = doc.select(".ui .inverted .header");
 
@@ -803,8 +806,7 @@ public class DataFetch {
 
 
 
-    // Deprecated
-    @SuppressWarnings("unused")
+    @Deprecated
     private PlayerStats getPlayer(String clanTag,
                                   Member member, List<ClanWarLog> warLog) {
         PlayerStats player = new PlayerStats();
@@ -939,8 +941,7 @@ public class DataFetch {
         return player;
     }
 
-    // Deprecated
-    @SuppressWarnings("unused")
+    @Deprecated
     public  PlayerStats getMissingPlayer(Member member, String clanTag) {
         PlayerStats newPlayer = new PlayerStats();
         newPlayer.setTag(member.getTag());

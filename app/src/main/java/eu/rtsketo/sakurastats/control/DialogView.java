@@ -1,6 +1,5 @@
 package eu.rtsketo.sakurastats.control;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -58,7 +57,7 @@ public class DialogView {
         switch (type) {
             case INPUT:
                 final ImageView loadingAnim = dialog.findViewById(R.id.loadingAnim);
-                input.addTextChangedListener(new InputCheck(input, acti));
+                input.addTextChangedListener(new InputCheck(input));
                 if (count > 0) decorate(explain,"Enter a", size[0]);
                 else decorate(explain, "Enter your", size[0]);
                 decorate(explain2,"clan's tag!", size[0]);
@@ -172,11 +171,8 @@ public class DialogView {
     class InputCheck implements TextWatcher {
         private String clanTagInput = "";
         private EditText editText;
-        private Activity activity;
 
-        InputCheck(EditText et, Activity acti) {
-            editText = et; activity = acti; }
-
+        InputCheck(EditText et) { editText = et; }
         @Override public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
         @Override public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
 
