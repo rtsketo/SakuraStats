@@ -167,13 +167,13 @@ public class Interface extends AppCompatActivity {
         long diff = (curr - time);
 
         switch (mod) {
-            case "batt": return diff > 24 * HRS;
-            case "prof": return diff > 72 * HRS;
+            case "batt":
             case "chest": return diff > 24 * HRS;
-            case "auto": return diff > 48 * HRS;
+            case "prof": return diff > 72 * HRS;
+            case "auto":
             case "wstat": return diff > 48 * HRS;
             case "prog": return diff > 15 * MINS;
-            case "acti": return diff > 60 * MINS;
+            case "acti":
             case "war": return diff > 60 * MINS;
             default: return diff > 15 * MINS; }
     }
@@ -224,24 +224,32 @@ public class Interface extends AppCompatActivity {
     };
 
     public void badConnection() {
-        runOnUiThread(() -> {
-            if (warFrag.getLoading())
-                warFrag.getWifi().setVisibility(View.VISIBLE);
-            if (actiFrag.getLoading())
-                actiFrag.getWifi().setVisibility(View.VISIBLE);
-            progFrag.getWifi().first.setVisibility(View.VISIBLE);
-            progFrag.getWifi().second.setVisibility(View.VISIBLE);
-        });
+        if (warFrag != null &&
+                actiFrag != null &&
+                progFrag != null) {
 
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override public void run() {
-                runOnUiThread(() -> {
-                    warFrag.getWifi().setVisibility(View.INVISIBLE);
-                    actiFrag.getWifi().setVisibility(View.INVISIBLE);
-                    progFrag.getWifi().first.setVisibility(View.INVISIBLE);
-                    progFrag.getWifi().second.setVisibility(View.INVISIBLE);
-                });}},1500); }
+            runOnUiThread(() -> {
+                if (warFrag.getLoading())
+                    warFrag.getWifi().setVisibility(View.VISIBLE);
+                if (actiFrag.getLoading())
+                    actiFrag.getWifi().setVisibility(View.VISIBLE);
+                progFrag.getWifi().first.setVisibility(View.VISIBLE);
+                progFrag.getWifi().second.setVisibility(View.VISIBLE);
+            });
+
+            Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    runOnUiThread(() -> {
+                        warFrag.getWifi().setVisibility(View.INVISIBLE);
+                        actiFrag.getWifi().setVisibility(View.INVISIBLE);
+                        progFrag.getWifi().first.setVisibility(View.INVISIBLE);
+                        progFrag.getWifi().second.setVisibility(View.INVISIBLE);
+                    });    }
+            }, 1500);
+        }
+    }
 
     @Override
     public void onBackPressed() {
