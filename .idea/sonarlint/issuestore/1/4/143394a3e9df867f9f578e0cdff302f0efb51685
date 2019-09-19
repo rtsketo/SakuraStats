@@ -1,0 +1,7 @@
+
+=squid:S1659‹"%Declare "seleVis" on a separate line.(ñ¯Šÿ
+fsquid:HiddenFieldChecks"8Rename "size" which hides the field declared at line 72.(¶‚„¸øÿÿÿÿ8†£¥-
+Rsquid:S3985¢".Remove this unused private "SortByMagi" class.(üÒÌÊşÿÿÿÿ8µ—§¥-
+Csquid:S1659Š"$Declare "idView" on a separate line.(¶ù‰Í8†£¥-
+psquid:S3776Ô"RRefactor this method to reduce its Cognitive Complexity from 28 to the 15 allowed.(Ïíô^8†£¥-
+`squid:S2184ä"ACast one of the operands of this addition operation to a "float".(…úÕ8ïøõÍ-

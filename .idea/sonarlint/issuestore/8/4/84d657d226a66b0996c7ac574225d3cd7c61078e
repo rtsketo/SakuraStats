@@ -1,0 +1,13 @@
+
+psquid:S2293A"YReplace the type specification in this constructor call with the diamond operator ("<>").(ÌáÕ«
+asquid:HiddenFieldCheckq"?Rename "strokeWidth" which hides the field declared at line 43.(€žê†
+isquid:S3776@"RRefactor this method to reduce its Cognitive Complexity from 28 to the 15 allowed.(¤¿—
+esquid:HiddenFieldCheckt">Rename "strokeJoin" which hides the field declared at line 45.(ãµ–ðÿÿÿÿÿ
+fsquid:S4201¾"IRemove this unnecessary null check; "instanceof" returns false for nulls.(Ùº ¤úÿÿÿÿ
+usquid:S2293D"YReplace the type specification in this constructor call with the diamond operator ("<>").(·Ä¢çùÿÿÿÿ
+fsquid:HiddenFieldCheckr"?Rename "strokeColor" which hides the field declared at line 44.(°ñ¼¾ýÿÿÿÿ
+U"squid:SwitchLastCaseIsDefaultChecku""Add a default case to this switch.(ÉÞ‘ˆüÿÿÿÿ
+Usquid:S1155Ô">Use isEmpty() to check whether the collection is empty or not.(‘²”V
+Usquid:S1155~">Use isEmpty() to check whether the collection is empty or not.(èöºÅ
+fsquid:HiddenFieldChecks"?Rename "strokeMiter" which hides the field declared at line 46.(ä­ÇÔþÿÿÿÿ
+psquid:S2293B"YReplace the type specification in this constructor call with the diamond operator ("<>").(®´•˜
