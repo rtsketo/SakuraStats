@@ -1,19 +1,0 @@
-
-esquid:UnusedPrivateMethodİ"3Remove this unused private "getPlayerStats" method.(ïñ‡Ëÿÿÿÿÿ8ñ¦ÜÛ£-
-…squid:S1192ì"aDefine a constant instead of duplicating this literal "https://spy.deckshop.pro/player/" 4 times.(òÅûÿÿÿÿ8˜è¸ß¤-
-]"squid:SwitchLastCaseIsDefaultCheckå""Add a default case to this switch.(Ÿ´„ûÿÿÿÿ8š¢˜»£-
-vsquid:S1192½"RDefine a constant instead of duplicating this literal "td:nth-child(2) a" 4 times.(¯ºİÑùÿÿÿÿ8˜è¸ß¤-
-j
-squid:S128è"LEnd this switch case with an unconditional break, return or throw statement.(¨â™ø8 ‰Œ‘£-
-j
-squid:S128æ"LEnd this switch case with an unconditional break, return or throw statement.(ÄÉ¿½8š¢˜»£-
-qsquid:S3776•"RRefactor this method to reduce its Cognitive Complexity from 55 to the 15 allowed.(İ©õ“8ñ¦ÜÛ£-
-Fsquid:S1659Ş""Declare "wins" on a separate line.(€‡íúÿÿÿÿ8š¢˜»£-
-vsquid:S3776ƒ"RRefactor this method to reduce its Cognitive Complexity from 25 to the 15 allowed.(ì˜º¶ùÿÿÿÿ8š¢˜»£-
-psquid:S3776ò"RRefactor this method to reduce its Cognitive Complexity from 29 to the 15 allowed.(æ±ˆR8ñ¦ÜÛ£-
-zsquid:S1192z"\Define a constant instead of duplicating this literal "https://royaleapi.com/clan/" 5 times.(ùÇ÷æ8˜è¸ß¤-
-W"squid:SwitchLastCaseIsDefaultCheck„""Add a default case to this switch.(¶„æ8š¢˜»£-
-osquid:CommentedOutCodeLineÖ"<This block of commented-out lines of code should be removed.(áù¡ùÿÿÿÿ8˜è¸ß¤-
-isquid:S1192w"LDefine a constant instead of duplicating this literal ".text-muted" 4 times.(˜×ı8˜è¸ß¤-
-vsquid:S3776€"RRefactor this method to reduce its Cognitive Complexity from 46 to the 15 allowed.(›üÆ·ıÿÿÿÿ8š¢˜»£-
-psquid:S3776ù"RRefactor this method to reduce its Cognitive Complexity from 21 to the 15 allowed.(ª½ûk8š¢˜»£-
