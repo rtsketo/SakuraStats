@@ -27,13 +27,6 @@
 * [***Card Levels Score***] *The overall score of a player’s card collection based on their cards' level*.
 
 
-&nbsp;
-
-##### Support
-
-* Some users requested a way to support this app, so there you go feel free to [buy me a beer](paypal.me/rtsketo)! 
-* If it's more than enough for a beer, a portion of the donation will be donated to *RoyalAPI*, as this app wouldn't have been possible without it. Cosinder supporting them directly.
-
 
 &nbsp;
 
