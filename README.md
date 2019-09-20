@@ -4,9 +4,9 @@
 &nbsp;
 
 ### App Discription
-&nbsp;&nbsp;&nbsp;&nbsp;Sakura Stats is an app that focuses on gathering, processing and displaying player statistics of a clan and it can help determine which players are performing good in wars, which of them still have low level cards and which are inactive.
+&nbsp;&nbsp;&nbsp;&nbsp;SakuraStats is an Android app that gathers players' stats of the same clan. You can use it for your clan to determine which players are performing well in Clan Wars, which of them still have low level cards and who are inactive.
 
-&nbsp;&nbsp;&nbsp;&nbsp;One the main unique features of the app is the war forecast, in which the app can predict with moderately accuracy the outcome of the current clan war. This could be useful in notifying your clanmates early of a potential loss and making then extra cautious when building a deck or playing the final battle.
+&nbsp;&nbsp;&nbsp;&nbsp;Its unique feature is to forecast the outcome of an ongoing Clan War with moderate accuracy. This is truly useful if you plan on notifying your clanmates early of an upcoming loss and taking extra caution when building a deck or playing the final battle.
 
 
 
@@ -20,9 +20,9 @@
 * [***Clan War Chest***] *Best clan war chest acquired by the player in the current war season*.
 * [***Card Levels Score***] *The overall score of a player’s card collection based on their cards' level*.
 
-<div class="text-purple">hey</div>
 
-### Google Play: [https://play.google.com/store/apps/details?id=eu.rtsketo.sakurastats](https://play.google.com/store/apps/details?id=eu.rtsketo.sakurastats)
+### Download
+[https://play.google.com/store/apps/details?id=eu.rtsketo.sakurastats](https://play.google.com/store/apps/details?id=eu.rtsketo.sakurastats)
 
 
 &nbsp;
