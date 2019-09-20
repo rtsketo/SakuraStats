@@ -463,7 +463,9 @@ public class DataFetch {
                     int warTrophies = Integer.parseInt(
                             stand.selectFirst("td.trophy").ownText());
                     int trophyChange = Integer.parseInt(
-                            stand.selectFirst("td.trophy_change").ownText());
+                            stand.selectFirst("td.trophy_change").ownText()
+                                    .replace(" ","")
+                                    .replace("+",""));
 
                     ClanWarLogStanding cwls = new ClanWarLogStanding();
                     cwls.setWarTrophiesChange(trophyChange);

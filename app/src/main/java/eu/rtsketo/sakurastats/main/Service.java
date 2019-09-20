@@ -101,8 +101,8 @@ public class Service {
 
         pm.reset(members.size());
         CountDownLatch psLatch = new CountDownLatch(members.size());
-        List<PlayerStats> ps = new ArrayList<>();
-        List<ClanPlayer> cp = new ArrayList<>();
+        List<PlayerStats> ps = Collections.synchronizedList(new ArrayList<>());
+        List<ClanPlayer> cp = Collections.synchronizedList(new ArrayList<>());
 
         for (Member member : members)
             getFixedPool().execute(()-> {
