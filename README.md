@@ -1,4 +1,5 @@
-# SakuraStats
+
+![logo](https://i.imgur.com/s3Z4p5W.png)
 
 ##### App Discription
 &nbsp;&nbsp;&nbsp;&nbsp;Sakura Stats is an app that focuses on gathering, processing and displaying player statistics of a clan and it can help determine which players are performing good in wars, which of them still have low level cards and which are inactive.
