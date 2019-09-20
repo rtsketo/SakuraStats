@@ -20,6 +20,8 @@
 * [***Clan War Chest***] *Best clan war chest acquired by the player in the current war season*.
 * [***Card Levels Score***] *The overall score of a player’s card collection based on their cards' level*.
 
+<div class="text-purple">hey</div>
+
 ### Google Play: [https://play.google.com/store/apps/details?id=eu.rtsketo.sakurastats](https://play.google.com/store/apps/details?id=eu.rtsketo.sakurastats)
 
 
