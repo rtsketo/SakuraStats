@@ -3,9 +3,6 @@ package eu.rtsketo.sakurastats.control;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
-
 
 public class ThreadPool {
     private ThreadPool() {}
@@ -14,8 +11,9 @@ public class ThreadPool {
 
     public static synchronized ThreadPoolExecutor getFixedPool() {
         if (fixedPool == null) {
-            int threads = Runtime.getRuntime().availableProcessors();
-            int maxThreads = min(max(4,threads*2),20);
+//            int threads = Runtime.getRuntime().availableProcessors();
+            int maxThreads = 20;
+//                    min(max(10,threads*2),25);
             fixedPool = (ThreadPoolExecutor)
                     Executors.newFixedThreadPool(maxThreads);
         }

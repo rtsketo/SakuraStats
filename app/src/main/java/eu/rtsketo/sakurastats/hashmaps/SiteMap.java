@@ -1,5 +1,7 @@
 package eu.rtsketo.sakurastats.hashmaps;
 
+import android.util.Log;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -12,6 +14,8 @@ import java.util.Map;
 
 public class SiteMap {
     private SiteMap() {}
+    private static long lastFestch;
+    private static final int delay = 250;
     private static Map<String, Document> pageMap = new HashMap<>();
     private static final String agent = "Mozilla/5.0 " +
             "(Linux; Android 6.0; Nexus 5 Build/MRA58N) " +
@@ -21,6 +25,10 @@ public class SiteMap {
     public static String getAgent() { return  agent; }
     public static void clearPages() { pageMap.clear(); }
     public static Document getPage(String page) throws IOException {
+
+        getPermissionToFetch();
+        Log.v("SiteFetch", page);
+
         if(pageMap.containsKey(page)) return pageMap.get(page);
         URLConnection clanURL = new URL(page).openConnection();
         clanURL.setRequestProperty("User-Agent", agent);
@@ -31,4 +39,47 @@ public class SiteMap {
         input.close();
         return doc;
     }
+
+    public static Document getCWPage(String tag) throws IOException {
+        if(pageMap.containsKey("CWPage" + tag)) return pageMap.get("CWPage" + tag);
+        String page = "https://royaleapi.com/inc/player/cw_history/" + tag;
+
+        getPermissionToFetch();
+        Log.v("SiteFetch", page);
+
+        URLConnection clanURL = new URL(page).openConnection();
+        clanURL.setRequestProperty("Accept", "*/*");
+        clanURL.setRequestProperty("Referer", "https://royaleapi.com/player/" + tag);
+        clanURL.setRequestProperty("X-Requested-With", "XMLHttpRequest");
+        clanURL.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" +
+                " AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36");
+        clanURL.setRequestProperty("Sec-Fetch-Mode", "cors");
+        clanURL.connect();
+        InputStream input = clanURL.getInputStream();
+        Document doc =  Jsoup.parse(input,"UTF-8", page);
+        pageMap.put("CWPage" + tag, doc);
+        input.close();
+        return doc;
+    }
+
+    private static void getPermissionToFetch() {
+        boolean permission = false;
+
+        while(!permission) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            synchronized (SiteMap.class) {
+                long currentTime = System.currentTimeMillis();
+                if (lastFestch + delay < currentTime) {
+                    lastFestch = currentTime;
+                    permission = true;
+                }
+            }
+        }
+
+    }
+
 }

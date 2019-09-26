@@ -67,6 +67,7 @@ import static eu.rtsketo.sakurastats.control.ThreadPool.getCachePool;
 import static eu.rtsketo.sakurastats.control.ThreadPool.getFixedPool;
 import static eu.rtsketo.sakurastats.hashmaps.LeagueMap.l2o;
 import static eu.rtsketo.sakurastats.hashmaps.SiteMap.getAgent;
+import static eu.rtsketo.sakurastats.hashmaps.SiteMap.getCWPage;
 import static eu.rtsketo.sakurastats.hashmaps.SiteMap.getPage;
 import static eu.rtsketo.sakurastats.main.Interface.TAG;
 
@@ -109,12 +110,13 @@ public class DataFetch {
         acti.badConnection(); }
 
      boolean checkClan(final String tag) {
-        try { TimeLimiter limiter = SimpleTimeLimiter.create(getCachePool());
-            Clan clan = limiter.callWithTimeout(() ->
-                    api.getClan(ClanRequest.builder(tag).build()),
-                    timeout, TimeUnit.MILLISECONDS);
-            if (clan.getTag() != null) return true; }
-        catch (Exception ex) { cought(ex); }
+        if (api != null)
+            try { TimeLimiter limiter = SimpleTimeLimiter.create(getCachePool());
+                Clan clan = limiter.callWithTimeout(() ->
+                        api.getClan(ClanRequest.builder(tag).build()),
+                        timeout, TimeUnit.MILLISECONDS);
+                if (clan.getTag() != null) return true; }
+            catch (Exception ex) { cought(ex); }
         try { Document doc = getPage("https://spy.deckshop.pro/clan/"+tag);
             if (!doc.select(".text-muted").isEmpty() &&
                     doc.select(".text-muted").get(1)
@@ -129,11 +131,12 @@ public class DataFetch {
 
     public List<Member> getMembers(final String tag) {
         List<Member> members = null;
-        try { TimeLimiter limiter = SimpleTimeLimiter.create(getCachePool());
-            members = limiter.callWithTimeout(() ->
-                    api.getClan(ClanRequest.builder(tag).build())
-                            .getMembers(), timeout, TimeUnit.MILLISECONDS); }
-        catch (Exception ex) { cought(ex); timeout(); }
+        if (api != null)
+            try { TimeLimiter limiter = SimpleTimeLimiter.create(getCachePool());
+                members = limiter.callWithTimeout(() ->
+                        api.getClan(ClanRequest.builder(tag).build())
+                                .getMembers(), timeout, TimeUnit.MILLISECONDS); }
+            catch (Exception ex) { cought(ex); timeout(); }
         if (members == null) try {
             List<Member> mems = new ArrayList<>();
             Document doc = getPage("https://spy.deckshop.pro/clan/"+tag);
@@ -158,7 +161,7 @@ public class DataFetch {
     private PlayerStats getWarStats(final String tag) {
         PlayerStats ps = null;
         for (int c = 0; c < retries && ps == null; c++) try {
-            Document doc = getPage("https://royaleapi.com/inc/player/cw_history/" + tag);
+            Document doc = getCWPage(tag);
 
             double wins = doc.select(".won_all").size() - 1
                     + (doc.select(".won_one").size() - 1) * .5;
@@ -210,11 +213,12 @@ public class DataFetch {
 
      public List<TopClan> getTopClans() {
         List<TopClan> topClans = null;
-        try { TimeLimiter limiter = SimpleTimeLimiter.create(getCachePool());
-            TopClansRequest tcp = TopClansRequest.builder().build();
-            topClans = limiter.callWithTimeout(() ->
-                    api.getTopClans(tcp), timeout, TimeUnit.MILLISECONDS); }
-        catch (Exception ex) { cought(ex); timeout(); }
+        if (api != null)
+            try { TimeLimiter limiter = SimpleTimeLimiter.create(getCachePool());
+                TopClansRequest tcp = TopClansRequest.builder().build();
+                topClans = limiter.callWithTimeout(() ->
+                        api.getTopClans(tcp), timeout, TimeUnit.MILLISECONDS); }
+            catch (Exception ex) { cought(ex); timeout(); }
         if (topClans == null) try {
             List<TopClan> clans = new ArrayList<>();
             Document doc = getPage("https://spy.deckshop.pro/top/gr/clans");
@@ -235,12 +239,13 @@ public class DataFetch {
 
     private ChestCycle getPlayerChests(final String tag) {
         ChestCycle chestCycle = null;
-        try { TimeLimiter limiter = SimpleTimeLimiter.create(getCachePool());
-            chestCycle = limiter.callWithTimeout(() ->
-                    api.getPlayerChests(PlayerChestsRequest.builder(
-                    Collections.singletonList(tag)).build()).get(0),
-                    timeout, TimeUnit.MILLISECONDS); }
-        catch (Exception ex) { cought(ex); timeout(); }
+        if (api != null)
+            try { TimeLimiter limiter = SimpleTimeLimiter.create(getCachePool());
+                chestCycle = limiter.callWithTimeout(() ->
+                        api.getPlayerChests(PlayerChestsRequest.builder(
+                        Collections.singletonList(tag)).build()).get(0),
+                        timeout, TimeUnit.MILLISECONDS); }
+            catch (Exception ex) { cought(ex); timeout(); }
         if (chestCycle == null) try {
             ChestCycle cc = new ChestCycle();
             Document doc = getPage("https://spy.deckshop.pro/player/"+tag);
@@ -267,24 +272,25 @@ public class DataFetch {
 
      public ClanWar getClanWar(final String tag) {
         ClanWar clanWar = null;
-        try { TimeLimiter limiter = SimpleTimeLimiter.create(getCachePool());
-            clanWar = limiter.callWithTimeout(() ->
-                    api.getClanWar(ClanWarRequest
-                            .builder(tag).build()),
-                    timeout, TimeUnit.MILLISECONDS);
-            if (clanWar.getClan() == null) {
-                ClanWarClan clanWarClan = new ClanWarClan();
-                limiter = SimpleTimeLimiter.create(getCachePool());
-                Clan clan = limiter.callWithTimeout(() ->
-                        api.getClan(ClanRequest.builder(tag)
-                                .build()), timeout, TimeUnit.MILLISECONDS);
-                clanWarClan.setBadge(clan.getBadge());
-                clanWarClan.setName(clan.getName());
-                clanWarClan.setTag(tag);
-                clanWar.setClan(clanWarClan);
+        if (api != null)
+            try { TimeLimiter limiter = SimpleTimeLimiter.create(getCachePool());
+                clanWar = limiter.callWithTimeout(() ->
+                        api.getClanWar(ClanWarRequest
+                                .builder(tag).build()),
+                        timeout, TimeUnit.MILLISECONDS);
+                if (clanWar.getClan() == null) {
+                    ClanWarClan clanWarClan = new ClanWarClan();
+                    limiter = SimpleTimeLimiter.create(getCachePool());
+                    Clan clan = limiter.callWithTimeout(() ->
+                            api.getClan(ClanRequest.builder(tag)
+                                    .build()), timeout, TimeUnit.MILLISECONDS);
+                    clanWarClan.setBadge(clan.getBadge());
+                    clanWarClan.setName(clan.getName());
+                    clanWarClan.setTag(tag);
+                    clanWar.setClan(clanWarClan);
+                }
             }
-        }
-        catch (Exception ex) { cought(ex); timeout(); }
+            catch (Exception ex) { cought(ex); timeout(); }
         if (clanWar == null) try {
             ClanWar newWar = new ClanWar();
             ClanWarClan clan = new ClanWarClan();
@@ -393,12 +399,13 @@ public class DataFetch {
     private List<ClanWarLog> getClanWarLog(final String tag) {
         if (clanWars.containsKey(tag)) return clanWars.get(tag);
         List<ClanWarLog> clanWarLogs = null;
-        try { TimeLimiter limiter = SimpleTimeLimiter.create(getCachePool());
-            clanWarLogs = limiter.callWithTimeout(() ->
-                    api.getClanWarLog(ClanWarLogRequest
-                            .builder(tag).build()),
-                    timeout, TimeUnit.MILLISECONDS); }
-        catch (Exception ex) { cought(ex); timeout(); }
+        if (api != null)
+            try { TimeLimiter limiter = SimpleTimeLimiter.create(getCachePool());
+                clanWarLogs = limiter.callWithTimeout(() ->
+                        api.getClanWarLog(ClanWarLogRequest
+                                .builder(tag).build()),
+                        timeout, TimeUnit.MILLISECONDS); }
+            catch (Exception ex) { cought(ex); timeout(); }
         if (clanWarLogs == null) try {
             Document doc = getPage("https://royaleapi.com/clan/"+tag+"/war/log");
             String page = "https://royaleapi.com/clan/"+tag+"/war/analytics/csv";
@@ -502,11 +509,12 @@ public class DataFetch {
 
     private Profile getProfile(final String tag) {
         Profile profile = null;
-        try { TimeLimiter limiter = SimpleTimeLimiter.create(getCachePool());
-            profile = limiter.callWithTimeout(() ->
-                    api.getProfile(ProfileRequest.builder(tag)
-                            .build()), timeout, TimeUnit.MILLISECONDS); }
-        catch (Exception ex) { cought(ex); timeout(); }
+        if (api != null)
+            try { TimeLimiter limiter = SimpleTimeLimiter.create(getCachePool());
+                profile = limiter.callWithTimeout(() ->
+                        api.getProfile(ProfileRequest.builder(tag)
+                                .build()), timeout, TimeUnit.MILLISECONDS); }
+            catch (Exception ex) { cought(ex); timeout(); }
         if (profile == null) try {
             Profile player = new Profile();
             List<Card> cardList = new ArrayList<>();
@@ -550,12 +558,13 @@ public class DataFetch {
 
     private List<Battle> getBattles(final String tag) {
         List<Battle> battles = null;
-        try { TimeLimiter limiter = SimpleTimeLimiter.create(getCachePool());
-            battles = limiter.callWithTimeout(() ->
-                    api.getPlayerBattles(PlayerBattlesRequest.builder(
-                    Collections.singletonList(tag)).build())
-                            .get(0), timeout, TimeUnit.MILLISECONDS); }
-        catch (Exception ex) { cought(ex); timeout(); }
+        if (api != null)
+            try { TimeLimiter limiter = SimpleTimeLimiter.create(getCachePool());
+                battles = limiter.callWithTimeout(() ->
+                        api.getPlayerBattles(PlayerBattlesRequest.builder(
+                        Collections.singletonList(tag)).build())
+                                .get(0), timeout, TimeUnit.MILLISECONDS); }
+            catch (Exception ex) { cought(ex); timeout(); }
         if (battles == null) try {
             List<Battle> batts = new ArrayList<>();
             Document doc = getPage("https://spy.deckshop.pro/player/"+tag+"/battles");
