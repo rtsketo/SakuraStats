@@ -15,7 +15,7 @@ import java.util.Map;
 public class SiteMap {
     private SiteMap() {}
     private static long lastFestch;
-    private static final int delay = 250;
+    private static final int delay = 120;
     private static Map<String, Document> pageMap = new HashMap<>();
     private static final String agent = "Mozilla/5.0 " +
             "(Linux; Android 6.0; Nexus 5 Build/MRA58N) " +
@@ -25,11 +25,11 @@ public class SiteMap {
     public static String getAgent() { return  agent; }
     public static void clearPages() { pageMap.clear(); }
     public static Document getPage(String page) throws IOException {
+        if(pageMap.containsKey(page)) return pageMap.get(page);
 
         getPermissionToFetch();
         Log.v("SiteFetch", page);
 
-        if(pageMap.containsKey(page)) return pageMap.get(page);
         URLConnection clanURL = new URL(page).openConnection();
         clanURL.setRequestProperty("User-Agent", agent);
         clanURL.connect();
@@ -67,7 +67,7 @@ public class SiteMap {
 
         while(!permission) {
             try {
-                Thread.sleep(100);
+                Thread.sleep(50);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

@@ -26,6 +26,7 @@ import eu.rtsketo.sakurastats.R;
 import eu.rtsketo.sakurastats.control.DataFetch;
 import eu.rtsketo.sakurastats.control.DataRoom;
 import eu.rtsketo.sakurastats.dbobjects.ClanStats;
+import eu.rtsketo.sakurastats.main.Console;
 import eu.rtsketo.sakurastats.main.Interface;
 
 import static eu.rtsketo.sakurastats.control.ThreadPool.getCachePool;
@@ -38,7 +39,7 @@ import static eu.rtsketo.sakurastats.hashmaps.SDPMap.sdp2px;
 public class Prognostics extends Fragment {
     private ImageView loadingAnim,
             loadingOp, wifi, wifiOp;
-    private MagicTextView loadView;
+    private MagicTextView loadView, console;
     private LinearLayout lineage;
     private boolean loading;
     private Interface acti;
@@ -56,14 +57,16 @@ public class Prognostics extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         root = inflater.inflate(R.layout.fragment_prognose, container, false);
-        loadView = root.findViewById(R.id.loading);
+        loadingAnim = root.findViewById(R.id.loadingAnim);
         loadingOp = root.findViewById(R.id.loadingOp);
         lineage = root.findViewById(R.id.warClanList);
-        loadingAnim = root.findViewById(R.id.loadingAnim);
+        loadView = root.findViewById(R.id.loading);
+        console = root.findViewById(R.id.console);
 
         decorate(loadView, "Loading...", 10);
         ImageView bgWaves = root.findViewById(R.id.bgWaves);
         ((AnimationDrawable)bgWaves.getDrawable()).start();
+        Console.create(acti, console);
 
         loadingAnim.setOnClickListener(v -> refresh(true));
         return root;
@@ -71,6 +74,7 @@ public class Prognostics extends Fragment {
 
     public void refresh(final boolean force) {
         getCachePool().execute(() -> {
+            removeViews();
             setLoading(true);
             String tag = acti.getLastClan();
             if (force || acti.getLastUse(tag)) {
@@ -79,9 +83,10 @@ public class Prognostics extends Fragment {
                                 .getClanStats(tag);
                 setStats(cs);
                 acti.setLastForce(0);
-                if (cs.size() == 5)
-                    acti.runOnUiThread(() ->
-                        acti.changeTabTo(0)); }
+//                if (cs.size() == 5)
+//                    acti.runOnUiThread(() ->
+//                        acti.changeTabTo(0));
+            }
             else setStats(DataRoom.getInstance().getDao()
                     .getClanStatsList(tag)); });
     }
@@ -127,7 +132,9 @@ public class Prognostics extends Fragment {
 
 
     public void setStats(List<ClanStats> clans) {
-        removeViews();
+        acti.runOnUiThread(()->
+                console.setVisibility(View.GONE));
+
         if (clans.size()==5) {
             int counter = 0;
             ClanStats[] stats = new ClanStats[5];
@@ -145,8 +152,8 @@ public class Prognostics extends Fragment {
                     .LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT);
             info.setLayoutParams(params); more.setLayoutParams(params);
-            decorate(info, "The clan isn't currently in War\n\n\n\n\n\n\n\n\n",sdp2px(10));
-            decorate(more, "Stats can't be refreshed in less than 15min",sdp2px(8));
+            decorate(info, "The clan isn't currently in War\n\n\n\n\n\n\n\n\n", sdp2px(10));
+            decorate(more, "Stats can't be refreshed in less than 15min", sdp2px(8));
             info.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
             more.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
             acti.runOnUiThread(() -> {
@@ -157,7 +164,7 @@ public class Prognostics extends Fragment {
         setLoading(false);
     }
 
-    private void removeViews() {
+    public void removeViews() {
         acti.runOnUiThread(() -> lineage.removeAllViews()); }
 
     private void addClan(ClanStats clan) {
@@ -206,5 +213,9 @@ public class Prognostics extends Fragment {
             return (int) ((b.getEstimatedWins()+b.getExtraWins())*100
                     - (a.getEstimatedWins()+a.getExtraWins())*100);
         }
+    }
+
+    public MagicTextView getConsole() {
+        return console;
     }
 }

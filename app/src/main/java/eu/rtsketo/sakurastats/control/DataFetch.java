@@ -37,6 +37,7 @@ import eu.rtsketo.sakurastats.dbobjects.ClanPlayer;
 import eu.rtsketo.sakurastats.dbobjects.ClanStats;
 import eu.rtsketo.sakurastats.dbobjects.PlayerStats;
 import eu.rtsketo.sakurastats.dbobjects.WarDay;
+import eu.rtsketo.sakurastats.main.Console;
 import eu.rtsketo.sakurastats.main.Interface;
 import jcrapi.Api;
 import jcrapi.model.Badge;
@@ -86,11 +87,11 @@ public class DataFetch {
     private DAObject db = DataRoom.getInstance().getDao();
     private List<ClanStats> clanList;
     private int maxParticipants;
-    private String mainTag;
-    private Interface acti;
-    private int sleepTime;
     private boolean internet;
+    private Interface acti;
+    private String mainTag;
     private long lastCheck;
+    private int sleepTime;
 
     public DataFetch(Interface activity) { acti = activity; }
 
@@ -107,6 +108,7 @@ public class DataFetch {
 
     private void cought(Exception e) {
         Log.w(TAG, "Data fetching failed!", e);
+        Console.logln("Fetch failed!");
         acti.badConnection(); }
 
      boolean checkClan(final String tag) {
@@ -189,7 +191,6 @@ public class DataFetch {
             ps.setWars(0);
             ps.setTag(tag);
         }
-
         return ps;
     }
 
@@ -221,13 +222,16 @@ public class DataFetch {
             catch (Exception ex) { cought(ex); timeout(); }
         if (topClans == null) try {
             List<TopClan> clans = new ArrayList<>();
-            Document doc = getPage("https://spy.deckshop.pro/top/gr/clans");
+            Document doc = getPage("https://spy.deckshop.pro/top/global/clans");
             Elements small = doc.select(".text-muted");
+            Elements names = doc.select("a.h4");
 
+            int index = 0;
             for (Element muted : small) {
                 String clan = muted.text().trim();
                 if(clan.startsWith("#") && !clan.startsWith("# ")) {
                     TopClan topClan = new TopClan();
+                    topClan.setName(names.get(index++).text());
                     topClan.setTag(clan.replace("#", ""));
                     clans.add(topClan);
                 }
@@ -596,6 +600,9 @@ public class DataFetch {
         clanStats.setName("???");
         clanStats.setTag(tag);
 
+        Console.logln("\t\tClan... \t"
+                + clan.getName());
+
         clanStats.setCrowns(0);
         clanStats.setRemaining(0);
         clanStats.setActualWins(0);
@@ -607,32 +614,32 @@ public class DataFetch {
         clanStats.setClan3("???");
         clanStats.setClan4("???");
 
-            clanStats.setWarTrophies(clan.getWarTrophies());
-            clanStats.setName(clan.getName());
+        clanStats.setWarTrophies(clan.getWarTrophies());
+        clanStats.setName(clan.getName());
 
-            if (clanWar.getState().equals("warDay")
-                    && clanWar.getClan().getWarTrophies() > 200) {
-                if (target) clanStats.setRemaining(mainClan(clanWar));
-                else clanStats.setRemaining(maxParticipants - clan.getBattlesPlayed());
+        if (clanWar.getState().equals("warDay")
+                && clanWar.getClan().getWarTrophies() > 200) {
+            if (target) clanStats.setRemaining(mainClan(clanWar));
+            else clanStats.setRemaining(maxParticipants - clan.getBattlesPlayed());
 
-                Pair<Integer, Double> eew = prognoseWins(clanWar);
-                clanStats.setMaxParticipants(maxParticipants);
-                clanStats.setActualWins(clan.getWins());
-                clanStats.setCrowns(clan.getCrowns());
-                clanStats.setEstimatedWins(eew.first);
-                clanStats.setExtraWins(eew.second);
+            Pair<Integer, Double> eew = prognoseWins(clanWar);
+            clanStats.setMaxParticipants(maxParticipants);
+            clanStats.setActualWins(clan.getWins());
+            clanStats.setCrowns(clan.getCrowns());
+            clanStats.setEstimatedWins(eew.first);
+            clanStats.setExtraWins(eew.second);
 
-                int counter = 0;
-                String[] opponentClan = new String[4];
-                for (ClanWarStanding clanParticipant : clanWar.getStandings())
-                    if (!clanParticipant.getTag().equals(tag))
-                        opponentClan[counter++] = clanParticipant.getTag();
+            int counter = 0;
+            String[] opponentClan = new String[4];
+            for (ClanWarStanding clanParticipant : clanWar.getStandings())
+                if (!clanParticipant.getTag().equals(tag))
+                    opponentClan[counter++] = clanParticipant.getTag();
 
-                clanStats.setClan1(opponentClan[0]);
-                clanStats.setClan2(opponentClan[1]);
-                clanStats.setClan3(opponentClan[2]);
-                clanStats.setClan4(opponentClan[3]);
-            }
+            clanStats.setClan1(opponentClan[0]);
+            clanStats.setClan2(opponentClan[1]);
+            clanStats.setClan3(opponentClan[2]);
+            clanStats.setClan4(opponentClan[3]);
+        }
         db.insertClanStats(clanStats);
         return clanStats;
     }
@@ -646,11 +653,13 @@ public class DataFetch {
             if(maxParticipants < clan.getParticipants())
                 maxParticipants = clan.getParticipants();
 
+        Console.logln(" \nGetting opposing clans...");
         CountDownLatch latch = new CountDownLatch(4);
         for (final ClanWarStanding clan : standings)
             if (!clan.getTag().equals(mainClan.getClan().getTag()))
                 getFixedPool().execute(() -> {
-                    clanList.add(getClan(clan.getTag()));
+                    ClanStats cs = getClan(clan.getTag());
+                    clanList.add(cs);
                     latch.countDown(); });
 
         try { latch.await(); }
@@ -716,15 +725,15 @@ public class DataFetch {
 
 
     public List<ClanStats> getClanStats(String tag) {
-            if (acti.getLastUse(tag)) {
-                db.resetClanStats(tag);
-                clanList = new ArrayList<>();
-                clanList.add(getClan(tag, true));
-                acti.setLastUse(tag);
-                return clanList;
-            }
-
-            return db.getClanStatsList(tag);
+        Console.logln(" \nCalculating forecast...");
+        if (acti.getLastUse(tag)) {
+            db.resetClanStats(tag);
+            clanList = new ArrayList<>();
+            clanList.add(getClan(tag, true));
+            acti.setLastUse(tag);
+            return clanList;
+        }
+        return db.getClanStatsList(tag);
     }
 
     private List<PlayerStats> getPlayerStats(ClanWar clanWar, boolean force) {
@@ -747,6 +756,7 @@ public class DataFetch {
         PlayerStats ps;
 
         if (acti.getLastUse(member.getTag(), "wstat") || force) {
+            Console.logln("\t\t\t\t\t\t-\t\t" + member.getName());
             ps = getWarStats(member.getTag());
             ps.setName(member.getName());
             ps.setTag(member.getTag());
@@ -761,6 +771,7 @@ public class DataFetch {
         return ps;
     }
 
+    @Deprecated
      private List<PlayerStats> getPlayerStats(String tag) {
         return getPlayerStats(tag, false); }
      private List<PlayerStats> getPlayerStats(String tag, boolean force) {
@@ -885,8 +896,8 @@ public class DataFetch {
     }
 
      public ClanPlayer getPlayerProfile(String tag, boolean force) {
+         ClanPlayer player = db.getClanPlayer(tag);
         if (acti.getLastUse(tag, "prof") || force) {
-            ClanPlayer player = db.getClanPlayer(tag);
             if (player == null) player = new ClanPlayer();
 
             Profile profile = getProfile(tag);
@@ -916,9 +927,7 @@ public class DataFetch {
             db.insertClanPlayer(player);
             acti.setLastUse(tag, "prof");
             acti.setLastForce(1);
-            return player;
-        }
-        return db.getClanPlayer(tag);
+        } return player;
     }
 
      public ClanPlayer getMemberActivity(ClanPlayer player, boolean force) {

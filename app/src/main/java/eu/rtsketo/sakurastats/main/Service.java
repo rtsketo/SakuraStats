@@ -1,9 +1,13 @@
 package eu.rtsketo.sakurastats.main;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
+import android.view.View;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -59,6 +63,7 @@ public class Service {
             thread = new Thread(()-> {
                 List<TopClan> tp = new ArrayList<>();
                 TopClan sakura = new TopClan();
+                sakura.setName("Sakura Frontier");
                 sakura.setTag("2YCJRUC");
                 tp.add(sakura);
 
@@ -67,9 +72,12 @@ public class Service {
                 else if (acti.getLastClan() != null)
                     collectData(acti.getLastClan());
                 else {
+                    Console.logln(" \nChecking top clans...");
                     tp.addAll(df.getTopClans());
                     for (TopClan clan : tp) {
                         String cTag = clan.getTag();
+                        Console.logln("\t\t\t\t\t\t-\t\t"
+                                + clan.getName());
                         if (df.getClanWar(cTag).getState().equals("warDay")) {
                             acti.setLastClan(cTag);
                             collectData(cTag);
@@ -84,6 +92,10 @@ public class Service {
     private void collectData(String cTag) {
         PlayerMap pm = PlayerMap.getInstance();
         DAObject db = DataRoom.getInstance().getDao();
+        acti.runOnUiThread(()->
+            acti.getProgFrag().getConsole()
+                    .setVisibility(View.VISIBLE));
+        acti.getProgFrag().removeViews();
         clearPages();
 
         List<Member> members;
@@ -104,6 +116,7 @@ public class Service {
         List<PlayerStats> ps = Collections.synchronizedList(new ArrayList<>());
         List<ClanPlayer> cp = Collections.synchronizedList(new ArrayList<>());
 
+        Console.logln(" \nFetching clan members...");
         for (Member member : members)
             getFixedPool().execute(()-> {
                 if (!stop && member != null) {
@@ -115,26 +128,37 @@ public class Service {
         waitLatch(psLatch);
 
         Collections.reverse(ps);
+        Console.logln(" \nFetching member stats...");
         CountDownLatch cpLatch = new CountDownLatch(ps.size());
         for (final PlayerStats playerStats : ps)
             getFixedPool().execute(()->{
                 if (!stop && playerStats != null) {
                     String pTag = playerStats.getTag();
                     ClanPlayer clanPlayer = df.getPlayerProfile(pTag, force);
+                    Console.logln("\t\t" +
+                            Console.convertRole((clanPlayer.getRole()))
+                            + "\t\t" + playerStats.getName());
                     pm.put(pTag, clanPlayer);
                     cp.add(clanPlayer);
                 } cpLatch.countDown();
                 updateLoading((int) (ps.size()*2 - cpLatch.getCount()), ps.size());
             });
         waitLatch(cpLatch);
-        acti.getWarFrag().setLoading(false);
 
+        acti.getWarFrag().setLoading(false);
+        Console.logln(" \nFetching member activity...");
         CountDownLatch acLatch = new CountDownLatch(cp.size());
+
+        @SuppressLint("SimpleDateFormat")
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd HH:mm");
         for (final ClanPlayer tempPlayer : cp)
             getFixedPool().execute(()->{
                 if (!stop && tempPlayer != null) {
                     String pTag = tempPlayer.getTag();
                     ClanPlayer clanPlayer = df.getMemberActivity(tempPlayer, force);
+                    Console.logln("\t\t" +
+                            sdf.format(new Date(clanPlayer.getLast()*1000))
+                            + "\t\t" + clanPlayer.getTag());
                     pm.put(pTag, clanPlayer);
                 } acLatch.countDown();
                 updateLoading((int) (ps.size()*3 - acLatch.getCount()), ps.size());

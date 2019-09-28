@@ -32,6 +32,7 @@ import eu.rtsketo.sakurastats.R;
 import eu.rtsketo.sakurastats.dbobjects.ClanPlayer;
 import eu.rtsketo.sakurastats.dbobjects.PlayerStats;
 import eu.rtsketo.sakurastats.hashmaps.PlayerMap;
+import eu.rtsketo.sakurastats.main.Console;
 import eu.rtsketo.sakurastats.main.Interface;
 import eu.rtsketo.sakurastats.main.Service;
 import io.reactivex.Observer;
@@ -112,19 +113,11 @@ public class WarStatistics extends Fragment {
             final String scoreText = cp.getScore() == 9001 ?
                     "max" : String.valueOf(cp.getScore());
 
-            String role = cp.getRole() != null? cp.getRole() : "";
-            switch (role) {
-                case "coLeader":    role = "Co-Leader "; break;
-                case "leader":      role = "Leader     "; break;
-                case "elder":       role = "Elder         "; break;
-                default:            role = "Member    ";
-            }
-
-            String finalRole = role;
+            String role = Console.convertRole(cp.getRole());
             acti.runOnUiThread(() -> {
                 decorate(finalPV.score, scoreText, size[0]);
                 decorate(finalPV.troph, cp.getTrophies(), size[1]);
-                decorate(finalPV.tag, finalRole, size[1],
+                decorate(finalPV.tag, role, size[1],
                         Color.WHITE, maxy[1]);
                 finalPV.frame.setVisibility(View.VISIBLE); });
         }
