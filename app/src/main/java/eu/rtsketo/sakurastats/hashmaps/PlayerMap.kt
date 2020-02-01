@@ -11,10 +11,10 @@ import io.reactivex.subjects.ReplaySubject
 import java.util.*
 
 class PlayerMap private constructor(private val acti: Interface) {
-    private var playerMap: MutableMap<String, Pair<ClanPlayer, PlayerStats?>>? = null
+    private var playerMap: MutableMap<String, Pair<ClanPlayer, PlayerStats>> = null
     private val sync = Any()
-    private var cpSub: ReplaySubject<ClanPlayer?>? = null
-    private var psSub: ReplaySubject<PlayerStats?>? = null
+    private var cpSub: ReplaySubject<ClanPlayer> = null
+    private var psSub: ReplaySubject<PlayerStats> = null
     private val DELAY = 20
     private var time: Long = 0
     private var size = 0
@@ -22,8 +22,8 @@ class PlayerMap private constructor(private val acti: Interface) {
         return size
     }
 
-    fun put(tag: String, player: Any?) {
-        var pair = playerMap!![tag]
+    fun put(tag: String, player: Any) {
+        var pair = playerMap[tag]
         val handler = Handler(Looper.getMainLooper())
         if (pair == null) pair = Pair(ClanPlayer(), PlayerStats())
         synchronized(sync) {
@@ -33,46 +33,46 @@ class PlayerMap private constructor(private val acti: Interface) {
         }
         if (player is ClanPlayer) {
             pair = Pair(player, pair.second)
-            handler.postAtTime({ cpSub!!.onNext((player as ClanPlayer?)!!) }, time)
+            handler.postAtTime({ cpSub.onNext((player as ClanPlayer)) }, time)
         } else {
-            pair = Pair(pair.first, player as PlayerStats?)
-            handler.postAtTime({ psSub!!.onNext(player!!) }, time)
+            pair = Pair(pair.first, player as PlayerStats)
+            handler.postAtTime({ psSub.onNext(player) }, time)
         }
-        playerMap!![tag] = pair
+        playerMap[tag] = pair
     }
 
     fun reset(size: Int) {
         synchronized(PlayerMap::class.java) {
-            if (playerMap != null) playerMap!!.clear() else playerMap = HashMap(size)
+            if (playerMap != null) playerMap.clear() else playerMap = HashMap(size)
             this.size = size
         }
         val wFrag = acti.warFrag
         val aFrag = acti.actiFrag
         psSub = ReplaySubject.create()
         cpSub = ReplaySubject.create()
-        cpSub.subscribe(wFrag!!.cpObserver())
-        psSub.subscribe(wFrag!!.psObserver())
-        cpSub.subscribe(aFrag!!.cpObserver())
-        psSub.subscribe(aFrag!!.psObserver())
+        cpSub.subscribe(wFrag.cpObserver())
+        psSub.subscribe(wFrag.psObserver())
+        cpSub.subscribe(aFrag.cpObserver())
+        psSub.subscribe(aFrag.psObserver())
     }
 
     fun completeSubs() {
         val handler = Handler(Looper.getMainLooper())
         handler.postAtTime({
-            cpSub!!.onComplete()
-            psSub!!.onComplete()
+            cpSub.onComplete()
+            psSub.onComplete()
         }, time)
     }
 
-    val all: Map<String, Pair<ClanPlayer, PlayerStats?>>?
+    val all: Map<String, Pair<ClanPlayer, PlayerStats>>
         get() = playerMap
 
-    operator fun get(tag: String?): Pair<ClanPlayer, PlayerStats>? {
-        return playerMap!!.get(tag)
+    operator fun get(tag: String): Pair<ClanPlayer, PlayerStats> {
+        return playerMap.get(tag)
     }
 
     companion object {
-        var instance: PlayerMap? = null
+        var instance: PlayerMap = null
             private set
 
         fun init(activity: Interface) {

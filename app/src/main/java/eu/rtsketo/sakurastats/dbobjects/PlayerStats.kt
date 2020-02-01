@@ -6,9 +6,9 @@ import androidx.room.PrimaryKey
 @Entity
 class PlayerStats {
     @PrimaryKey
-    var tag: String = null
-    var name: String = null
-    var clan: String? = null
+    var tag = ""
+    var name = ""
+    var clan = ""
     var wins = 0
     var played = 0
     var curWins = 0

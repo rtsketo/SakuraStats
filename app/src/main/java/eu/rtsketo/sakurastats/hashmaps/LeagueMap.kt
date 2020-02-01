@@ -4,16 +4,16 @@ import android.util.Pair
 import java.util.*
 
 object LeagueMap {
-    private var leagueMap: MutableList<Pair<Int, Int>>? = null
+    private var leagueMap: MutableList<Pair<Int, Int>> = null
     fun l2o(league: Int): Int {
         initLeagueMap()
-        for (p in leagueMap!!) if (p.second == league) return p.first
+        for (p in leagueMap) if (p.second == league) return p.first
         return 1
     }
 
     fun o2l(order: Int): Int {
         initLeagueMap()
-        for (p in leagueMap!!) if (p.first == order) return p.second
+        for (p in leagueMap) if (p.first == order) return p.second
         return 45
     }
 

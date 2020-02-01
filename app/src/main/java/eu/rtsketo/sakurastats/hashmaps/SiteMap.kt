@@ -10,19 +10,18 @@ import java.util.*
 object SiteMap {
     private var lastFestch: Long = 0
     private const val delay = 120
-    private val pageMap: MutableMap<String, Document?> = HashMap()
+    private val pageMap = mutableMapOf<String, Document>()
     const val agent = "Mozilla/5.0 " +
             "(Linux; Android 6.0; Nexus 5 Build/MRA58N) " +
             "AppleWebKit/537.36 (KHTML, like Gecko) " +
             "Chrome/64.0.3282.186 Mobile Safari/537.36"
 
-    fun clearPages() {
-        pageMap.clear()
-    }
+    fun clearPages() { pageMap.clear() }
 
     @Throws(IOException::class)
-    fun getPage(page: String): Document? {
-        if (pageMap.containsKey(page)) return pageMap[page]
+    fun getPage(page: String): Document {
+        if (pageMap.containsKey(page))
+            return pageMap[page]!!
         permissionToFetch
         Log.v("SiteFetch", page)
         val clanURL = URL(page).openConnection()
@@ -36,8 +35,9 @@ object SiteMap {
     }
 
     @Throws(IOException::class)
-    fun getCWPage(tag: String): Document? {
-        if (pageMap.containsKey("CWPage$tag")) return pageMap["CWPage$tag"]
+    fun getCWPage(tag: String): Document {
+        if (pageMap.containsKey("CWPage$tag"))
+            return pageMap["CWPage$tag"]!!
         val page = "https://royaleapi.com/inc/player/cw_history/$tag"
         permissionToFetch
         Log.v("SiteFetch", page)
@@ -57,7 +57,7 @@ object SiteMap {
     }
 
     private val permissionToFetch: Unit
-        private get() {
+        get() {
             var permission = false
             while (!permission) {
                 try {

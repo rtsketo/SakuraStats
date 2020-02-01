@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import android.os.SystemClock
 import android.util.Log
 import android.util.Pair
-import com.google.common.util.concurrent.SimpleTimeLimiter
-import com.google.common.util.concurrent.TimeLimiter
 import eu.rtsketo.sakurastats.dbobjects.ClanPlayer
 import eu.rtsketo.sakurastats.dbobjects.ClanStats
 import eu.rtsketo.sakurastats.dbobjects.PlayerStats
@@ -13,9 +11,7 @@ import eu.rtsketo.sakurastats.hashmaps.LeagueMap
 import eu.rtsketo.sakurastats.hashmaps.SiteMap
 import eu.rtsketo.sakurastats.main.Console
 import eu.rtsketo.sakurastats.main.Interface
-import jcrapi.Api
 import jcrapi.model.*
-import jcrapi.request.*
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction
 import org.jsoup.nodes.Document
@@ -28,21 +24,22 @@ import java.net.UnknownHostException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
-class DataFetch(private val acti: Interface?) {
-    private val retries = 100
-    private var timeout = 10000
-    private val clanWars: MutableMap<String?, List<ClanWarLog>?> = HashMap()
-    private val db: DAObject = DataRoom.Companion.getInstance().getDao()
-    private var clanList: MutableList<ClanStats?>? = null
+class DataFetch(private val acti: Interface) {
+    private val clanWars = mutableMapOf<String, List<ClanWarLog>>()
+    private val db: DAObject = DataRoom.instance.dao
+    private var clanList = arrayListOf<ClanStats>()
     private var maxParticipants = 0
     private var internet = false
-    private var mainTag: String? = null
-    private var lastCheck: Long = 0
+    private var timeout = 10000
+    private var lastCheck = 0L
     private var sleepTime = 0
+    private val retries = 100
+    private var mainTag = ""
+
     private fun timeout() {
-        timeout = Math.max(5000, timeout - 500)
+        timeout = 5000.coerceAtLeast(
+                timeout - 500)
     }
 
     private fun sleep() {
@@ -51,52 +48,32 @@ class DataFetch(private val acti: Interface?) {
         SystemClock.sleep(sleepTime.toLong())
     }
 
-    private fun cought(e: Exception) {
-        Log.w(Interface.Companion.TAG, "Data fetching failed!", e)
-        Console.Companion.logln("Fetch failed!")
-        acti!!.badConnection()
+    private fun caught(e: Exception) {
+        Log.w(Interface.TAG, "Data fetching failed!", e)
+        Console.logln("Fetch failed!")
+        acti.badConnection()
     }
 
     fun checkClan(tag: String): Boolean {
-        if (api != null) try {
-            val limiter: TimeLimiter = SimpleTimeLimiter.create(ThreadPool.getCachePool())
-            val clan = limiter.callWithTimeout({ api.getClan(ClanRequest.builder(tag).build()) },
-                    timeout.toLong(), TimeUnit.MILLISECONDS)
-            if (clan.tag != null) return true
-        } catch (ex: Exception) {
-            cought(ex)
-        }
-        try {
+        return try {
             var doc = SiteMap.getPage("https://spy.deckshop.pro/clan/$tag")
-            if (!doc!!.select(".text-muted").isEmpty() &&
+            if (!doc.select(".text-muted").isEmpty() &&
                     doc.select(".text-muted")[1]
                             .ownText().startsWith("#")) return true
             doc = SiteMap.getPage("https://royaleapi.com/clan/$tag/war")
-            val txt = doc!!.selectFirst(".horizontal .item")
-            if (txt != null && txt.ownText().trim { it <= ' ' }
-                            .startsWith("#")) return true
-        } catch (ex: IOException) {
-            cought(ex)
-        }
-        return false
+            val txt = doc.selectFirst(".horizontal .item")
+
+            txt != null && txt.ownText()
+                    .trim { it <= ' ' }
+                    .startsWith("#")
+        } catch (ex: IOException) { caught(ex); false }
     }
 
-    fun getMembers(tag: String?): MutableList<Member>? {
-        var members: MutableList<Member>? = null
-        if (api != null) try {
-            val limiter: TimeLimiter = SimpleTimeLimiter.create(ThreadPool.getCachePool())
-            members = limiter.callWithTimeout({
-                api.getClan(ClanRequest.builder(tag).build())
-                        .members
-            }, timeout.toLong(), TimeUnit.MILLISECONDS)
-        } catch (ex: Exception) {
-            cought(ex)
-            timeout()
-        }
-        if (members == null) try {
-            val mems: MutableList<Member> = ArrayList()
+    fun getMembers(tag: String): MutableList<Member> {
+        return try {
+            val members: MutableList<Member> = ArrayList()
             val doc = SiteMap.getPage("https://spy.deckshop.pro/clan/$tag")
-            val small = doc!!.select(".text-muted")
+            val small = doc.select(".text-muted")
             for (muted in small) {
                 val clan = muted.text().replace("✓", "").trim { it <= ' ' }
                 if (clan.startsWith("#") && !clan.startsWith("# ")) {
@@ -108,46 +85,47 @@ class DataFetch(private val acti: Interface?) {
                         val playerName = ele.ownText()
                         member.name = playerName
                         member.tag = playerTag
-                        mems.add(member)
+                        members.add(member)
                     }
                 }
             }
-            members = mems
+            members
         } catch (ex: IOException) {
-            cought(ex)
-            sleep()
-            return getMembers(tag)
+            caught(ex); sleep()
+            getMembers(tag)
         }
-        return members
     }
 
     private fun getWarStats(tag: String): PlayerStats {
-        var ps: PlayerStats? = null
         var c = 0
-        while (c < retries && ps == null) {
+        val ps = PlayerStats()
+        while (c < retries) {
             try {
                 val doc = SiteMap.getCWPage(tag)
-                val wins = (doc!!.select(".won_all").size - 1
+                val wins = (doc.select(".won_all").size - 1
                         + (doc.select(".won_one").size - 1) * .5)
                 val missed = doc.select(".missed").size - 1
                 val wars = doc.select(".war_hit").size
-                val ratio: Double = if (wars == 0) 0 else wins / wars
                 val norma = (1.0 + wins) / (2.0 + wars)
-                ps = PlayerStats()
+                val ratio =
+                        if (wars == 0) 0.0
+                        else wins / wars
+
                 ps.wins = wins.toInt()
                 ps.missed = missed
                 ps.ratio = ratio
                 ps.norma = norma
                 ps.wars = wars
                 ps.tag = tag
+                c = 1337
             } catch (ex: Exception) {
-                cought(ex)
+                caught(ex)
                 sleep()
+                c++
             }
-            c++
         }
-        if (ps == null) {
-            ps = PlayerStats()
+
+        if (c != 1337) {
             ps.wins = 0
             ps.missed = 0
             ps.ratio = 0.0
@@ -155,38 +133,32 @@ class DataFetch(private val acti: Interface?) {
             ps.wars = 0
             ps.tag = tag
         }
+
         return ps
     }
 
-    // Deprecated
+    @Deprecated("")
     private fun lastWin(doc: Document): Int {
         var league = 4
         val eleLeague = doc.select(".won_one .league img," +
                 " .won_all .league img").first()
         if (eleLeague != null) {
             val lastLeague = eleLeague
-                    .attr("data-cfsrc").toLowerCase()
-            if (lastLeague.contains("silver")) league = 3 else if (lastLeague.contains("gold")) league = 2 else if (lastLeague.contains("legend")) league = 1
+                    .attr("data-cfsrc").toLowerCase(Locale.ROOT)
+            if (lastLeague.contains("silver")) league = 3
+            else if (lastLeague.contains("gold")) league = 2
+            else if (lastLeague.contains("legend")) league = 1
         }
         return LeagueMap.l2o(league * 10)
     }
 
-    val topClans: List<TopClan>?
-        get() {
-            var topClans: List<TopClan>? = null
-            if (api != null) try {
-                val limiter: TimeLimiter = SimpleTimeLimiter.create(ThreadPool.getCachePool())
-                val tcp = TopClansRequest.builder().build()
-                topClans = limiter.callWithTimeout({ api.getTopClans(tcp) }, timeout.toLong(), TimeUnit.MILLISECONDS)
-            } catch (ex: Exception) {
-                cought(ex)
-                timeout()
-            }
-            if (topClans == null) try {
-                val clans: MutableList<TopClan> = ArrayList()
+    val topClans = arrayListOf<TopClan>()
+        get() {  if (field.size > 0) return field
+            try {
                 val doc = SiteMap.getPage("https://spy.deckshop.pro/top/global/clans")
-                val small = doc!!.select(".text-muted")
+                val small = doc.select(".text-muted")
                 val names = doc.select("a.h4")
+
                 var index = 0
                 for (muted in small) {
                     val clan = muted.text().trim { it <= ' ' }
@@ -194,93 +166,57 @@ class DataFetch(private val acti: Interface?) {
                         val topClan = TopClan()
                         topClan.name = names[index++].text()
                         topClan.tag = clan.replace("#", "")
-                        clans.add(topClan)
+                        field.add(topClan)
                     }
                 }
-                topClans = clans
-            } catch (ex: IOException) {
-                cought(ex)
-                sleep()
-                return topClans
-            }
-            return topClans
+            } catch (ex: IOException) { caught(ex); sleep() }
+            return field
         }
 
-    private fun getPlayerChests(tag: String): ChestCycle? {
-        var chestCycle: ChestCycle? = null
-        if (api != null) try {
-            val limiter: TimeLimiter = SimpleTimeLimiter.create(ThreadPool.getCachePool())
-            chestCycle = limiter.callWithTimeout({ api.getPlayerChests(PlayerChestsRequest.builder(listOf(tag)).build())[0] },
-                    timeout.toLong(), TimeUnit.MILLISECONDS)
-        } catch (ex: Exception) {
-            cought(ex)
-            timeout()
-        }
-        if (chestCycle == null) try {
-            val cc = ChestCycle()
+    private fun getPlayerChests(tag: String): ChestCycle {
+        return try {
+            val chestCycle = ChestCycle()
             val doc = SiteMap.getPage("https://spy.deckshop.pro/player/$tag")
-            var ele = doc!!.selectFirst(".chest-magical ~ span")
+            var ele = doc.selectFirst(".chest-magical ~ span")
             var chestNum = extractNum(ele)
-            cc.magical = chestNum.toInt()
+            chestCycle.magical = chestNum.toInt()
             ele = doc.selectFirst(".chest-legendary ~ span")
             chestNum = extractNum(ele)
-            cc.legendary = chestNum.toInt()
+            chestCycle.legendary = chestNum.toInt()
             ele = doc.selectFirst(".chest-smc ~ span")
             chestNum = extractNum(ele)
-            cc.megaLightning = chestNum.toInt()
-            chestCycle = cc
+            chestCycle.megaLightning = chestNum.toInt()
+            chestCycle
         } catch (ex: IOException) {
-            cought(ex)
-            sleep()
+            caught(ex); sleep()
             return getPlayerChests(tag)
         }
-        return chestCycle
     }
 
-    private fun extractNum(ele: Element?): String {
-        val chestNum: String
-        chestNum = if (ele == null) "0" else if (ele.ownText() == "") "0" else ele.ownText()
+    private fun extractNum(ele: Element): String {
+        val chestNum: String =
+                if (ele.ownText() == "") "0"
+                else ele.ownText()
         return chestNum.replace("+", "")
     }
 
-    fun getClanWar(tag: String): ClanWar? {
-        var clanWar: ClanWar? = null
-        if (api != null) try {
-            var limiter: TimeLimiter = SimpleTimeLimiter.create(ThreadPool.getCachePool())
-            clanWar = limiter.callWithTimeout({
-                api.getClanWar(ClanWarRequest
-                        .builder(tag).build())
-            },
-                    timeout.toLong(), TimeUnit.MILLISECONDS)
-            if (clanWar.clan == null) {
-                val clanWarClan = ClanWarClan()
-                limiter = SimpleTimeLimiter.create(ThreadPool.getCachePool())
-                val clan = limiter.callWithTimeout({
-                    api.getClan(ClanRequest.builder(tag)
-                            .build())
-                }, timeout.toLong(), TimeUnit.MILLISECONDS)
-                clanWarClan.badge = clan.badge
-                clanWarClan.name = clan.name
-                clanWarClan.tag = tag
-                clanWar.clan = clanWarClan
-            }
-        } catch (ex: Exception) {
-            cought(ex)
-            timeout()
-        }
-        if (clanWar == null) try {
-            val newWar = ClanWar()
+    fun getClanWar(tag: String): ClanWar {
+        return try {
+            val clanWar = ClanWar()
             val clan = ClanWarClan()
             val newList: MutableList<ClanWarStanding> = ArrayList()
             val newPars: MutableList<ClanWarParticipant> = ArrayList()
             val doc = SiteMap.getPage("https://royaleapi.com/clan/$tag/war")
-            val stats = doc!!.select(".clan_stats > .stats > .value")
+            val stats = doc.select(".clan_stats > .stats > .value")
             var warState = stats[0].ownText()
-            warState = if (warState.contains("War Day")) "warDay" else if (warState.contains("Not")) "notInWar" else "collectionDay"
-            newWar.state = warState
+            warState =
+                    if (warState.contains("War Day")) "warDay"
+                    else if (warState.contains("Not")) "notInWar"
+                    else "collectionDay"
+            clanWar.state = warState
             val namae = doc.selectFirst(".p_head_item .header").ownText()
             var badge = doc.selectFirst(".attached .floated")
-                    .attr("data-cfsrc").toLowerCase()
+                    .attr("data-cfsrc").toLowerCase(Locale.ROOT)
             badge = badge.split("/").toTypedArray()[badge.split("/").toTypedArray().size - 1].split("\\.").toTypedArray()[0]
             val clanBadge = Badge()
             clanBadge.name = badge
@@ -290,11 +226,11 @@ class DataFetch(private val acti: Interface?) {
             if (stats.size > 3) {
                 val battlesPlayed = stats[2].ownText().toInt()
                 val participants = stats[3].ownText().toInt()
-                val wTrohpies = stats[5].ownText().toInt()
+                val wTrophies = stats[5].ownText().toInt()
                 val crowns = stats[4].ownText().toInt()
                 clan.battlesPlayed = battlesPlayed
                 clan.participants = participants
-                clan.warTrophies = wTrohpies
+                clan.warTrophies = wTrophies
                 clan.crowns = crowns
                 val standings = doc.select(".standings tbody > tr")
                 for (standing in standings) {
@@ -306,7 +242,7 @@ class DataFetch(private val acti: Interface?) {
                     val name = standing.selectFirst("td:nth-child(2) a").ownText()
                     val wins = standing.selectFirst(".wins").ownText().toInt()
                     val clanStand = SiteMap.getPage("https://royaleapi.com/clan/$clanTag/war")
-                    val clanStats = clanStand!!.select(".clan_stats > .stats > .value")
+                    val clanStats = clanStand.select(".clan_stats > .stats > .value")
                     cws.tag = clanTag
                     cws.name = name
                     cws.wins = wins
@@ -353,64 +289,62 @@ class DataFetch(private val acti: Interface?) {
                     cwp.wins = wins
                     newPars.add(cwp)
                 }
-                newWar.participants = newPars
-                newWar.standings = newList
+                clanWar.participants = newPars
+                clanWar.standings = newList
             }
-            newWar.clan = clan
-            clanWar = newWar
+            clanWar.clan = clan
+            clanWar
         } catch (ex: Exception) {
-            cought(ex)
-            sleep()
-            clanWar = getClanWar(tag)
+            caught(ex); sleep()
+            getClanWar(tag)
         }
-        return clanWar
     }
 
-    private fun getClanWarLog(tag: String?): List<ClanWarLog>? {
-        if (clanWars.containsKey(tag)) return clanWars[tag]
-        var clanWarLogs: List<ClanWarLog>? = null
-        if (api != null) try {
-            val limiter: TimeLimiter = SimpleTimeLimiter.create(ThreadPool.getCachePool())
-            clanWarLogs = limiter.callWithTimeout({
-                api.getClanWarLog(ClanWarLogRequest
-                        .builder(tag).build())
-            },
-                    timeout.toLong(), TimeUnit.MILLISECONDS)
-        } catch (ex: Exception) {
-            cought(ex)
-            timeout()
-        }
-        if (clanWarLogs == null) try {
+    private fun getClanWarLog(tag: String): List<ClanWarLog> {
+        return if (clanWars.containsKey(tag))
+            clanWars[tag] ?: arrayListOf()
+        else try {
+            val clanWarLogs = arrayListOf<ClanWarLog>()
             val doc = SiteMap.getPage("https://royaleapi.com/clan/$tag/war/log")
             val page = "https://royaleapi.com/clan/$tag/war/analytics/csv"
             val clanURL = URL(page).openConnection()
-            clanURL.setRequestProperty("User-Agent", SiteMap.getAgent())
+            clanURL.setRequestProperty("User-Agent", SiteMap.agent)
             clanURL.connect()
             val input = clanURL.getInputStream()
             val reader = InputStreamReader(input)
             val records = CSVFormat.DEFAULT.parse(reader).records
             @SuppressLint("SimpleDateFormat") val sdf = SimpleDateFormat("yyyyMMdd'T'HHmmss")
             sdf.timeZone = TimeZone.getTimeZone("GMT")
-            val dayMap: MutableMap<String, MutableList<ClanWarLogParticipant>?> = HashMap()
-            val logDays: MutableList<ClanWarLog> = ArrayList()
-            for (rec in records) if (rec[0] != "name") for (w in 0 until (rec.size() - 5) / 4) if (rec[4 * w + 5] != "" &&
+            val dayMap
+                    = mutableMapOf<String, MutableList<ClanWarLogParticipant>>()
+            for (rec in records) if (rec[0] != "name")
+                for (w in 0 until (rec.size() - 5) / 4) if (rec[4 * w + 5] != "" &&
                     !dayMap.containsKey(rec[4 * w + 5])) dayMap[rec[4 * w + 5]] = ArrayList()
-            for (rec in records) if (rec[0] != "name") for (w in 0 until (rec.size() - 5) / 4) if (rec[4 * w + 5] != "") {
-                val player = ClanWarLogParticipant()
-                player.name = rec[0]
-                player.tag = rec[1]
-                val day = 4 * w + 5
-                player.cardsEarned = rec[day + 1].toInt()
-                player.battlesPlayed = rec[day + 2].toInt()
-                player.wins = rec[day + 3].toInt()
-                dayMap[rec[day]]!!.add(player)
-            }
+            for (rec in records) if (rec[0] != "name")
+                for (w in 0 until (rec.size() - 5) / 4) if (rec[4 * w + 5] != "") {
+                    val player = ClanWarLogParticipant()
+                    player.name = rec[0]
+                    player.tag = rec[1]
+                    val day = 4 * w + 5
+                    player.cardsEarned = rec[day + 1].toInt()
+                    player.battlesPlayed = rec[day + 2].toInt()
+                    player.wins = rec[day + 3].toInt()
+
+                    dayMap[rec[day]]?.run {
+                        dayMap[rec[day]] = mutableListOf() }
+                    dayMap[rec[day]]!!.add(player)
+                }
+
             val season = IntArray(10)
-            val standList: Array<List<ClanWarLogStanding>> = arrayOfNulls<List<*>>(10)
-            var eles = doc!!.select(".ui .inverted .header")
+            val standList
+                    = arrayOfNulls<List<ClanWarLogStanding>>(10)
+            var eles = doc.select(".ui .inverted .header")
             var counter = 0
-            for (ele in eles) if (ele.ownText().startsWith("Season")) season[counter++] = Integer.valueOf(
-                    ele.ownText().replace("Season ", ""))
+            for (ele in eles)
+                if (ele.ownText().startsWith("Season"))
+                    season[counter++] = Integer.valueOf(
+                            ele.ownText().replace("Season ", ""))
+
             counter = 0
             eles = doc.select(".standings .unstackable")
             for (ele in eles) {
@@ -435,6 +369,7 @@ class DataFetch(private val acti: Interface?) {
                 }
                 standList[counter++] = cwlsList
             }
+
             counter = 0
             for ((key, value) in dayMap) {
                 val newLog = ClanWarLog()
@@ -445,47 +380,35 @@ class DataFetch(private val acti: Interface?) {
                 newLog.seasonNumber = season[counter]
                 newLog.participants = value
                 newLog.standings = standList[counter++]
-                logDays.add(newLog)
+                clanWarLogs.add(newLog)
             }
             input.close()
             reader.close()
-            clanWarLogs = logDays
+            clanWars[tag] = clanWarLogs
+            clanWarLogs
         } catch (ex: Exception) {
-            cought(ex)
-            sleep()
-            clanWarLogs = getClanWarLog(tag)
+            caught(ex); sleep()
+            getClanWarLog(tag)
         }
-        clanWars[tag] = clanWarLogs
-        return clanWarLogs
     }
 
-    private fun getProfile(tag: String): Profile? {
-        var profile: Profile? = null
-        if (api != null) try {
-            val limiter: TimeLimiter = SimpleTimeLimiter.create(ThreadPool.getCachePool())
-            profile = limiter.callWithTimeout({
-                api.getProfile(ProfileRequest.builder(tag)
-                        .build())
-            }, timeout.toLong(), TimeUnit.MILLISECONDS)
-        } catch (ex: Exception) {
-            cought(ex)
-            timeout()
-        }
-        if (profile == null) try {
+    private fun getProfile(tag: String): Profile {
+        return try {
             val player = Profile()
             val cardList: MutableList<Card> = ArrayList()
             var doc = SiteMap.getPage("https://spy.deckshop.pro/player/$tag/cards")
-            val cards = doc!!.select(".card_tag")
+            val cards = doc.select(".card_tag")
             for (element in cards) {
                 val card = Card()
                 card.maxLevel = 13
                 card.displayLevel = element.ownText().replace("Level ", "").toInt()
                 cardList.add(card)
             }
+
             player.cards = cardList
             doc = SiteMap.getPage("https://spy.deckshop.pro/player/$tag")
-            val roleElement = doc!!.selectFirst(".clearfix > .text-muted")
-            var role: String? = "Member"
+            val roleElement = doc.selectFirst(".clearfix > .text-muted")
+            var role: String = "Member"
             if (roleElement != null) role = roleElement.ownText()
             role = when (role) {
                 "Co-leader" -> "coLeader"
@@ -493,67 +416,49 @@ class DataFetch(private val acti: Interface?) {
                 "Elder" -> "elder"
                 else -> "member"
             }
+
             val pClan = ProfileClan()
             pClan.role = role
             player.clan = pClan
             player.trophies = doc.select(".media-body .text-warning")
                     .text().replace(" ", "").toInt()
-            profile = player
+            player
         } catch (ex: IOException) {
-            cought(ex)
-            sleep()
-            return getProfile(tag)
+            caught(ex); sleep()
+            getProfile(tag)
         }
-        return profile
     }
 
-    private fun getBattles(tag: String): List<Battle>? {
-        var battles: List<Battle>? = null
-        if (api != null) try {
-            val limiter: TimeLimiter = SimpleTimeLimiter.create(ThreadPool.getCachePool())
-            battles = limiter.callWithTimeout({
-                api.getPlayerBattles(PlayerBattlesRequest.builder(listOf(tag)).build())[0]
-            }, timeout.toLong(), TimeUnit.MILLISECONDS)
-        } catch (ex: Exception) {
-            cought(ex)
-            timeout()
-        }
-        if (battles == null) try {
-            val batts: MutableList<Battle> = ArrayList()
+    private fun getBattles(tag: String): List<Battle> {
+        return try {
+            val battles = arrayListOf<Battle>()
             val doc = SiteMap.getPage("https://spy.deckshop.pro/player/$tag/battles")
-            val eles = doc!!.select(".timestamp")
+            val eles = doc.select(".timestamp")
             if (eles == null) {
                 val battle = Battle()
                 battle.utcTime = 0
-                batts.add(battle)
+                battles.add(battle)
             } else for (ele in eles) {
                 val battle = Battle()
                 val textTime = ele.attributes()["data-timestamp"]
                 val time = textTime.toLong()
                 battle.utcTime = time
-                batts.add(battle)
-            }
-            battles = batts
+                battles.add(battle)
+            }; battles
         } catch (ex: IOException) {
-            cought(ex)
-            sleep()
-            return getBattles(tag)
+            caught(ex); sleep()
+            getBattles(tag)
         }
-        return battles
     }
 
-    private fun getClan(tag: String): ClanStats {
-        return getClan(tag, false)
-    }
-
-    private fun getClan(tag: String, target: Boolean): ClanStats {
+    private fun getClan(tag: String, target: Boolean = false): ClanStats {
         val clanWar = getClanWar(tag)
-        val clan = clanWar!!.clan
+        val clan = clanWar.clan
         val clanStats = ClanStats()
         clanStats.state = clanWar.state
         clanStats.badge = clan.badge
                 .name.toLowerCase()
-        clanStats.name = "???"
+        clanStats.name = ""
         clanStats.tag = tag
         Console.Companion.logln("\t\tClan... \t"
                 + clan.name)
@@ -562,10 +467,10 @@ class DataFetch(private val acti: Interface?) {
         clanStats.actualWins = 0
         clanStats.estimatedWins = 0
         clanStats.maxParticipants = 0
-        clanStats.clan1 = "???"
-        clanStats.clan2 = "???"
-        clanStats.clan3 = "???"
-        clanStats.clan4 = "???"
+        clanStats.clan1 = ""
+        clanStats.clan2 = ""
+        clanStats.clan3 = ""
+        clanStats.clan4 = ""
         clanStats.warTrophies = clan.warTrophies
         clanStats.name = clan.name
         if (clanWar.state == "warDay" && clanWar.clan.warTrophies > 200) {
@@ -576,9 +481,11 @@ class DataFetch(private val acti: Interface?) {
             clanStats.crowns = clan.crowns
             clanStats.estimatedWins = eew.first
             clanStats.extraWins = eew.second
-            var counter = 0
-            val opponentClan = arrayOfNulls<String>(4)
-            for (clanParticipant in clanWar.standings) if (clanParticipant.tag != tag) opponentClan[counter++] = clanParticipant.tag
+
+            val opponentClan = arrayListOf<String>()
+            for (clanParticipant in clanWar.standings)
+                if (clanParticipant.tag != tag)
+                    opponentClan.add(clanParticipant.tag)
             clanStats.clan1 = opponentClan[0]
             clanStats.clan2 = opponentClan[1]
             clanStats.clan3 = opponentClan[2]
@@ -588,20 +495,20 @@ class DataFetch(private val acti: Interface?) {
         return clanStats
     }
 
-    private fun mainClan(mainClan: ClanWar?): Int {
-        val standings = mainClan!!.standings
+    private fun mainClan(mainClan: ClanWar): Int {
+        val standings = mainClan.standings
         mainTag = mainClan.clan.tag
         maxParticipants = 0
         for (clan in standings) if (maxParticipants < clan.participants) maxParticipants = clan.participants
         Console.Companion.logln(" \nGetting opposing clans...")
         val latch = CountDownLatch(4)
-        for (clan in standings) if (clan.tag != mainClan.clan.tag) ThreadPool.getFixedPool().execute {
+        for (clan in standings) if (clan.tag != mainClan.clan.tag) ThreadPool.fixedPool.execute {
             val cs = getClan(clan.tag)
-            clanList!!.add(cs)
+            clanList.add(cs)
             latch.countDown()
         }
-        try {
-            latch.await()
+
+        try { latch.await()
         } catch (e: InterruptedException) {
             Thread.currentThread().interrupt()
             Log.e(Interface.Companion.TAG, "Latch failed.", e)
@@ -609,21 +516,23 @@ class DataFetch(private val acti: Interface?) {
         return maxParticipants - mainClan.clan.battlesPlayed
     }
 
-    private fun prognoseWins(clan: ClanWar?): Pair<Int, Double> {
+    private fun prognoseWins(clan: ClanWar): Pair<Int, Double> {
         val playerList = getPlayerStats(clan, false)
         var remainingBattles = maxParticipants
-        var poly: PolynomialFunction? = null
+        var poly = PolynomialFunction(doubleArrayOf(0.0,1.0))
         var alreadyWon = 0
+
         for (player in playerList) {
-            if (player.getCurPlay() > 0) {
-                remainingBattles -= player.getCurPlay()
-                alreadyWon += player.getCurWins()
+            if (player.curPlay > 0) {
+                remainingBattles -= player.curPlay
+                alreadyWon += player.curWins
             } else {
                 remainingBattles--
-                val winChance = if (player.getPlayed() == 0) .5 else player.getNorma()
+                val winChance = if (player.played == 0) .5 else player.norma
                 poly = polyMulti(poly, 1 - winChance, winChance)
             }
         }
+
         for (r in 0 until remainingBattles) poly = polyMulti(poly, .5, .5)
         var probWin = 0
         var maxCoef = 0.0
@@ -644,39 +553,41 @@ class DataFetch(private val acti: Interface?) {
         return Pair(probWin + alreadyWon, extraWin)
     }
 
-    private fun polyMulti(poly: PolynomialFunction?, coef1: Double, coef2: Double): PolynomialFunction? {
+    private fun polyMulti(poly: PolynomialFunction, coef1: Double, coef2: Double): PolynomialFunction {
         var poly = poly
         val tempPoly = PolynomialFunction(doubleArrayOf(coef1, coef2))
         poly = if (poly == null) tempPoly else poly.multiply(tempPoly)
         return poly
     }
 
-    fun getClanStats(tag: String?): List<ClanStats?>? {
+    fun getClanStats(tag: String): List<ClanStats> {
         Console.Companion.logln(" \nCalculating forecast...")
-        if (acti!!.getLastUse(tag)) {
+        if (acti.getLastUse(tag)) {
             db.resetClanStats(tag)
             clanList = ArrayList()
-            clanList.add(getClan(tag!!, true))
+            clanList.add(getClan(tag, true))
             acti.setLastUse(tag)
             return clanList
         }
         return db.getClanStatsList(tag)
     }
 
-    private fun getPlayerStats(clanWar: ClanWar?, force: Boolean): List<PlayerStats?> {
-        val playerStats = getPlayerStats(clanWar!!.clan.tag, force)
-        val currentStats: MutableList<PlayerStats?> = ArrayList()
-        for (player in playerStats!!) for (warPlayer in clanWar.participants) if (warPlayer.tag == player.getTag()) {
-            player.setCurPlay(warPlayer.battlesPlayed)
-            player.setCurWins(warPlayer.wins)
+    private fun getPlayerStats(clanWar: ClanWar, force: Boolean): List<PlayerStats> {
+        val playerStats = getPlayerStats(clanWar.clan.tag, force)
+        val currentStats: MutableList<PlayerStats> = ArrayList()
+        for (player in playerStats)
+            for (warPlayer in clanWar.participants)
+                if (warPlayer.tag == player.tag) {
+            player.curPlay = warPlayer.battlesPlayed
+            player.curWins = warPlayer.wins
             currentStats.add(player)
         }
         return currentStats
     }
 
-    fun getPlayerStats(clanTag: String?, member: Member, force: Boolean): PlayerStats? {
-        val ps: PlayerStats?
-        if (acti!!.getLastUse(member.tag, "wstat") || force) {
+    fun getPlayerStats(clanTag: String, member: Member, force: Boolean): PlayerStats {
+        val ps: PlayerStats
+        if (acti.getLastUse(member.tag, "wstat") || force) {
             Console.Companion.logln("\t\t\t\t\t\t-\t\t" + member.name)
             ps = getWarStats(member.tag)
             ps.name = member.name
@@ -685,24 +596,24 @@ class DataFetch(private val acti: Interface?) {
             ps.chest = findLastWarWin(ps)
             acti.setLastUse(member.tag, "wstat")
         } else ps = db.getPlayerStats(member.tag)
-        ps.setCurrent(true)
+        ps.isCurrent = true
         db.insertPlayerStats(ps)
         return ps
     }
 
     @Deprecated("")
-    private fun getPlayerStats(tag: String): List<PlayerStats?>? {
+    private fun getPlayerStats(tag: String): List<PlayerStats> {
         return getPlayerStats(tag, false)
     }
 
-    private fun getPlayerStats(tag: String, force: Boolean): List<PlayerStats?>? {
-        if (acti!!.getLastUse(tag) || force) {
-            val members: List<Member>? = getMembers(tag)
-            val players: MutableList<PlayerStats?> = ArrayList()
+    private fun getPlayerStats(tag: String, force: Boolean): List<PlayerStats> {
+        if (acti.getLastUse(tag) || force) {
+            val members: List<Member> = getMembers(tag)
+            val players: MutableList<PlayerStats> = ArrayList()
             db.resetCurrentPlayers(tag)
-            for (member in members!!) {
+            for (member in members) {
                 val player = getPlayerStats(tag, member, force)
-                player.setCurrent(true)
+                player.isCurrent = true
                 players.add(player)
             }
             return players
@@ -710,10 +621,12 @@ class DataFetch(private val acti: Interface?) {
         return db.getClanPlayerStats(tag)
     }
 
-    private fun findLastWarWin(player: PlayerStats?): Int {
+    private fun findLastWarWin(player: PlayerStats): Int {
         var chest = 0
-        val warLog = getClanWarLog(player.getClan())
-        for (dayLog in warLog!!) for (dayPlayer in dayLog.participants) if (dayPlayer.tag == player.getTag()) {
+        val warLog = getClanWarLog(player.clan)
+        for (dayLog in warLog)
+            for (dayPlayer in dayLog.participants)
+                if (dayPlayer.tag == player.tag) {
             val warTroph = (dayLog.standings[0].warTrophies
                     - dayLog.standings[0].warTrophiesChange)
             var league = 4
@@ -721,7 +634,7 @@ class DataFetch(private val acti: Interface?) {
             var position = 0
             for (cwls in dayLog.standings) {
                 position++
-                if (cwls.tag == player.getClan()) break
+                if (cwls.tag == player.clan) break
             }
             val order = LeagueMap.l2o(league * 10 + position)
             val season = if (warLog[0].seasonNumber
@@ -741,12 +654,12 @@ class DataFetch(private val acti: Interface?) {
         player.clan = clanTag
         player.isCurrent = true
         val playerDB = db.getPlayerStats(member.tag)
-        var missed = playerDB?.missed ?: 0
-        var played = playerDB?.played ?: 0
-        var chest = playerDB?.chest ?: 0
-        var cards = playerDB?.cards ?: 0
-        var wins = playerDB?.wins ?: 0
-        var wars = playerDB?.wars ?: 0
+        var missed = playerDB.missed
+        var played = playerDB.played
+        var chest = playerDB.chest
+        var cards = playerDB.cards
+        var wins = playerDB.wins
+        var wars = playerDB.wars
         for (dayLog in warLog) {
             var found = false
             for (dayDB in db.warDays) if (dayDB.warDay == dayLog.createdDate) found = true
@@ -771,7 +684,10 @@ class DataFetch(private val acti: Interface?) {
                 if (chest < newChest) chest = newChest
             }
         }
-        val ratio: Double = if (played == 0) 0 else wins.toDouble() / played
+
+        val ratio: Double =
+                if (played == 0) 0.0
+                else wins.toDouble() / played
         val norma = (1.0 + wins) / (2.0 + played)
         player.missed = missed
         player.played = played
@@ -785,15 +701,15 @@ class DataFetch(private val acti: Interface?) {
         return player
     }
 
-    fun getPlayerProfile(tag: String, force: Boolean): ClanPlayer? {
+    fun getPlayerProfile(tag: String, force: Boolean): ClanPlayer {
         var player = db.getClanPlayer(tag)
-        if (acti!!.getLastUse(tag, "prof") || force) {
+        if (acti.getLastUse(tag, "prof") || force) {
             if (player == null) player = ClanPlayer()
             val profile = getProfile(tag)
             player.clan = mainTag
             player.tag = tag
             var cardCount = 0.0
-            for (card in profile!!.cards) {
+            for (card in profile.cards) {
                 val max = card.maxLevel
                 val lvl = card.displayLevel
                 val dif = max - lvl
@@ -815,9 +731,9 @@ class DataFetch(private val acti: Interface?) {
     fun getMemberActivity(player: ClanPlayer, force: Boolean): ClanPlayer {
         val tag = player.tag
         var changed = false
-        if (acti!!.getLastUse(tag, "chest") || force) {
+        if (acti.getLastUse(tag, "chest") || force) {
             val cc = getPlayerChests(tag)
-            player.smc = cc!!.megaLightning
+            player.smc = cc.megaLightning
             player.legendary = cc.legendary
             player.magical = cc.magical
             acti.setLastUse(tag, "chest")
@@ -826,7 +742,9 @@ class DataFetch(private val acti: Interface?) {
         if (acti.getLastUse(tag, "batt") || force) {
             val battles = getBattles(tag)
             var last: Long = 0
-            for (battle in battles!!) if (last < battle.utcTime) last = battle.utcTime
+            for (battle in battles)
+                if (last < battle.utcTime)
+                    last = battle.utcTime
             player.last = last
             acti.setLastUse(tag, "batt")
             changed = true
@@ -839,7 +757,7 @@ class DataFetch(private val acti: Interface?) {
     }
 
     @Deprecated("")
-    fun getMissingPlayer(member: Member, clanTag: String?): PlayerStats {
+    fun getMissingPlayer(member: Member, clanTag: String): PlayerStats {
         val newPlayer = PlayerStats()
         newPlayer.tag = member.tag
         newPlayer.name = member.name
@@ -872,18 +790,10 @@ class DataFetch(private val acti: Interface?) {
     private fun testSite(site: String): Boolean {
         try {
             val address = InetAddress.getByName(site)
-            return address != ""
+            return address.toString() != ""
         } catch (e: UnknownHostException) {
             Log.e(Interface.Companion.TAG, "No internet!", e)
         }
         return false
     }
-
-    companion object {
-        // Make api == null if you don't have a developer key.
-// private static Api api = new Api("https://api.royaleapi.com/", devKey);
-// It's temporarly null, untile the API is updated to v2.
-        private val api: Api? = null
-    }
-
 }

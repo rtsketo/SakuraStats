@@ -21,17 +21,18 @@ import eu.rtsketo.sakurastats.hashmaps.SDPMap
 import eu.rtsketo.sakurastats.main.Interface
 import eu.rtsketo.sakurastats.main.Service
 
-class DialogView(type: SakuraDialog, prevDia: Dialog?, count: Int, acti: Interface?) {
+class DialogView(type: SakuraDialog, prevDia: Dialog, count: Int, acti: Interface) {
     enum class SakuraDialog {
         INPUT, INFO, CLANQUEST, RATEQUEST
     }
 
-    constructor(type: SakuraDialog, acti: Interface?) : this(type, null, -1, acti)
-    constructor(type: SakuraDialog, count: Int, acti: Interface?) : this(type, null, count, acti)
-    constructor(type: SakuraDialog, prevDia: Dialog?, acti: Interface?) : this(type, prevDia, -1, acti)
+    constructor(type: SakuraDialog, acti: Interface) : this(type, null, -1, acti)
+    constructor(type: SakuraDialog, count: Int, acti: Interface) : this(type, null, count, acti)
+    constructor(type: SakuraDialog, prevDia: Dialog, acti: Interface) : this(type, prevDia, -1, acti)
 
     internal inner class InputCheck(private val editText: EditText) : TextWatcher {
         private var clanTagInput = ""
+        // TODO transfer logic to onTextChanged
         override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {}
         override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {}
         override fun afterTextChanged(input: Editable) {
@@ -53,9 +54,9 @@ class DialogView(type: SakuraDialog, prevDia: Dialog?, count: Int, acti: Interfa
         inputView = if (type == SakuraDialog.INPUT) LayoutInflater.from(acti)
                 .inflate(R.layout.dialog_input, null) else LayoutInflater.from(acti)
                 .inflate(R.layout.dialog_quest, null)
-        val dialog = Dialog(acti!!)
+        val dialog = Dialog(acti)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        dialog.window!!.setBackgroundDrawableResource(
+        dialog.window.setBackgroundDrawableResource(
                 android.R.color.transparent)
         dialog.setContentView(inputView)
         dialog.setCancelable(false)
@@ -87,7 +88,7 @@ class DialogView(type: SakuraDialog, prevDia: Dialog?, count: Int, acti: Interfa
                             .argb(100, 200, 200, 200))
                     (loadingAnim.drawable as AnimationDrawable).start()
                     val finalTag = tag
-                    ThreadPool.getCachePool().execute {
+                    ThreadPool.cachePool.execute {
                         val df = DataFetch(acti)
                         if (finalTag.length > 2 && df.checkClan(finalTag)) {
                             if (count > -1) {
@@ -120,7 +121,7 @@ class DialogView(type: SakuraDialog, prevDia: Dialog?, count: Int, acti: Interfa
                 }
             }
             SakuraDialog.CLANQUEST -> {
-                decorate(explain, "Are you sure?", size[0])
+                decorate(explain, "Are you sure", size[0])
                 decorate(explain2, "A random clan" +
                         "\nwill be chosen.", size[1])
                 cancel.setOnClickListener { view: View ->
@@ -132,7 +133,7 @@ class DialogView(type: SakuraDialog, prevDia: Dialog?, count: Int, acti: Interfa
                             .start(null, false, true)
                     ViewDecor.bounce(view, acti)
                     dialog.cancel()
-                    prevDia!!.cancel()
+                    prevDia.cancel()
                 }
             }
             SakuraDialog.RATEQUEST -> {
@@ -147,7 +148,7 @@ class DialogView(type: SakuraDialog, prevDia: Dialog?, count: Int, acti: Interfa
                 }
                 confirm.setOnClickListener { view: View ->
                     ViewDecor.bounce(view, acti)
-                    val uri = Uri.parse("market://details?id=" + acti.packageName)
+                    val uri = Uri.parse("market://detailsid=" + acti.packageName)
                     val goToMarket = Intent(Intent.ACTION_VIEW, uri)
                     goToMarket.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY or
                             Intent.FLAG_ACTIVITY_NEW_DOCUMENT or
@@ -156,7 +157,7 @@ class DialogView(type: SakuraDialog, prevDia: Dialog?, count: Int, acti: Interfa
                         ContextCompat.startActivity(acti, goToMarket, null)
                     } catch (e: ActivityNotFoundException) {
                         ContextCompat.startActivity(acti, Intent(Intent.ACTION_VIEW,
-                                Uri.parse("http://play.google.com/store/apps/details?id=" + acti.packageName)), null)
+                                Uri.parse("http://play.google.com/store/apps/detailsid=" + acti.packageName)), null)
                     }
                     dialog.cancel()
                 }

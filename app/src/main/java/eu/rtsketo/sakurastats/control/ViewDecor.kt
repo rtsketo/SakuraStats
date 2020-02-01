@@ -18,41 +18,41 @@ import eu.rtsketo.sakurastats.R
 import eu.rtsketo.sakurastats.hashmaps.SDPMap
 
 object ViewDecor {
-    private var tf: Typeface? = null
+    private var tf: Typeface = null
     fun init(res: Resources) {
         tf = Typeface.createFromAsset(res.assets,
                 "fonts/Supercell-Magic_5.ttf")
     }
 
-    fun animateView(view: ImageView?, animate: Boolean) {
-        val anim = view!!.drawable
+    fun animateView(view: ImageView, animate: Boolean) {
+        val anim = view.drawable
         if (anim is AnimationDrawable) if (animate) anim.start() else anim.stop()
     }
 
-    fun blinkView(view: ImageView?, blink: Boolean) {
+    fun blinkView(view: ImageView, blink: Boolean) {
         if (blink) {
-            val animation: Animation = AlphaAnimation(1, .5f)
+            val animation: Animation = AlphaAnimation(1f, .5f)
             animation.duration = 400
             animation.interpolator = LinearInterpolator()
             animation.repeatCount = Animation.INFINITE
             animation.repeatMode = Animation.REVERSE
-            view!!.startAnimation(animation)
-        } else view!!.clearAnimation()
+            view.startAnimation(animation)
+        } else view.clearAnimation()
     }
 
-    fun decorate(tv: MagicTextView?, txt: Int, size: Float): MagicTextView? {
+    fun decorate(tv: MagicTextView, txt: Int, size: Float): MagicTextView {
         return decorate(tv, "" + txt, size, Color.WHITE)
     }
 
-    fun decorate(tv: MagicTextView?, txt: Double, size: Float): MagicTextView? {
+    fun decorate(tv: MagicTextView, txt: Double, size: Float): MagicTextView {
         return decorate(tv, "" + txt, size, Color.WHITE)
     }
 
-    fun decorate(tv: MagicTextView?, txt: Int, size: Float, color: Int): MagicTextView? {
+    fun decorate(tv: MagicTextView, txt: Int, size: Float, color: Int): MagicTextView {
         return decorate(tv, "" + txt, size, color)
     }
 
-    fun decorate(tv: MagicTextView?, txt: Double, size: Float, color: Int): MagicTextView? {
+    fun decorate(tv: MagicTextView, txt: Double, size: Float, color: Int): MagicTextView {
         return decorate(tv, "" + txt, size, color)
     }
 
@@ -64,9 +64,9 @@ object ViewDecor {
     }
 
     @JvmOverloads
-    fun decorate(tv: MagicTextView?, txt: String?,
-                 size: Float, color: Int = Color.WHITE, maxWidth: Int = -1): MagicTextView? {
-        tv!!.clearOuterShadows()
+    fun decorate(tv: MagicTextView, txt: String,
+                 size: Float, color: Int = Color.WHITE, maxWidth: Int = -1): MagicTextView {
+        tv.clearOuterShadows()
         tv.text = txt
         tv.typeface = tf
         tv.setTextColor(color)
@@ -83,11 +83,11 @@ object ViewDecor {
         return tv
     }
 
-    fun bounce(v: View, a: Activity?) {
+    fun bounce(v: View, a: Activity) {
         v.startAnimation(AnimationUtils.loadAnimation(a, R.anim.bounce))
     }
 
-    fun rotate(v: View, a: Activity?) {
+    fun rotate(v: View, a: Activity) {
         v.startAnimation(AnimationUtils.loadAnimation(a, R.anim.rotate))
     }
 }

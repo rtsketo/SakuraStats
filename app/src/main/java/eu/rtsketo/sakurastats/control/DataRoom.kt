@@ -21,6 +21,5 @@ abstract class DataRoom : RoomDatabase() {
             instance = Room.databaseBuilder(context.applicationContext,
                     DataRoom::class.java, "sakuradb").build()
         }
-
     }
 }

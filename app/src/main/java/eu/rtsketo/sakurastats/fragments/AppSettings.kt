@@ -23,14 +23,14 @@ class AppSettings : Fragment() {
     private val clanBadge = arrayOfNulls<ImageView>(5)
     private val clanEdit = arrayOfNulls<ImageView>(5)
     private val clanSele = arrayOfNulls<ImageView>(5)
-    private var acti: Interface? = null
+    private var acti: Interface = null
     override fun onAttach(context: Context) {
-        acti = activity as Interface?
+        acti = activity as Interface
         super.onAttach(context)
     }
 
     override fun onCreateView(inflater: LayoutInflater,
-                              container: ViewGroup?, savedInstanceState: Bundle?): View? {
+                              container: ViewGroup, savedInstanceState: Bundle): View {
         val frag = inflater.inflate(R.layout.fragment_settings, container, false)
         val clanLabel: MagicTextView = frag.findViewById(R.id.settingsClanLabel)
         clanName[0] = frag.findViewById(R.id.settingsClanName1)
@@ -73,7 +73,7 @@ class AppSettings : Fragment() {
                 ViewDecor.bounce(view, acti)
                 selectClan(c)
             })
-            clanEdit[c].setOnClickListener(View.OnClickListener { view: View? -> DialogView(SakuraDialog.INPUT, c, acti) })
+            clanEdit[c].setOnClickListener(View.OnClickListener { view: View -> DialogView(SakuraDialog.INPUT, c, acti) })
         }
         frag.findViewById<View>(R.id.settingsSupportGitHub)
                 .setOnClickListener { v: View -> reportIssue(v.context) }
@@ -81,50 +81,50 @@ class AppSettings : Fragment() {
     }
 
     fun selectClan(c: Int) {
-        acti!!.runOnUiThread { setSelect(false) }
-        val cTag = acti!!.getStoredClan(c)
+        acti.runOnUiThread { setSelect(false) }
+        val cTag = acti.getStoredClan(c)
         if (cTag != null) {
-            Service.Companion.getThread()!!.start(cTag, false, true)
+            Service.Companion.getThread().start(cTag, false, true)
             acti.setLastClan(cTag)
         }
     }
 
     private fun setSelect(sele: Boolean) {
         for (c in 0..4) {
-            if (acti!!.getStoredClan(c) != null) clanSele[c]!!.isEnabled = sele
-            if (sele) clanSele[c]!!.colorFilter = null else clanSele[c]!!.setColorFilter(Color.argb(
+            if (acti.getStoredClan(c) != null) clanSele[c].isEnabled = sele
+            if (sele) clanSele[c].colorFilter = null else clanSele[c].setColorFilter(Color.argb(
                     100, 200, 200, 200))
         }
     }
 
     @JvmOverloads
     fun refreshStored(c: Int, button: Boolean = true) {
-        if (acti!!.getStoredClan(c) != null) ThreadPool.getCachePool().execute {
+        if (acti.getStoredClan(c) != null) ThreadPool.cachePool.execute {
             val size: Int = SDPMap.Companion.sdp2px(9)
             val clan = db.getClanStats(
-                    acti!!.getStoredClan(c))
-            acti!!.runOnUiThread {
+                    acti.getStoredClan(c))
+            acti.runOnUiThread {
                 if (button) {
-                    clanSele[c]!!.isEnabled = true
-                    clanSele[c]!!.colorFilter = null
+                    clanSele[c].isEnabled = true
+                    clanSele[c].colorFilter = null
                 }
                 if (clan != null) {
                     decorate(clanName[c], clan.name, size.toFloat())
-                    clanBadge[c]!!.setImageResource(
-                            acti!!.resources
+                    clanBadge[c].setImageResource(
+                            acti.resources
                                     .getIdentifier(clan.badge,
                                             "drawable", acti
                                             .getPackageName()))
                 } else {
                     decorate(clanName[c], "#" +
-                            acti!!.getStoredClan(c), size.toFloat(), Color.LTGRAY)
-                    clanBadge[c]!!.setImageResource(R.drawable.no_clan)
+                            acti.getStoredClan(c), size.toFloat(), Color.LTGRAY)
+                    clanBadge[c].setImageResource(R.drawable.no_clan)
                 }
             }
         } else {
-            acti!!.runOnUiThread {
-                clanSele[c]!!.setColorFilter(Color.argb(100, 200, 200, 200))
-                clanSele[c]!!.isEnabled = false
+            acti.runOnUiThread {
+                clanSele[c].setColorFilter(Color.argb(100, 200, 200, 200))
+                clanSele[c].isEnabled = false
                 if (c < 5) decorate(clanName[c], "Edit to Add a Clan", SDPMap.Companion.sdp2px(8).toFloat(), Color.LTGRAY) else decorate(clanName[c], "Not yet Available!", SDPMap.Companion.sdp2px(6).toFloat(), Color.GRAY)
             }
         }
@@ -134,13 +134,13 @@ class AppSettings : Fragment() {
         for (c in 0..4) refreshStored(c)
     }
 
-    fun reportIssue(context: Context?) {
+    fun reportIssue(context: Context) {
         IssueReporterLauncher.forTarget("rtsketo", "SakuraStats")
-                .putExtraInfo("Clan_Tag_1", acti!!.getStoredClan(0))
-                .putExtraInfo("Clan_Tag_2", acti!!.getStoredClan(1))
-                .putExtraInfo("Clan_Tag_3", acti!!.getStoredClan(2))
-                .putExtraInfo("Clan_Tag_4", acti!!.getStoredClan(3))
-                .putExtraInfo("Clan_Tag_5", acti!!.getStoredClan(4))
+                .putExtraInfo("Clan_Tag_1", acti.getStoredClan(0))
+                .putExtraInfo("Clan_Tag_2", acti.getStoredClan(1))
+                .putExtraInfo("Clan_Tag_3", acti.getStoredClan(2))
+                .putExtraInfo("Clan_Tag_4", acti.getStoredClan(3))
+                .putExtraInfo("Clan_Tag_5", acti.getStoredClan(4))
                 .guestEmailRequired(true)
                 .minDescriptionLength(20)
                 .homeAsUpEnabled(true)

@@ -12,18 +12,18 @@ class SDPMap {
         get() = Resources.getSystem().displayMetrics.heightPixels
 
     companion object {
-        private var sdpMap: SparseIntArray? = null
-        private var res: Resources? = null
+        private var sdpMap: SparseIntArray = null
+        private var res: Resources = null
         fun sdp2px(sdp: Int): Int {
             if (sdp < 1) return -1
             if (sdpMap == null) sdpMap = SparseIntArray()
-            var px = sdpMap!![sdp, 1337]
+            var px = sdpMap[sdp, 1337]
             if (px == 1337) {
                 val pack = BuildConfig.APPLICATION_ID
-                val id = res!!.getIdentifier("_" +
+                val id = res.getIdentifier("_" +
                         sdp + "sdp", "dimen", pack)
-                px = res!!.getDimensionPixelSize(id)
-                sdpMap!!.put(sdp, px)
+                px = res.getDimensionPixelSize(id)
+                sdpMap.put(sdp, px)
             }
             return px
         }
@@ -40,7 +40,7 @@ class SDPMap {
             return px2dp(sdp2px(sdp).toFloat())
         }
 
-        fun init(res: Resources?) {
+        fun init(res: Resources) {
             Companion.res = res
         }
     }

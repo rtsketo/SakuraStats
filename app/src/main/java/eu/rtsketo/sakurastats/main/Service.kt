@@ -17,14 +17,14 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.CountDownLatch
 
-class Service private constructor(private val acti: Interface?) {
+class Service private constructor(private val acti: Interface) {
     private var thread: Thread? = null
-    private var df: DataFetch? = null
+    private var df = DataFetch(acti)
     private var force = false
     private var stop = false
     @Synchronized
-    fun start(tag: String?, force: Boolean, tab: Boolean) {
-        ThreadPool.getCachePool().execute {
+    fun start(tag: String, force: Boolean, tab: Boolean) {
+        ThreadPool.cachePool.execute {
             if (thread != null) try {
                 stop = true
                 thread!!.join()
@@ -33,60 +33,67 @@ class Service private constructor(private val acti: Interface?) {
                 Log.e(Interface.Companion.TAG, "Join failed", e)
                 thread!!.interrupt()
             }
+
             this.force = force
-            df = DataFetch(acti)
             thread = Thread(Runnable {
                 val tp: MutableList<TopClan> = ArrayList()
                 val sakura = TopClan()
                 sakura.name = "Sakura Frontier"
                 sakura.tag = "2YCJRUC"
                 tp.add(sakura)
-                if (tag != null) collectData(tag) else if (acti.getLastClan() != null) collectData(acti.getLastClan()) else {
-                    Console.Companion.logln(" \nChecking top clans...")
-                    tp.addAll(df.getTopClans())
+                if (tag.isNotEmpty()) collectData(tag)
+                else if (acti.lastClan.isNotEmpty())
+                    collectData(acti.lastClan)
+                else {
+                    Console.logln(" \nChecking top clans...")
+                    tp.addAll(df.topClans)
                     for (clan in tp) {
                         val cTag = clan.tag
                         Console.Companion.logln("\t\t\t\t\t\t-\t\t"
                                 + clan.name)
-                        if (df!!.getClanWar(cTag)!!.state == "warDay") {
-                            acti.setLastClan(cTag)
+                        if (df.getClanWar(cTag).state == "warDay") {
+                            acti.lastClan = cTag
                             collectData(cTag)
                             break
                         }
                     }
                 }
             })
+
             thread!!.priority = Thread.MIN_PRIORITY
             thread!!.start()
         }
     }
 
-    private fun collectData(cTag: String?) {
-        val pm: PlayerMap = PlayerMap.Companion.getInstance()
-        val db: DAObject = DataRoom.Companion.getInstance().getDao()
-        acti!!.runOnUiThread {
+    private fun collectData(cTag: String) {
+        val pm: PlayerMap = PlayerMap.instance
+        val db= DataRoom.instance?.dao
+        acti.runOnUiThread {
             acti.progFrag.console.visibility = View.VISIBLE
         }
         acti.progFrag.removeViews()
         SiteMap.clearPages()
-        val members: MutableList<Member?>?
-        if (acti.getLastUse(cTag) || force) members = df!!.getMembers(cTag) else {
+        val members: MutableList<Member>
+        if (acti.getLastUse(cTag) || force) members = df.getMembers(cTag) else {
             members = ArrayList()
-            for (player in db.getClanPlayerStats(cTag)) {
-                val member = Member()
-                member.name = player.name
-                member.tag = player.tag
-                members.add(member)
+            db?.apply {
+                for (player
+                in getClanPlayerStats(cTag)) {
+                    val member = Member()
+                    member.name = player.name
+                    member.tag = player.tag
+                    members.add(member)
+                }
             }
         }
-        pm.reset(members!!.size)
+        pm.reset(members.size)
         val psLatch = CountDownLatch(members.size)
         val ps = Collections.synchronizedList(ArrayList<PlayerStats>())
         val cp = Collections.synchronizedList(ArrayList<ClanPlayer>())
         Console.Companion.logln(" \nFetching clan members...")
-        for (member in members) ThreadPool.getFixedPool().execute {
+        for (member in members) ThreadPool.fixedPool.execute {
             if (!stop && member != null) {
-                val playerStats = df!!.getPlayerStats(cTag, member, force)
+                val playerStats = df.getPlayerStats(cTag, member, force)
                 pm.put(member.tag, playerStats)
                 ps.add(playerStats)
             }
@@ -97,10 +104,10 @@ class Service private constructor(private val acti: Interface?) {
         Collections.reverse(ps)
         Console.Companion.logln(" \nFetching member stats...")
         val cpLatch = CountDownLatch(ps.size)
-        for (playerStats in ps) ThreadPool.getFixedPool().execute {
+        for (playerStats in ps) ThreadPool.fixedPool.execute {
             if (!stop && playerStats != null) {
                 val pTag = playerStats.tag
-                val clanPlayer = df!!.getPlayerProfile(pTag, force)
+                val clanPlayer = df.getPlayerProfile(pTag, force)
                 Console.Companion.logln("\t\t" +
                         Console.Companion.convertRole(clanPlayer.role)
                         + "\t\t" + playerStats.name)
@@ -115,10 +122,10 @@ class Service private constructor(private val acti: Interface?) {
         Console.Companion.logln(" \nFetching member activity...")
         val acLatch = CountDownLatch(cp.size)
         @SuppressLint("SimpleDateFormat") val sdf = SimpleDateFormat("MM/dd HH:mm")
-        for (tempPlayer in cp) ThreadPool.getFixedPool().execute {
+        for (tempPlayer in cp) ThreadPool.fixedPool.execute {
             if (!stop && tempPlayer != null) {
                 val pTag = tempPlayer.tag
-                val clanPlayer = df!!.getMemberActivity(tempPlayer, force)
+                val clanPlayer = df.getMemberActivity(tempPlayer, force)
                 Console.Companion.logln("\t\t" +
                         sdf.format(Date(clanPlayer.last * 1000))
                         + "\t\t" + clanPlayer.tag)
@@ -146,21 +153,21 @@ class Service private constructor(private val acti: Interface?) {
     private fun updateLoading(cur: Int, max: Int) {
         val warMax = 2 * max
         val actMax = 3 * max
-        if (cur < warMax) acti!!.warFrag.updateLoading(cur, warMax)
-        acti!!.actiFrag.updateLoading(cur, actMax)
+        if (cur < warMax) acti.warFrag.updateLoading(cur, warMax)
+        acti.actiFrag.updateLoading(cur, actMax)
     }
 
     companion object {
         private var bth: Service? = null
-        fun getThread(): Service? {
+        fun getThread(): Service {
             if (bth == null) throw NullPointerException(
                     "Service not initialized properly.")
-            return bth
+            return bth as Service
         }
 
-        fun getThread(acti: Interface?): Service? {
-            if (bth == null || getThread()!!.acti != acti) bth = Service(acti)
-            return bth
+        fun getThread(acti: Interface): Service {
+            if (bth == null || getThread().acti != acti) bth = Service(acti)
+            return bth as Service
         }
     }
 
