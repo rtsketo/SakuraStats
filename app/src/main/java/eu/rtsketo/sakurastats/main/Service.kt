@@ -69,12 +69,14 @@ class Service private constructor(private val acti: Interface) {
         val pm: PlayerMap = PlayerMap.instance
         val db= DataRoom.instance?.dao
         acti.runOnUiThread {
-            acti.progFrag.console.visibility = View.VISIBLE
+            acti.getProgFrag().console.visibility = View.VISIBLE
         }
-        acti.progFrag.removeViews()
+        acti.getProgFrag().removeViews()
         SiteMap.clearPages()
         val members: MutableList<Member>
-        if (acti.getLastUse(cTag) || force) members = df.getMembers(cTag) else {
+        if (acti.getLastUse(cTag) || force)
+            members = df.getMembers(cTag)
+        else {
             members = ArrayList()
             db?.apply {
                 for (player
@@ -92,7 +94,7 @@ class Service private constructor(private val acti: Interface) {
         val cp = Collections.synchronizedList(ArrayList<ClanPlayer>())
         Console.Companion.logln(" \nFetching clan members...")
         for (member in members) ThreadPool.fixedPool.execute {
-            if (!stop && member != null) {
+            if (!stop) {
                 val playerStats = df.getPlayerStats(cTag, member, force)
                 pm.put(member.tag, playerStats)
                 ps.add(playerStats)
@@ -101,7 +103,7 @@ class Service private constructor(private val acti: Interface) {
             updateLoading((members.size - psLatch.count).toInt(), members.size)
         }
         waitLatch(psLatch)
-        Collections.reverse(ps)
+        ps.reverse()
         Console.Companion.logln(" \nFetching member stats...")
         val cpLatch = CountDownLatch(ps.size)
         for (playerStats in ps) ThreadPool.fixedPool.execute {
@@ -118,7 +120,7 @@ class Service private constructor(private val acti: Interface) {
             updateLoading((ps.size * 2 - cpLatch.count).toInt(), ps.size)
         }
         waitLatch(cpLatch)
-        acti.warFrag.loading = false
+        acti.getWarFrag().loading = false
         Console.Companion.logln(" \nFetching member activity...")
         val acLatch = CountDownLatch(cp.size)
         @SuppressLint("SimpleDateFormat") val sdf = SimpleDateFormat("MM/dd HH:mm")
@@ -136,8 +138,8 @@ class Service private constructor(private val acti: Interface) {
         }
         waitLatch(acLatch)
         pm.completeSubs()
-        acti.progFrag.refresh(false)
-        acti.settiFrag.refreshStored()
+        acti.getProgFrag().refresh(false)
+        acti.getSettiFrag().refreshStored()
         acti.incUseCount()
     }
 
@@ -153,8 +155,8 @@ class Service private constructor(private val acti: Interface) {
     private fun updateLoading(cur: Int, max: Int) {
         val warMax = 2 * max
         val actMax = 3 * max
-        if (cur < warMax) acti.warFrag.updateLoading(cur, warMax)
-        acti.actiFrag.updateLoading(cur, actMax)
+        if (cur < warMax) acti.getWarFrag().updateLoading(cur, warMax)
+        acti.getActiFrag().updateLoading(cur, actMax)
     }
 
     companion object {

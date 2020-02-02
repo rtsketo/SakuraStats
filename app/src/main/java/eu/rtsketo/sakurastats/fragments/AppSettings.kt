@@ -1,5 +1,6 @@
 package eu.rtsketo.sakurastats.fragments
 
+import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
@@ -13,24 +14,24 @@ import com.qwerjk.better_text.MagicTextView
 import eu.rtsketo.sakurastats.R
 import eu.rtsketo.sakurastats.control.*
 import eu.rtsketo.sakurastats.control.DialogView.SakuraDialog
+import eu.rtsketo.sakurastats.control.ViewDecor.decorate
 import eu.rtsketo.sakurastats.hashmaps.SDPMap
 import eu.rtsketo.sakurastats.main.Interface
 import eu.rtsketo.sakurastats.main.Service
 
 class AppSettings : Fragment() {
-    private val db: DAObject = DataRoom.Companion.getInstance().getDao()
-    private val clanName = arrayOfNulls<MagicTextView>(5)
-    private val clanBadge = arrayOfNulls<ImageView>(5)
-    private val clanEdit = arrayOfNulls<ImageView>(5)
-    private val clanSele = arrayOfNulls<ImageView>(5)
-    private var acti: Interface = null
+    private val db= DataRoom.instance?.dao
+    private val clanName = arrayListOf<MagicTextView>()
+    private val clanBadge = arrayListOf<ImageView>()
+    private val clanEdit = arrayListOf<ImageView>()
+    private val clanSele = arrayListOf<ImageView>()
+    private var acti: Interface? = null
     override fun onAttach(context: Context) {
         acti = activity as Interface
         super.onAttach(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater,
-                              container: ViewGroup, savedInstanceState: Bundle): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val frag = inflater.inflate(R.layout.fragment_settings, container, false)
         val clanLabel: MagicTextView = frag.findViewById(R.id.settingsClanLabel)
         clanName[0] = frag.findViewById(R.id.settingsClanName1)
@@ -69,11 +70,13 @@ class AppSettings : Fragment() {
         decorate(frag.findViewById(R.id.settingsSupportText), "Suggest new ideas!\n\nRequest a feature or\nreport any issue to GitHub.", size.toFloat())
         refreshStored()
         for (c in 0..4) {
-            clanSele[c].setOnClickListener(View.OnClickListener { view: View ->
-                ViewDecor.bounce(view, acti)
+            clanSele[c].setOnClickListener { view ->
+                acti?.apply {
+                    ViewDecor.bounce(view, acti!!) }
                 selectClan(c)
-            })
-            clanEdit[c].setOnClickListener(View.OnClickListener { view: View -> DialogView(SakuraDialog.INPUT, c, acti) })
+            }
+            clanEdit[c].setOnClickListener {
+                DialogView(SakuraDialog.INPUT, c, acti as Interface) }
         }
         frag.findViewById<View>(R.id.settingsSupportGitHub)
                 .setOnClickListener { v: View -> reportIssue(v.context) }
@@ -81,17 +84,17 @@ class AppSettings : Fragment() {
     }
 
     fun selectClan(c: Int) {
-        acti.runOnUiThread { setSelect(false) }
-        val cTag = acti.getStoredClan(c)
-        if (cTag != null) {
-            Service.Companion.getThread().start(cTag, false, true)
-            acti.setLastClan(cTag)
+        acti?.runOnUiThread { setSelect(false) }
+        val cTag = acti?.getStoredClan(c) ?: ""
+        if (cTag.isNotEmpty()) {
+            Service.getThread().start(cTag, force = false, tab = true)
+            acti?.lastClan = cTag
         }
     }
 
     private fun setSelect(sele: Boolean) {
         for (c in 0..4) {
-            if (acti.getStoredClan(c) != null) clanSele[c].isEnabled = sele
+            if (acti?.getStoredClan(c) != null) clanSele[c].isEnabled = sele
             if (sele) clanSele[c].colorFilter = null else clanSele[c].setColorFilter(Color.argb(
                     100, 200, 200, 200))
         }
@@ -99,30 +102,30 @@ class AppSettings : Fragment() {
 
     @JvmOverloads
     fun refreshStored(c: Int, button: Boolean = true) {
-        if (acti.getStoredClan(c) != null) ThreadPool.cachePool.execute {
-            val size: Int = SDPMap.Companion.sdp2px(9)
-            val clan = db.getClanStats(
-                    acti.getStoredClan(c))
-            acti.runOnUiThread {
+        if (acti?.getStoredClan(c) != null)
+            ThreadPool.cachePool.execute {
+                val size: Int = SDPMap.Companion.sdp2px(9)
+                val clan = db?.getClanStats(
+                        acti?.getStoredClan(c) ?: "")
+
+                acti?.runOnUiThread {
                 if (button) {
                     clanSele[c].isEnabled = true
                     clanSele[c].colorFilter = null
                 }
                 if (clan != null) {
                     decorate(clanName[c], clan.name, size.toFloat())
-                    clanBadge[c].setImageResource(
-                            acti.resources
-                                    .getIdentifier(clan.badge,
-                                            "drawable", acti
-                                            .getPackageName()))
+                    acti?.resources?.getIdentifier(clan.badge,
+                                    "drawable", acti?.packageName)
+                            ?.let { clanBadge[c].setImageResource(it) }
                 } else {
                     decorate(clanName[c], "#" +
-                            acti.getStoredClan(c), size.toFloat(), Color.LTGRAY)
+                            acti?.getStoredClan(c), size.toFloat(), Color.LTGRAY)
                     clanBadge[c].setImageResource(R.drawable.no_clan)
                 }
             }
         } else {
-            acti.runOnUiThread {
+            acti?.runOnUiThread {
                 clanSele[c].setColorFilter(Color.argb(100, 200, 200, 200))
                 clanSele[c].isEnabled = false
                 if (c < 5) decorate(clanName[c], "Edit to Add a Clan", SDPMap.Companion.sdp2px(8).toFloat(), Color.LTGRAY) else decorate(clanName[c], "Not yet Available!", SDPMap.Companion.sdp2px(6).toFloat(), Color.GRAY)
@@ -136,11 +139,11 @@ class AppSettings : Fragment() {
 
     fun reportIssue(context: Context) {
         IssueReporterLauncher.forTarget("rtsketo", "SakuraStats")
-                .putExtraInfo("Clan_Tag_1", acti.getStoredClan(0))
-                .putExtraInfo("Clan_Tag_2", acti.getStoredClan(1))
-                .putExtraInfo("Clan_Tag_3", acti.getStoredClan(2))
-                .putExtraInfo("Clan_Tag_4", acti.getStoredClan(3))
-                .putExtraInfo("Clan_Tag_5", acti.getStoredClan(4))
+                .putExtraInfo("Clan_Tag_1", acti?.getStoredClan(0))
+                .putExtraInfo("Clan_Tag_2", acti?.getStoredClan(1))
+                .putExtraInfo("Clan_Tag_3", acti?.getStoredClan(2))
+                .putExtraInfo("Clan_Tag_4", acti?.getStoredClan(3))
+                .putExtraInfo("Clan_Tag_5", acti?.getStoredClan(4))
                 .guestEmailRequired(true)
                 .minDescriptionLength(20)
                 .homeAsUpEnabled(true)

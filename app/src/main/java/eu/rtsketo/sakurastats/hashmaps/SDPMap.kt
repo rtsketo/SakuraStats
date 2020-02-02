@@ -3,6 +3,7 @@ package eu.rtsketo.sakurastats.hashmaps
 import android.content.res.Resources
 import android.util.SparseIntArray
 import androidx.multidex.BuildConfig
+import kotlin.math.roundToInt
 
 class SDPMap {
     val screenWidth: Int
@@ -12,12 +13,13 @@ class SDPMap {
         get() = Resources.getSystem().displayMetrics.heightPixels
 
     companion object {
-        private var sdpMap: SparseIntArray = null
-        private var res: Resources = null
+        private var sdpMap = SparseIntArray()
+        private lateinit var res: Resources
+
         fun sdp2px(sdp: Int): Int {
             if (sdp < 1) return -1
-            if (sdpMap == null) sdpMap = SparseIntArray()
             var px = sdpMap[sdp, 1337]
+
             if (px == 1337) {
                 val pack = BuildConfig.APPLICATION_ID
                 val id = res.getIdentifier("_" +
@@ -29,7 +31,7 @@ class SDPMap {
         }
 
         fun dp2px(dp: Float): Int {
-            return Math.round(dp * Resources.getSystem().displayMetrics.density)
+            return (dp * Resources.getSystem().displayMetrics.density).roundToInt()
         }
 
         fun px2dp(px: Float): Float {
@@ -41,7 +43,7 @@ class SDPMap {
         }
 
         fun init(res: Resources) {
-            Companion.res = res
+            this.res = res
         }
     }
 }

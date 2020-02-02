@@ -27,7 +27,7 @@ import java.util.concurrent.CountDownLatch
 
 class DataFetch(private val acti: Interface) {
     private val clanWars = mutableMapOf<String, List<ClanWarLog>>()
-    private val db: DAObject = DataRoom.instance.dao
+    private val db: DAObject? = DataRoom.instance?.dao
     private var clanList = arrayListOf<ClanStats>()
     private var maxParticipants = 0
     private var internet = false
@@ -491,7 +491,7 @@ class DataFetch(private val acti: Interface) {
             clanStats.clan3 = opponentClan[2]
             clanStats.clan4 = opponentClan[3]
         }
-        db.insertClanStats(clanStats)
+        db?.insertClanStats(clanStats)
         return clanStats
     }
 
@@ -560,16 +560,16 @@ class DataFetch(private val acti: Interface) {
         return poly
     }
 
-    fun getClanStats(tag: String): List<ClanStats> {
-        Console.Companion.logln(" \nCalculating forecast...")
+    fun getClanStats(tag: String): List<ClanStats>? {
+        Console.logln(" \nCalculating forecast...")
         if (acti.getLastUse(tag)) {
-            db.resetClanStats(tag)
+            db?.resetClanStats(tag)
             clanList = ArrayList()
             clanList.add(getClan(tag, true))
             acti.setLastUse(tag)
             return clanList
         }
-        return db.getClanStatsList(tag)
+        return db?.getClanStatsList(tag)
     }
 
     private fun getPlayerStats(clanWar: ClanWar, force: Boolean): List<PlayerStats> {
@@ -595,14 +595,16 @@ class DataFetch(private val acti: Interface) {
             ps.clan = clanTag
             ps.chest = findLastWarWin(ps)
             acti.setLastUse(member.tag, "wstat")
-        } else ps = db.getPlayerStats(member.tag)
-        ps.isCurrent = true
-        db.insertPlayerStats(ps)
-        return ps
+        } else ps = db!!.getPlayerStats(member.tag)
+
+        return ps.apply {
+            isCurrent = true
+            db?.insertPlayerStats(this)
+        }
     }
 
     @Deprecated("")
-    private fun getPlayerStats(tag: String): List<PlayerStats> {
+    private fun getPlayerStats(tag: String): List<PlayerStats>? {
         return getPlayerStats(tag, false)
     }
 
@@ -610,15 +612,18 @@ class DataFetch(private val acti: Interface) {
         if (acti.getLastUse(tag) || force) {
             val members: List<Member> = getMembers(tag)
             val players: MutableList<PlayerStats> = ArrayList()
-            db.resetCurrentPlayers(tag)
+            db?.resetCurrentPlayers(tag)
             for (member in members) {
                 val player = getPlayerStats(tag, member, force)
-                player.isCurrent = true
-                players.add(player)
+                player?.apply {
+                    isCurrent = true
+                    players.add(this)
+                }
             }
             return players
         }
-        return db.getClanPlayerStats(tag)
+
+        return db!!.getClanPlayerStats(tag)
     }
 
     private fun findLastWarWin(player: PlayerStats): Int {
@@ -653,37 +658,42 @@ class DataFetch(private val acti: Interface) {
         player.tag = member.tag
         player.clan = clanTag
         player.isCurrent = true
-        val playerDB = db.getPlayerStats(member.tag)
-        var missed = playerDB.missed
-        var played = playerDB.played
-        var chest = playerDB.chest
-        var cards = playerDB.cards
-        var wins = playerDB.wins
-        var wars = playerDB.wars
-        for (dayLog in warLog) {
-            var found = false
-            for (dayDB in db.warDays) if (dayDB.warDay == dayLog.createdDate) found = true
-            if (!found) for (dayPlayer in dayLog.participants) if (dayPlayer.tag == player.tag) {
-                val warTroph = dayLog.standings[0].warTrophies
-                if (dayPlayer.battlesPlayed == 0) missed++
-                played += dayPlayer.battlesPlayed
-                cards += dayPlayer.cardsEarned
-                wins += dayPlayer.wins
-                wars++
-                var league = 4
-                if (warTroph > 2999) league = 1 else if (warTroph > 1499) league = 2 else if (warTroph > 599) league = 3
-                var position = 0
-                for (cwls in dayLog.standings) {
-                    position++
-                    if (cwls.tag == player.clan) break
-                }
-                val order = LeagueMap.l2o(league * 10 + position)
-                val season = if (warLog[0].seasonNumber
-                        != dayLog.seasonNumber) 0 else dayLog.seasonNumber
-                val newChest = order + season * 100
-                if (chest < newChest) chest = newChest
+        val playerDB = db?.getPlayerStats(member.tag)
+        var missed = playerDB?.missed ?: 0
+        var played = playerDB?.played ?: 0
+        var chest = playerDB?.chest ?: 0
+        var cards = playerDB?.cards ?: 0
+        var wins = playerDB?.wins ?: 0
+        var wars = playerDB?.wars ?: 0
+        for (dayLog in warLog)
+            db?.apply {
+                var found = false
+                for (dayDB in this.warDays)
+                    if (dayDB.warDay == dayLog.createdDate) found = true
+
+                if (!found)
+                    for (dayPlayer in dayLog.participants)
+                        if (dayPlayer.tag == player.tag) {
+                            val warTroph = dayLog.standings[0].warTrophies
+                            if (dayPlayer.battlesPlayed == 0) missed++
+                            played += dayPlayer.battlesPlayed
+                            cards += dayPlayer.cardsEarned
+                            wins += dayPlayer.wins
+                            wars++
+                            var league = 4
+                            if (warTroph > 2999) league = 1 else if (warTroph > 1499) league = 2 else if (warTroph > 599) league = 3
+                            var position = 0
+                            for (cwls in dayLog.standings) {
+                                position++
+                                if (cwls.tag == player.clan) break
+                            }
+                            val order = LeagueMap.l2o(league * 10 + position)
+                            val season = if (warLog[0].seasonNumber
+                                    != dayLog.seasonNumber) 0 else dayLog.seasonNumber
+                            val newChest = order + season * 100
+                            if (chest < newChest) chest = newChest
+                    }
             }
-        }
 
         val ratio: Double =
                 if (played == 0) 0.0
@@ -697,12 +707,12 @@ class DataFetch(private val acti: Interface) {
         player.chest = chest
         player.wars = wars
         player.wins = wins
-        db.insertPlayerStats(player)
+        db?.insertPlayerStats(player)
         return player
     }
 
     fun getPlayerProfile(tag: String, force: Boolean): ClanPlayer {
-        var player = db.getClanPlayer(tag)
+        var player = db?.getClanPlayer(tag)
         if (acti.getLastUse(tag, "prof") || force) {
             if (player == null) player = ClanPlayer()
             val profile = getProfile(tag)
@@ -721,11 +731,12 @@ class DataFetch(private val acti: Interface) {
             player.role = role
             player.trophies = profile.trophies
             player.score = score
-            db.insertClanPlayer(player)
+            db?.insertClanPlayer(player)
             acti.setLastUse(tag, "prof")
             acti.setLastForce(1)
         }
-        return player
+
+        return player!!
     }
 
     fun getMemberActivity(player: ClanPlayer, force: Boolean): ClanPlayer {
@@ -750,7 +761,7 @@ class DataFetch(private val acti: Interface) {
             changed = true
         }
         if (changed) {
-            db.insertClanPlayer(player)
+            db?.insertClanPlayer(player)
             acti.setLastForce(2)
         }
         return player
@@ -772,7 +783,7 @@ class DataFetch(private val acti: Interface) {
         newPlayer.missed = 0
         newPlayer.played = 0
         newPlayer.wins = 0
-        db.insertPlayerStats(newPlayer)
+        db?.insertPlayerStats(newPlayer)
         return newPlayer
     }
 

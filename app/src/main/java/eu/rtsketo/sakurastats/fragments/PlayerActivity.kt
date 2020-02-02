@@ -18,6 +18,7 @@ import com.qwerjk.better_text.MagicTextView
 import eu.rtsketo.sakurastats.R
 import eu.rtsketo.sakurastats.control.ThreadPool
 import eu.rtsketo.sakurastats.control.ViewDecor
+import eu.rtsketo.sakurastats.control.ViewDecor.decorate
 import eu.rtsketo.sakurastats.dbobjects.ClanPlayer
 import eu.rtsketo.sakurastats.dbobjects.PlayerStats
 import eu.rtsketo.sakurastats.hashmaps.LeagueMap

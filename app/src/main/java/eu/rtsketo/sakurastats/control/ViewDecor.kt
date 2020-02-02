@@ -18,7 +18,7 @@ import eu.rtsketo.sakurastats.R
 import eu.rtsketo.sakurastats.hashmaps.SDPMap
 
 object ViewDecor {
-    private var tf: Typeface = null
+    private lateinit var tf: Typeface
     fun init(res: Resources) {
         tf = Typeface.createFromAsset(res.assets,
                 "fonts/Supercell-Magic_5.ttf")
@@ -40,21 +40,20 @@ object ViewDecor {
         } else view.clearAnimation()
     }
 
-    fun decorate(tv: MagicTextView, txt: Int, size: Float): MagicTextView {
-        return decorate(tv, "" + txt, size, Color.WHITE)
-    }
+    fun decorate(tv: MagicTextView, txt: Int, size: Float)
+            = decorate(tv, "" + txt, size, Color.WHITE)
+    fun decorate(tv: MagicTextView, txt: Double, size: Float)
+            = decorate(tv, "" + txt, size, Color.WHITE)
+    fun decorate(tv: MagicTextView, txt: Int, size: Float, color: Int)
+            = decorate(tv, "" + txt, size, color)
+    fun decorate(tv: MagicTextView, txt: Double, size: Float, color: Int)
+            = decorate(tv, "" + txt, size, color)
 
-    fun decorate(tv: MagicTextView, txt: Double, size: Float): MagicTextView {
-        return decorate(tv, "" + txt, size, Color.WHITE)
-    }
-
-    fun decorate(tv: MagicTextView, txt: Int, size: Float, color: Int): MagicTextView {
-        return decorate(tv, "" + txt, size, color)
-    }
-
-    fun decorate(tv: MagicTextView, txt: Double, size: Float, color: Int): MagicTextView {
-        return decorate(tv, "" + txt, size, color)
-    }
+    @JvmOverloads
+    fun decorate(tv: MagicTextView, txt: String,
+                 size: Int, color: Int = Color.WHITE,
+                 maxWidth: Int = -1)
+            = decorate(tv, txt, size.toFloat(), color, maxWidth)
 
     fun decorate(et: EditText, size: Int): EditText {
         et.setTextSize(TypedValue.COMPLEX_UNIT_PX, size.toFloat())
@@ -65,7 +64,8 @@ object ViewDecor {
 
     @JvmOverloads
     fun decorate(tv: MagicTextView, txt: String,
-                 size: Float, color: Int = Color.WHITE, maxWidth: Int = -1): MagicTextView {
+                 size: Float, color: Int = Color.WHITE,
+                 maxWidth: Int = -1): MagicTextView {
         tv.clearOuterShadows()
         tv.text = txt
         tv.typeface = tf

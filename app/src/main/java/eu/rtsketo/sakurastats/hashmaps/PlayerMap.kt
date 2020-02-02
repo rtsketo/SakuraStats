@@ -11,12 +11,12 @@ import io.reactivex.subjects.ReplaySubject
 import java.util.*
 
 class PlayerMap private constructor(private val acti: Interface) {
-    private var playerMap: MutableMap<String, Pair<ClanPlayer, PlayerStats>> = null
+    private var playerMap = mutableMapOf<String, Pair<ClanPlayer, PlayerStats>>()
+    private var psSub: ReplaySubject<PlayerStats> = ReplaySubject.create()
+    private var cpSub: ReplaySubject<ClanPlayer> = ReplaySubject.create()
     private val sync = Any()
-    private var cpSub: ReplaySubject<ClanPlayer> = null
-    private var psSub: ReplaySubject<PlayerStats> = null
-    private val DELAY = 20
-    private var time: Long = 0
+    private val delay = 20
+    private var time = 0L
     private var size = 0
     fun size(): Int {
         return size
@@ -26,14 +26,16 @@ class PlayerMap private constructor(private val acti: Interface) {
         var pair = playerMap[tag]
         val handler = Handler(Looper.getMainLooper())
         if (pair == null) pair = Pair(ClanPlayer(), PlayerStats())
+
         synchronized(sync) {
             val now = SystemClock.uptimeMillis()
-            if (time == 0L || now > time + DELAY) time = now
-            time += DELAY.toLong()
+            if (time == 0L || now > time + delay) time = now
+            time += delay.toLong()
         }
+
         if (player is ClanPlayer) {
             pair = Pair(player, pair.second)
-            handler.postAtTime({ cpSub.onNext((player as ClanPlayer)) }, time)
+            handler.postAtTime({ cpSub.onNext(player) }, time)
         } else {
             pair = Pair(pair.first, player as PlayerStats)
             handler.postAtTime({ psSub.onNext(player) }, time)
@@ -46,8 +48,8 @@ class PlayerMap private constructor(private val acti: Interface) {
             if (playerMap != null) playerMap.clear() else playerMap = HashMap(size)
             this.size = size
         }
-        val wFrag = acti.warFrag
-        val aFrag = acti.actiFrag
+        val wFrag = acti.getWarFrag()
+        val aFrag = acti.getActiFrag()
         psSub = ReplaySubject.create()
         cpSub = ReplaySubject.create()
         cpSub.subscribe(wFrag.cpObserver())
@@ -67,12 +69,12 @@ class PlayerMap private constructor(private val acti: Interface) {
     val all: Map<String, Pair<ClanPlayer, PlayerStats>>
         get() = playerMap
 
-    operator fun get(tag: String): Pair<ClanPlayer, PlayerStats> {
-        return playerMap.get(tag)
+    operator fun get(tag: String): Pair<ClanPlayer, PlayerStats>? {
+        return playerMap[tag]
     }
 
     companion object {
-        var instance: PlayerMap = null
+        lateinit var instance: PlayerMap
             private set
 
         fun init(activity: Interface) {
