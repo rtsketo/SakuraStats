@@ -30,7 +30,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <com.qwerjk.better_text.MagicTextView
-            android:id="@+id/loading"
+            android:id="@+id/loadView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/_6sdp"

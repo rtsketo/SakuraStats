@@ -10,8 +10,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.LinearLayout
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.Fragment
 import com.qwerjk.better_text.MagicTextView
@@ -240,7 +238,7 @@ class WarStatistics : Fragment() {
         sortRatio = root.findViewById(R.id.sortRatio)
         sortScore = root.findViewById(R.id.sortScore)
         sortTroph = root.findViewById(R.id.sortTroph)
-        loadView = root.findViewById(R.id.loading)
+        loadView = root.findViewById(R.id.loadView)
         info = MagicTextView(activity)
         info.textAlignment = View.TEXT_ALIGNMENT_CENTER
         sortTroph.setOnClickListener(View.OnClickListener { view: View ->

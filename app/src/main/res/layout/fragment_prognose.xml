@@ -57,7 +57,7 @@
         tools:ignore="ContentDescription" />
 
     <com.qwerjk.better_text.MagicTextView
-        android:id="@+id/loading"
+        android:id="@+id/loadView"
         android:layout_width="0dp"
         android:layout_height="@dimen/_15sdp"
         android:layout_marginStart="@dimen/_6sdp"

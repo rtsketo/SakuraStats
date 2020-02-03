@@ -48,6 +48,8 @@ object ViewDecor {
             = decorate(tv, "" + txt, size, color)
     fun decorate(tv: MagicTextView, txt: Double, size: Float, color: Int)
             = decorate(tv, "" + txt, size, color)
+    fun decorate(tv: MagicTextView, txt: Int, size: Int)
+            = decorate(tv, "" + txt, size, Color.WHITE)
 
     @JvmOverloads
     fun decorate(tv: MagicTextView, txt: String,
