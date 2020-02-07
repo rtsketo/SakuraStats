@@ -616,7 +616,7 @@ class DataFetch(private val acti: Interface) {
             db?.resetCurrentPlayers(tag)
             for (member in members) {
                 val player = getPlayerStats(tag, member, force)
-                player?.apply {
+                player.apply {
                     current = true
                     players.add(this)
                 }

@@ -1,8 +1,6 @@
 package eu.rtsketo.sakurastats.hashmaps
 
 import android.util.Pair
-import java.util.*
-import kotlin.jvm.Synchronized as Synchronized1
 
 object LeagueMap {
     private var leagueMap = mutableListOf<Pair<Int, Int>>()
