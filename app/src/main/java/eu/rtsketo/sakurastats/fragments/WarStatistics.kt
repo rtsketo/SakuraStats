@@ -8,6 +8,7 @@ import android.transition.TransitionManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.*
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.constraintlayout.widget.ConstraintSet
@@ -16,11 +17,12 @@ import com.qwerjk.better_text.MagicTextView
 import eu.rtsketo.sakurastats.R
 import eu.rtsketo.sakurastats.control.ThreadPool
 import eu.rtsketo.sakurastats.control.ViewDecor
+import eu.rtsketo.sakurastats.control.ViewDecor.bounce
 import eu.rtsketo.sakurastats.control.ViewDecor.decorate
 import eu.rtsketo.sakurastats.dbobjects.ClanPlayer
 import eu.rtsketo.sakurastats.dbobjects.PlayerStats
 import eu.rtsketo.sakurastats.hashmaps.PlayerMap
-import eu.rtsketo.sakurastats.hashmaps.SDPMap
+import eu.rtsketo.sakurastats.hashmaps.SDPMap.Companion.sdp2px
 import eu.rtsketo.sakurastats.main.Console
 import eu.rtsketo.sakurastats.main.Interface
 import eu.rtsketo.sakurastats.main.Service
@@ -30,52 +32,57 @@ import kotlinx.android.synthetic.main.fragment_warstats.*
 import java.util.*
 
 class WarStatistics : Fragment() {
-    private var playerMap: MutableMap<String, PlayerView> = null
+    private val size = intArrayOf(sdp2px(9), sdp2px(8))
+    private var playerMap = mutableMapOf<String, PlayerView>()
+    private val playerView = arrayListOf<PlayerView>()
     private val observers = BooleanArray(2)
-    private val playerView = arrayOfNulls<PlayerView>(50)
-    private val size = intArrayOf(SDPMap.Companion.sdp2px(9), SDPMap.Companion.sdp2px(8))
+    private lateinit var info: MagicTextView
+    private var acti: Interface? = null
 
     var loading = false
         set(loading) {
-            if (loading && !this.loading) acti.runOnUiThread {
-                sortRatio.isEnabled = false
-                sortScore.isEnabled = false
-                sortTroph.isEnabled = false
-                loadingAnim.isEnabled = false
-                loadingAnim.colorFilter = null
-                loadView.visibility = View.VISIBLE
-                ViewDecor.animateView(loadingAnim, true)
-                ViewDecor.blinkView(acti.getTab(1), true)
-                decorate(loadView, "Loading...", size[0])
-                loadingAnim.setImageResource(R.drawable.loading)
-                sortRatio.setColorFilter(Color.argb(100, 200, 200, 200))
-                sortScore.setColorFilter(Color.argb(100, 200, 200, 200))
-                sortTroph.setColorFilter(Color.argb(100, 200, 200, 200))
-            } else if (!loading && this.loading) {
-                acti.runOnUiThread {
+            if (loading && !this.loading)
+                acti?.runOnUiThread {
+                    sortRatio.isEnabled = false
+                    sortScore.isEnabled = false
+                    sortTroph.isEnabled = false
+                    loadingAnim.isEnabled = false
+                    loadingAnim.colorFilter = null
+                    loadView.visibility = VISIBLE
+                    ViewDecor.animateView(loadingAnim, true)
+                    ViewDecor.blinkView(acti!!.getTab(1), true)
+                    decorate(loadView, "Loading...", size[0])
+                    loadingAnim.setImageResource(R.drawable.loading)
+                    sortRatio.setColorFilter(Color.argb(100, 200, 200, 200))
+                    sortScore.setColorFilter(Color.argb(100, 200, 200, 200))
+                    sortTroph.setColorFilter(Color.argb(100, 200, 200, 200))
+                }
+            else if (!loading && this.loading) {
+                acti?.runOnUiThread {
                     sortRatio.isEnabled = true
                     sortScore.isEnabled = true
                     sortTroph.isEnabled = true
-                    info.visibility = View.GONE
+                    info.visibility = GONE
                     sortRatio.colorFilter = null
                     sortScore.colorFilter = null
                     sortTroph.colorFilter = null
                     ViewDecor.animateView(loadingAnim, false)
-                    ViewDecor.blinkView(acti.getTab(1), false)
+                    ViewDecor.blinkView(acti!!.getTab(1), false)
                     loadingAnim.setImageResource(R.drawable.refresh)
                     loadingAnim.setColorFilter(Color.argb(100, 200, 200, 200))
                 }
+
                 val timer = Timer()
                 timer.schedule(object : TimerTask() {
                     override fun run() {
-                        val refresh = 60 - acti.getLastForce(1)
-                        if (refresh < 0) acti.runOnUiThread {
-                            loadView.visibility = View.INVISIBLE
+                        val refresh = 60 - (acti?.getLastForce(1) ?: 0)
+                        if (refresh < 0) acti?.runOnUiThread {
+                            loadView.visibility = INVISIBLE
                             loadingAnim.colorFilter = null
                             loadingAnim.isEnabled = true
                             timer.cancel()
-                        } else acti.runOnUiThread {
-                            loadView.visibility = View.VISIBLE
+                        } else acti?.runOnUiThread {
+                            loadView.visibility = VISIBLE
                             decorate(loadView, refresh.toString() + "min", size[0])
                         }
                     }
@@ -84,7 +91,6 @@ class WarStatistics : Fragment() {
             field = loading
         }
 
-    private var acti: Interface = null
     fun psObserver(): Observer<PlayerStats> {
         return object : Observer<PlayerStats> {
             override fun onSubscribe(d: Disposable) {
@@ -128,9 +134,9 @@ class WarStatistics : Fragment() {
     private fun subscribe(obs: Int) {
         observers[obs] = true
         if (!observers[1 - obs]) {
-            acti.runOnUiThread {
-                acti.changeTabTo(1)
-                info.visibility = View.VISIBLE
+            acti?.runOnUiThread {
+                acti!!.changeTabTo(1)
+                info.visibility = VISIBLE
             }
             loading = true
             clearList()
@@ -142,71 +148,88 @@ class WarStatistics : Fragment() {
         if (!observers[1 - obs]) loading = false
     }
 
-    private fun displayStats(cp: ClanPlayer) {
-        displayStats(null, cp)
-    }
-
-    private fun displayStats(ps: PlayerStats, cp: ClanPlayer = null) {
-        val tagString: String
-        tagString = ps.tag : cp.getTag()
+    private fun displayStats(cp: ClanPlayer) { displayStats(null, cp) }
+    private fun displayStats(ps: PlayerStats) { displayStats(ps, null) }
+    private fun displayStats(ps: PlayerStats?, cp: ClanPlayer?) {
+        val tagString = ps?.tag ?: cp?.tag ?: ""
         var pv = playerMap[tagString]
         if (pv == null) pv = getPV(tagString)
         val finalPV = pv
         if (cp != null) {
             val scoreText = if (cp.score == 9001) "max" else cp.score.toString()
             val role: String = Console.Companion.convertRole(cp.role)
-            acti.runOnUiThread {
+            acti?.runOnUiThread {
                 decorate(finalPV.score, scoreText, size[0])
-                ViewDecor.decorate(finalPV.troph, cp.trophies, size[1])
-                ViewDecor.decorate(finalPV.tag, role, size[1].toFloat(),
+                decorate(finalPV.troph, cp.trophies, size[1])
+                decorate(finalPV.tag, role, size[1].toFloat(),
                         Color.WHITE, maxy[1])
-                finalPV.frame.visibility = View.VISIBLE
+                finalPV.frame.visibility = VISIBLE
             }
         }
         if (ps != null) {
-            val normaText: String = (ps.norma * 100) as Int.toString()+"%"
-            val ratioText: String = (ps.ratio * 100) as Int.toString()+"%"
-            acti.runOnUiThread {
+            val normaText = (ps.norma * 100).toInt().toString()+"%"
+            val ratioText = (ps.ratio * 100).toInt().toString()+"%"
+            acti?.runOnUiThread {
                 decorate(finalPV.norma, normaText, size[0])
-                ViewDecor.decorate(finalPV.wars, ps.wars, size[1])
-                ViewDecor.decorate(finalPV.missed, ps.missed, size[1])
+                decorate(finalPV.wars, ps.wars, size[1])
+                decorate(finalPV.missed, ps.missed, size[1])
                 decorate(finalPV.ratio, ratioText, size[1])
-                ViewDecor.decorate(finalPV.name, ps.name, size[0].toFloat(),
+                decorate(finalPV.name, ps.name, size[0].toFloat(),
                         Color.WHITE, maxy[0])
-                finalPV.frame.visibility = View.VISIBLE
+                finalPV.frame.visibility = VISIBLE
             }
         }
     }
 
     private fun getPV(tag: String): PlayerView {
-        var pvNum: Int = PlayerMap.Companion.getInstance()
+        var pvNum: Int = PlayerMap.instance
                 .size() - 1 - playerMap.size
-        pvNum = Math.max(0, Math.min(49, pvNum))
+        pvNum = 0.coerceAtLeast(49.coerceAtMost(pvNum))
         val pv = playerView[pvNum]
         playerMap[tag] = pv
         return pv
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        info = MagicTextView(context)
+        info.textAlignment = TEXT_ALIGNMENT_CENTER
+        sortTroph.setOnClickListener { v -> bounceButton(v); selectSort(1) }
+        sortScore.setOnClickListener { v -> bounceButton(v); selectSort(2) }
+        sortRatio.setOnClickListener { v -> bounceButton(v); selectSort(3) }
+        loadingAnim.setOnClickListener { v ->
+            acti?.lastClan?.let { Service.getThread()
+                .start(it, force = true, tab = false) }
+            bounceButton(v)
+        }
+        initFrames()
+    }
+
     fun refreshList(choice: Int) {
-        val pm: PlayerMap = PlayerMap.Companion.getInstance()
+        val pm: PlayerMap = PlayerMap.instance
         loading = true
         clearList()
         val tempList: List<*>
         tempList = if (choice == 3) {
             val tempPS: MutableList<PlayerStats> = ArrayList()
-            for ((_, value) in pm.all) if (value.first != null) tempPS.add(value.second)
+            for ((_, value) in pm.all) 
+                if (value.first != null) tempPS.add(value.second)
             Collections.sort(tempPS, SortByRatio())
             tempPS
         } else {
             val tempCP: MutableList<ClanPlayer> = ArrayList()
-            for ((_, value) in pm.all) if (value.first != null) tempCP.add(value.first)
-            if (choice == 1) Collections.sort(tempCP, SortByTrophies()) else if (choice == 2) Collections.sort(tempCP, SortByScore())
+            for ((_, value) in pm.all) 
+                if (value.first != null) tempCP.add(value.first)
+            if (choice == 1) Collections.sort(tempCP, SortByTrophies()) 
+            else if (choice == 2) Collections.sort(tempCP, SortByScore())
             tempCP
         }
-        for (c in Math.min(tempList.size - 1, 49) downTo 0) {
-            var tag: String
+        for (c in (tempList.size - 1).coerceAtMost(49) downTo 0) {
             SystemClock.sleep(20)
-            tag = if (tempList[c] is PlayerStats) (tempList[c] as PlayerStats).tag else (tempList[c] as ClanPlayer).tag
+            val tag: String =
+                    if (tempList[c] is PlayerStats)
+                        (tempList[c] as PlayerStats).tag
+                    else (tempList[c] as ClanPlayer).tag
             val pair = pm[tag]
             if (pair != null) displayStats(pair.second, pair.first)
         }
@@ -215,10 +238,9 @@ class WarStatistics : Fragment() {
 
     fun clearList() {
         playerMap.clear()
-        acti.runOnUiThread {
-            for (pv in playerView) {
-                val frame = pv.frame
-                if (frame != null) frame.visibility = View.GONE
+        acti?.runOnUiThread {
+            playerView.forEach {
+                it.frame.visibility = GONE
             }
         }
     }
@@ -229,41 +251,16 @@ class WarStatistics : Fragment() {
         super.onAttach(context)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup,
-                              savedInstanceState: Bundle): View {
-        root = inflater.inflate(R.layout.fragment_warstats, container, false)
-        lineage = root.findViewById(R.id.lineage)
-        warBar = root.findViewById(R.id.warBar)
-        loadingAnim = root.findViewById(R.id.loadingAnim)
-        sortRatio = root.findViewById(R.id.sortRatio)
-        sortScore = root.findViewById(R.id.sortScore)
-        sortTroph = root.findViewById(R.id.sortTroph)
-        loadView = root.findViewById(R.id.loadView)
-        info = MagicTextView(activity)
-        info.textAlignment = View.TEXT_ALIGNMENT_CENTER
-        sortTroph.setOnClickListener(View.OnClickListener { view: View ->
-            ViewDecor.bounce(view, acti)
-            selectSort(1)
-        })
-        sortScore.setOnClickListener(View.OnClickListener { view: View ->
-            ViewDecor.bounce(view, acti)
-            selectSort(2)
-        })
-        sortRatio.setOnClickListener(View.OnClickListener { view: View ->
-            ViewDecor.bounce(view, acti)
-            selectSort(3)
-        })
-        loadingAnim.setOnClickListener(View.OnClickListener { v: View ->
-            ViewDecor.bounce(v, acti)
-            Service.Companion.getThread().start(acti.getLastClan(), true, false)
-        })
-        initFrames()
-        return root
+    private fun bounceButton(v: View) {
+        acti?.apply { bounce(v, this) }
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.fragment_warstats, container, false)
     }
 
     private fun initFrames() {
-        val sort: MagicTextView = root.findViewById(R.id.sort)
-        acti.runOnUiThread {
+        acti?.runOnUiThread {
             decorate(sort, "Sort by:", size[0])
             decorate(loadView, "Loading...", size[0])
             decorate(info, "\nStats are being loaded," +
@@ -285,10 +282,11 @@ class WarStatistics : Fragment() {
             playerView[c].name = frame.findViewById(R.id.name)
             playerView[c].wars = frame.findViewById(R.id.wars)
             playerView[c].tag = frame.findViewById(R.id.tag)
-            frame.visibility = View.GONE
+            frame.visibility = GONE
+
             val rank: MagicTextView = frame.findViewById(R.id.rank)
-            acti.runOnUiThread {
-                decorate(rank, c + 1 + "", size[0] + 2.toFloat())
+            acti?.runOnUiThread {
+                decorate(rank, "${c + 1}", size[0] + 2.toFloat())
                 decorate(playerView[c].score, "", size[0])
                 decorate(playerView[c].norma, "", size[0])
                 decorate(playerView[c].troph, "", size[1])
@@ -296,14 +294,15 @@ class WarStatistics : Fragment() {
                 decorate(playerView[c].missed, "", size[1])
                 decorate(playerView[c].cards, "", size[1])
                 decorate(playerView[c].ratio, "", size[1])
-                ViewDecor.decorate(playerView[c].name, "", size[0].toFloat(),
+                decorate(playerView[c].name, "", size[0].toFloat(),
                         Color.WHITE, maxy[0])
-                ViewDecor.decorate(playerView[c].tag, "         " +
+                decorate(playerView[c].tag, "         " +
                         "      ", size[1].toFloat(), Color.WHITE, maxy[1])
                 lineage.addView(frame)
             }
         }
-        ViewDecor.rotate(root.findViewById(R.id.warSelection), acti)
+
+        acti?.let { ViewDecor.rotate(warSelection, it) }
         selectSort(0)
     }
 
@@ -314,7 +313,7 @@ class WarStatistics : Fragment() {
             var posView = ConstraintSet.START
             val idView: Int
             var disView = 8
-            var seleVis = View.VISIBLE
+            var seleVis = VISIBLE
             when (choice) {
                 1 -> idView = R.id.sortScore
                 2 -> idView = R.id.sortRatio
@@ -324,23 +323,23 @@ class WarStatistics : Fragment() {
                     disView = 3
                 }
                 else -> {
-                    seleVis = View.INVISIBLE
+                    seleVis = INVISIBLE
                     idView = R.id.loadingAnim
                 }
             }
             conSet.clone(warBar)
             conSet.connect(R.id.warSelection,
-                    ConstraintSet.END, idView, posView, SDPMap.Companion.sdp2px(disView))
+                    ConstraintSet.END, idView, posView, sdp2px(disView))
             conSet.setVisibility(R.id.warSelection, seleVis)
             TransitionManager.beginDelayedTransition(warBar)
-            acti.runOnUiThread { conSet.applyTo(warBar) }
+            acti?.runOnUiThread { conSet.applyTo(warBar) }
             if (choice > 0) refreshList(choice)
         }
     }
 
     fun updateLoading(cur: Int, max: Int) {
         val percent = cur * 100 / max
-        acti.runOnUiThread {
+        acti?.runOnUiThread {
             decorate(loadView, "... " +
                     percent + "%", size[0])
         }
@@ -365,15 +364,15 @@ class WarStatistics : Fragment() {
     }
 
     private inner class PlayerView(val frame: View) {
-        val name: MagicTextView = null
-        val score: MagicTextView = null
-        val norma: MagicTextView = null
-        val tag: MagicTextView = null
-        val troph: MagicTextView = null
-        val wars: MagicTextView = null
-        val missed: MagicTextView = null
-        val cards: MagicTextView = null
-        val ratio: MagicTextView = null
+        var name = MagicTextView(context)
+        var score = MagicTextView(context)
+        var norma = MagicTextView(context)
+        var tag = MagicTextView(context)
+        var troph = MagicTextView(context)
+        var wars = MagicTextView(context)
+        var missed = MagicTextView(context)
+        var cards = MagicTextView(context)
+        var ratio = MagicTextView(context)
 
     }
 

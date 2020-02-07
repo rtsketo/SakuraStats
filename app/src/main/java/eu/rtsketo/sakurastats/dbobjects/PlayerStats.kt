@@ -15,7 +15,7 @@ class PlayerStats {
     var curPlay = 0
     var ratio = 0.0
     var norma = 0.0
-    var isCurrent = false
+    var current = false
     var missed = 0
     var cards = 0
     var wars = 0

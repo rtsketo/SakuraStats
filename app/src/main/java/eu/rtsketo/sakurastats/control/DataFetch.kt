@@ -569,6 +569,7 @@ class DataFetch(private val acti: Interface) {
             acti.setLastUse(tag)
             return clanList
         }
+
         return db?.getClanStatsList(tag)
     }
 
@@ -598,7 +599,7 @@ class DataFetch(private val acti: Interface) {
         } else ps = db!!.getPlayerStats(member.tag)
 
         return ps.apply {
-            isCurrent = true
+            current = true
             db?.insertPlayerStats(this)
         }
     }
@@ -616,7 +617,7 @@ class DataFetch(private val acti: Interface) {
             for (member in members) {
                 val player = getPlayerStats(tag, member, force)
                 player?.apply {
-                    isCurrent = true
+                    current = true
                     players.add(this)
                 }
             }
@@ -657,7 +658,7 @@ class DataFetch(private val acti: Interface) {
         player.name = member.name
         player.tag = member.tag
         player.clan = clanTag
-        player.isCurrent = true
+        player.current = true
         val playerDB = db?.getPlayerStats(member.tag)
         var missed = playerDB?.missed ?: 0
         var played = playerDB?.played ?: 0
@@ -777,7 +778,7 @@ class DataFetch(private val acti: Interface) {
         newPlayer.wars = 0
         newPlayer.curPlay = 0
         newPlayer.curWins = 0
-        newPlayer.isCurrent = false
+        newPlayer.current = false
         newPlayer.ratio = 0.0
         newPlayer.norma = .5
         newPlayer.missed = 0

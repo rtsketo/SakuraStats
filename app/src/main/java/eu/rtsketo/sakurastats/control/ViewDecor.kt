@@ -15,7 +15,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import com.qwerjk.better_text.MagicTextView
 import eu.rtsketo.sakurastats.R
-import eu.rtsketo.sakurastats.hashmaps.SDPMap
+import eu.rtsketo.sakurastats.hashmaps.SDPMap.Companion.sdp2px
 
 object ViewDecor {
     private lateinit var tf: Typeface
@@ -72,14 +72,16 @@ object ViewDecor {
         tv.text = txt
         tv.typeface = tf
         tv.setTextColor(color)
-        tv.setStroke(Math.max(SDPMap.Companion.sdp2px(1) - 2.toFloat(), .8f), Color.BLACK)
-        tv.addOuterShadow(Math.max(SDPMap.Companion.sdp2px(1) - 2.toFloat(), .8f),
-                Math.max(SDPMap.Companion.sdp2px(1) - 2.toFloat(), .8f), Math.max(SDPMap.Companion.sdp2px(2) - 2.toFloat(), .8f), Color.BLACK)
+        tv.setStroke((sdp2px(1) - 2.toFloat()).coerceAtLeast(.8f), Color.BLACK)
+        tv.addOuterShadow(
+                (sdp2px(1) - 2.toFloat()).coerceAtLeast(.8f),
+                (sdp2px(1) - 2.toFloat()).coerceAtLeast(.8f),
+                (sdp2px(2) - 2.toFloat()).coerceAtLeast(.8f), Color.BLACK)
         tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, size)
         tv.measure(0, 0)
         if (maxWidth > 0) {
             val width = tv.measuredWidth.toFloat()
-            if (width > SDPMap.Companion.sdp2px(maxWidth)) return decorate(tv, txt,
+            if (width > sdp2px(maxWidth)) return decorate(tv, txt,
                     (size - .5).toFloat(), color, maxWidth)
         }
         return tv

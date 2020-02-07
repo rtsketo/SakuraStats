@@ -31,7 +31,7 @@ import kotlinx.android.synthetic.main.fragment_activity.*
 import java.util.*
 
 class PlayerActivity : Fragment() {
-    val info = MagicTextView(context)
+    private lateinit var info: MagicTextView
 
     var loading = false
         set(loading) {
@@ -96,6 +96,26 @@ class PlayerActivity : Fragment() {
     private val observers = BooleanArray(2)
     private val playerView = arrayListOf<PlayerView>()
     private var size = intArrayOf(SDPMap.sdp2px(6), SDPMap.sdp2px(9))
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        info = MagicTextView(context)
+        info.textAlignment = TEXT_ALIGNMENT_CENTER
+        sortTime.setOnClickListener { v -> bounceButton(v); selectSort(1) }
+        sortSMC.setOnClickListener { v -> bounceButton(v); selectSort(2) }
+        sortLege.setOnClickListener { v -> bounceButton(v); selectSort(3) }
+        sortMagi.setOnClickListener { v -> bounceButton(v); selectSort(4) }
+
+        loadingAnim.setOnClickListener { v->
+            acti?.apply {
+                ViewDecor.bounce(v, this)
+                Service.getThread().start(
+                        this.lastClan, force = true, tab = false)
+            }
+        }
+
+        initFrames()
+    }
 
     fun psObserver(): Observer<PlayerStats> {
         return object : Observer<PlayerStats> {
@@ -230,24 +250,8 @@ class PlayerActivity : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?
                               , savedInstanceState: Bundle?): View? {
-        val root = inflater.inflate(R.layout.fragment_activity,
+        return inflater.inflate(R.layout.fragment_activity,
                 container, false)
-
-        info.textAlignment = TEXT_ALIGNMENT_CENTER
-        sortTime.setOnClickListener { v -> bounceButton(v); selectSort(1) }
-        sortSMC.setOnClickListener { v -> bounceButton(v); selectSort(2) }
-        sortLege.setOnClickListener { v -> bounceButton(v); selectSort(3) }
-        sortMagi.setOnClickListener { v -> bounceButton(v); selectSort(4) }
-
-        loadingAnim.setOnClickListener { v->
-            acti?.apply {
-                ViewDecor.bounce(v, this)
-                Service.getThread().start(
-                        this.lastClan, force = true, tab = false)
-            }
-        }
-        initFrames()
-        return root
     }
 
     private fun bounceButton(v: View) {

@@ -1,6 +1,7 @@
 package eu.rtsketo.sakurastats.main
 
 import android.app.Activity
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.SystemClock.sleep
 import android.view.View.*
@@ -24,13 +25,14 @@ import eu.rtsketo.sakurastats.fragments.Prognostics
 import eu.rtsketo.sakurastats.fragments.WarStatistics
 import eu.rtsketo.sakurastats.hashmaps.PlayerMap
 import eu.rtsketo.sakurastats.hashmaps.SDPMap
+import eu.rtsketo.sakurastats.hashmaps.SDPMap.Companion.sdp2px
 import kotlinx.android.synthetic.main.activity_interface.*
 import kotlinx.android.synthetic.main.fragment_prognose.*
 import java.util.*
 
 class Interface : AppCompatActivity() {
+    private lateinit var preferences: SharedPreferences
     private val tab = arrayListOf<MagicTextView>()
-    private val preferences = getPreferences(Activity.MODE_PRIVATE)
     private var actiFrag: PlayerActivity? = null
     private var warFrag: WarStatistics? = null
     private var settiFrag: AppSettings? = null
@@ -54,6 +56,7 @@ class Interface : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val mSectionsPagerAdapter = SectionsPagerAdapter(supportFragmentManager)
+        preferences = getPreferences(Activity.MODE_PRIVATE)
         setContentView(R.layout.activity_interface)
         viewPager.adapter = mSectionsPagerAdapter
         viewPager.addOnPageChangeListener(pageChangeListener)
@@ -84,7 +87,7 @@ class Interface : AppCompatActivity() {
                 runOnUiThread {
                     DialogView(SakuraDialog.INPUT, this)
             } else Service.getThread(this)
-                    .start(lastClan, false, true)
+                    .start(lastClan, force = false, tab = true)
         }
     }
 
@@ -102,9 +105,10 @@ class Interface : AppCompatActivity() {
     private fun initTabs() {
         for (c in 0..3) getTab(c)
                 .setOnClickListener { changeTabTo(c) }
-        tab[0] = tab1; tab[1] = tab2
-        tab[2] = tab3; tab[3] = tab4
-        val size: Int = SDPMap.Companion.sdp2px(7)
+        tab.add(tab1); tab.add(tab2)
+        tab.add(tab3); tab.add(tab4)
+
+        val size = sdp2px(7)
         decorate(tab[0], "Forecast", size.toFloat())
         decorate(tab[1], "Analytics", size.toFloat())
         decorate(tab[2], "Activity", size.toFloat())

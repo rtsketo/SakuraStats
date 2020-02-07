@@ -2,8 +2,7 @@ package eu.rtsketo.sakurastats.main
 
 import android.annotation.SuppressLint
 import android.util.Log
-import android.view.View
-import eu.rtsketo.sakurastats.control.DAObject
+import android.view.View.VISIBLE
 import eu.rtsketo.sakurastats.control.DataFetch
 import eu.rtsketo.sakurastats.control.DataRoom
 import eu.rtsketo.sakurastats.control.ThreadPool
@@ -13,6 +12,7 @@ import eu.rtsketo.sakurastats.hashmaps.PlayerMap
 import eu.rtsketo.sakurastats.hashmaps.SiteMap
 import jcrapi.model.Member
 import jcrapi.model.TopClan
+import kotlinx.android.synthetic.main.fragment_prognose.*
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.CountDownLatch
@@ -69,7 +69,7 @@ class Service private constructor(private val acti: Interface) {
         val pm: PlayerMap = PlayerMap.instance
         val db= DataRoom.instance?.dao
         acti.runOnUiThread {
-            acti.getProgFrag().console.visibility = View.VISIBLE
+            acti.getProgFrag().console?.visibility = VISIBLE
         }
         acti.getProgFrag().removeViews()
         SiteMap.clearPages()
@@ -147,7 +147,7 @@ class Service private constructor(private val acti: Interface) {
         try {
             latch.await()
         } catch (e: InterruptedException) {
-            Log.e(Interface.Companion.TAG, "Latch failed", e)
+            Log.e(Interface.TAG, "Latch failed", e)
             Thread.currentThread().interrupt()
         }
     }
@@ -172,5 +172,4 @@ class Service private constructor(private val acti: Interface) {
             return bth as Service
         }
     }
-
 }

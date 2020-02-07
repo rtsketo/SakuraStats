@@ -1,6 +1,5 @@
 package eu.rtsketo.sakurastats.fragments
 
-import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
@@ -18,6 +17,7 @@ import eu.rtsketo.sakurastats.control.ViewDecor.decorate
 import eu.rtsketo.sakurastats.hashmaps.SDPMap
 import eu.rtsketo.sakurastats.main.Interface
 import eu.rtsketo.sakurastats.main.Service
+import kotlinx.android.synthetic.main.fragment_settings.view.*
 
 class AppSettings : Fragment() {
     private val db= DataRoom.instance?.dao
@@ -33,41 +33,41 @@ class AppSettings : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val frag = inflater.inflate(R.layout.fragment_settings, container, false)
-        val clanLabel: MagicTextView = frag.findViewById(R.id.settingsClanLabel)
-        clanName[0] = frag.findViewById(R.id.settingsClanName1)
-        clanName[1] = frag.findViewById(R.id.settingsClanName2)
-        clanName[2] = frag.findViewById(R.id.settingsClanName3)
-        clanName[3] = frag.findViewById(R.id.settingsClanName4)
-        clanName[4] = frag.findViewById(R.id.settingsClanName5)
-        clanBadge[0] = frag.findViewById(R.id.settingsClanBadge1)
-        clanBadge[1] = frag.findViewById(R.id.settingsClanBadge2)
-        clanBadge[2] = frag.findViewById(R.id.settingsClanBadge3)
-        clanBadge[3] = frag.findViewById(R.id.settingsClanBadge4)
-        clanBadge[4] = frag.findViewById(R.id.settingsClanBadge5)
-        clanEdit[0] = frag.findViewById(R.id.settingsClanEdit1)
-        clanEdit[1] = frag.findViewById(R.id.settingsClanEdit2)
-        clanEdit[2] = frag.findViewById(R.id.settingsClanEdit3)
-        clanEdit[3] = frag.findViewById(R.id.settingsClanEdit4)
-        clanEdit[4] = frag.findViewById(R.id.settingsClanEdit5)
-        clanSele[0] = frag.findViewById(R.id.settingsClanSelect1)
-        clanSele[1] = frag.findViewById(R.id.settingsClanSelect2)
-        clanSele[2] = frag.findViewById(R.id.settingsClanSelect3)
-        clanSele[3] = frag.findViewById(R.id.settingsClanSelect4)
-        clanSele[4] = frag.findViewById(R.id.settingsClanSelect5)
+        frag.settingsClanName1?.let { clanName.add(it) }
+        frag.settingsClanName2?.let { clanName.add(it) }
+        frag.settingsClanName3?.let { clanName.add(it) }
+        frag.settingsClanName4?.let { clanName.add(it) }
+        frag.settingsClanName5?.let { clanName.add(it) }
+        frag.settingsClanBadge1?.let { clanBadge.add(it) }
+        frag.settingsClanBadge2?.let { clanBadge.add(it) }
+        frag.settingsClanBadge3?.let { clanBadge.add(it) }
+        frag.settingsClanBadge4?.let { clanBadge.add(it) }
+        frag.settingsClanBadge5?.let { clanBadge.add(it) }
+        frag.settingsClanEdit1?.let { clanEdit.add(it) }
+        frag.settingsClanEdit2?.let { clanEdit.add(it) }
+        frag.settingsClanEdit3?.let { clanEdit.add(it) }
+        frag.settingsClanEdit4?.let { clanEdit.add(it) }
+        frag.settingsClanEdit5?.let { clanEdit.add(it) }
+        frag.settingsClanSelect1?.let { clanSele.add(it) }
+        frag.settingsClanSelect2?.let { clanSele.add(it) }
+        frag.settingsClanSelect3?.let { clanSele.add(it) }
+        frag.settingsClanSelect4?.let { clanSele.add(it) }
+        frag.settingsClanSelect5?.let { clanSele.add(it) }
+
         val size: Int = SDPMap.Companion.sdp2px(7)
-        decorate(clanLabel, "Stored Clans", SDPMap.Companion.sdp2px(9).toFloat())
-        decorate(frag.findViewById(R.id.settingsLegend), "Legend", SDPMap.Companion.sdp2px(9).toFloat())
-        decorate(frag.findViewById(R.id.settingsSupport), "Support", SDPMap.Companion.sdp2px(9).toFloat())
-        decorate(frag.findViewById(R.id.settingsLegend1), "The current number of won battles.", size.toFloat())
-        decorate(frag.findViewById(R.id.settingsLegend2), "The estimated battles that might be won in this war, based on the statistics of each player.", size.toFloat())
-        decorate(frag.findViewById(R.id.settingsLegend3), "A score based on the current levels of the cards each player has. From zero to over 9000!", size.toFloat())
-        decorate(frag.findViewById(R.id.settingsLegend4), "Normalized win ratio of final battles of each player. Everyone starts at 50%.", size.toFloat())
-        decorate(frag.findViewById(R.id.settingsLegend5), "The chances of the clan getting one or more wins than the estimated.", size.toFloat())
-        decorate(frag.findViewById(R.id.settingsLegend6), "The number of wars the player has participated in.", size.toFloat())
-        decorate(frag.findViewById(R.id.settingsLegend7), "The number of final battles the player has missed.", size.toFloat())
-        decorate(frag.findViewById(R.id.settingsLegend8), "The best war chest a player has acquired in this season.", size.toFloat())
-        decorate(frag.findViewById(R.id.settingsLegend9), "The actual win ratio of a player. It starts as 0%.", size.toFloat())
-        decorate(frag.findViewById(R.id.settingsSupportText), "Suggest new ideas!\n\nRequest a feature or\nreport any issue to GitHub.", size.toFloat())
+        frag.settingsClanLabel?.let { decorate(it, "Stored Clans", SDPMap.Companion.sdp2px(9).toFloat()) }
+        frag.settingsLegend?.let { decorate(it, "Legend", SDPMap.Companion.sdp2px(9).toFloat()) }
+        frag.settingsSupport?.let { decorate(it, "Support", SDPMap.Companion.sdp2px(9).toFloat()) }
+        frag.settingsLegend1?.let { decorate(it, "The current number of won battles.", size.toFloat()) }
+        frag.settingsLegend2?.let { decorate(it, "The estimated battles that might be won in this war, based on the statistics of each player.", size.toFloat()) }
+        frag.settingsLegend3?.let { decorate(it, "A score based on the current levels of the cards each player has. From zero to over 9000!", size.toFloat()) }
+        frag.settingsLegend4?.let { decorate(it, "Normalized win ratio of final battles of each player. Everyone starts at 50%.", size.toFloat()) }
+        frag.settingsLegend5?.let { decorate(it, "The chances of the clan getting one or more wins than the estimated.", size.toFloat()) }
+        frag.settingsLegend6?.let { decorate(it, "The number of wars the player has participated in.", size.toFloat()) }
+        frag.settingsLegend7?.let { decorate(it, "The number of final battles the player has missed.", size.toFloat()) }
+        frag.settingsLegend8?.let { decorate(it, "The best war chest a player has acquired in this season.", size.toFloat()) }
+        frag.settingsLegend9?.let { decorate(it, "The actual win ratio of a player. It starts as 0%.", size.toFloat()) }
+        frag.settingsSupportText?.let { decorate(it, "Suggest new ideas!\n\nRequest a feature or\nreport any issue to GitHub.", size.toFloat()) }
         refreshStored()
         for (c in 0..4) {
             clanSele[c].setOnClickListener { view ->
@@ -78,8 +78,9 @@ class AppSettings : Fragment() {
             clanEdit[c].setOnClickListener {
                 DialogView(SakuraDialog.INPUT, c, acti as Interface) }
         }
-        frag.findViewById<View>(R.id.settingsSupportGitHub)
-                .setOnClickListener { v: View -> reportIssue(v.context) }
+
+        frag.settingsSupportGitHub
+                ?.setOnClickListener { v: View -> reportIssue(v.context) }
         return frag
     }
 
