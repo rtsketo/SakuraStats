@@ -25,16 +25,19 @@ import eu.rtsketo.sakurastats.hashmaps.PlayerMap
 import eu.rtsketo.sakurastats.hashmaps.SDPMap.Companion.sdp2px
 import eu.rtsketo.sakurastats.main.Console
 import eu.rtsketo.sakurastats.main.Interface
+import eu.rtsketo.sakurastats.main.Interface.Companion.TAG
 import eu.rtsketo.sakurastats.main.Service
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_warstats.*
+import kotlinx.android.synthetic.main.fragment_warstats.view.*
 import java.util.*
 
-class WarStatistics : Fragment() {
+class WarStatistics: Fragment() {
+    private val playerView = arrayListOf<PlayerView>()
+    private val maxy = intArrayOf(112, 62)
     private val size = intArrayOf(sdp2px(9), sdp2px(8))
     private var playerMap = mutableMapOf<String, PlayerView>()
-    private val playerView = arrayListOf<PlayerView>()
     private val observers = BooleanArray(2)
     private lateinit var info: MagicTextView
     private var acti: Interface? = null
@@ -93,40 +96,22 @@ class WarStatistics : Fragment() {
 
     fun psObserver(): Observer<PlayerStats> {
         return object : Observer<PlayerStats> {
-            override fun onSubscribe(d: Disposable) {
-                subscribe(0)
-            }
-
-            override fun onNext(ps: PlayerStats) {
-                displayStats(ps)
-            }
-
-            override fun onComplete() {
-                complete(0)
-            }
-
+            override fun onSubscribe(d: Disposable) { subscribe(0) }
+            override fun onNext(ps: PlayerStats) { displayStats(ps) }
+            override fun onComplete() { complete(0) }
             override fun onError(e: Throwable) {
-                Log.e(Interface.Companion.TAG, "PS Observer failed", e)
+                Log.e(TAG, "PS Observer failed", e)
             }
         }
     }
 
     fun cpObserver(): Observer<ClanPlayer> {
         return object : Observer<ClanPlayer> {
-            override fun onSubscribe(d: Disposable) {
-                subscribe(1)
-            }
-
-            override fun onNext(cp: ClanPlayer) {
-                displayStats(cp)
-            }
-
-            override fun onComplete() {
-                complete(1)
-            }
-
+            override fun onSubscribe(d: Disposable) { subscribe(1) }
+            override fun onNext(cp: ClanPlayer) { displayStats(cp) }
+            override fun onComplete() { complete(1) }
             override fun onError(e: Throwable) {
-                Log.e(Interface.Companion.TAG, "CP Observer failed", e)
+                Log.e(TAG, "CP Observer failed", e)
             }
         }
     }
@@ -135,7 +120,7 @@ class WarStatistics : Fragment() {
         observers[obs] = true
         if (!observers[1 - obs]) {
             acti?.runOnUiThread {
-                acti!!.changeTabTo(1)
+//                acti!!.changeTabTo(1)
                 info.visibility = VISIBLE
             }
             loading = true
@@ -190,21 +175,6 @@ class WarStatistics : Fragment() {
         return pv
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        info = MagicTextView(context)
-        info.textAlignment = TEXT_ALIGNMENT_CENTER
-        sortTroph.setOnClickListener { v -> bounceButton(v); selectSort(1) }
-        sortScore.setOnClickListener { v -> bounceButton(v); selectSort(2) }
-        sortRatio.setOnClickListener { v -> bounceButton(v); selectSort(3) }
-        loadingAnim.setOnClickListener { v ->
-            acti?.lastClan?.let { Service.getThread()
-                .start(it, force = true, tab = false) }
-            bounceButton(v)
-        }
-        initFrames()
-    }
-
     fun refreshList(choice: Int) {
         val pm: PlayerMap = PlayerMap.instance
         loading = true
@@ -256,21 +226,35 @@ class WarStatistics : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_warstats, container, false)
+        val view = inflater.inflate(R.layout.fragment_warstats, container, false)
+        info = MagicTextView(context)
+        info.textAlignment = TEXT_ALIGNMENT_CENTER
+        view.sortTroph.setOnClickListener { v -> bounceButton(v); selectSort(1) }
+        view.sortScore.setOnClickListener { v -> bounceButton(v); selectSort(2) }
+        view.sortRatio.setOnClickListener { v -> bounceButton(v); selectSort(3) }
+        view.loadingAnim.setOnClickListener { v ->
+            acti?.lastClan?.let { Service.getThread()
+                    .start(it, force = true, tab = false) }
+            bounceButton(v)
+        }
+
+        initFrames(view)
+        return view
     }
 
-    private fun initFrames() {
+    private fun initFrames(view: View) {
         acti?.runOnUiThread {
-            decorate(sort, "Sort by:", size[0])
-            decorate(loadView, "Loading...", size[0])
+            decorate(view.sort, "Sort by:", size[0])
+            decorate(view.loadView, "Loading...", size[0])
             decorate(info, "\nStats are being loaded," +
                     " please wait...\n", size[0] + 2.toFloat())
-            lineage.addView(info)
+            view.lineage.addView(info)
         }
-        for (c in playerView.indices) {
+
+        for(c in 0..50) {
             val frame = LayoutInflater.from(acti)
                     .inflate(R.layout.frame_warstats, null)
-            playerView[c] = PlayerView(frame)
+            playerView.add(PlayerView(frame))
             val bgFrame = frame.findViewById<ImageView>(R.id.frameBG2)
             if (c % 2 == 1) bgFrame.setImageResource(R.drawable.background_2)
             playerView[c].troph = frame.findViewById(R.id.trophies)
@@ -298,11 +282,11 @@ class WarStatistics : Fragment() {
                         Color.WHITE, maxy[0])
                 decorate(playerView[c].tag, "         " +
                         "      ", size[1].toFloat(), Color.WHITE, maxy[1])
-                lineage.addView(frame)
+                view.lineage.addView(frame)
             }
         }
 
-        acti?.let { ViewDecor.rotate(warSelection, it) }
+        acti?.let { ViewDecor.rotate(view.warSelection, it) }
         selectSort(0)
     }
 
@@ -363,7 +347,7 @@ class WarStatistics : Fragment() {
         }
     }
 
-    private inner class PlayerView(val frame: View) {
+    inner class PlayerView(val frame: View) {
         var name = MagicTextView(context)
         var score = MagicTextView(context)
         var norma = MagicTextView(context)
@@ -373,10 +357,9 @@ class WarStatistics : Fragment() {
         var missed = MagicTextView(context)
         var cards = MagicTextView(context)
         var ratio = MagicTextView(context)
-
     }
 
     companion object {
-        private val maxy = intArrayOf(112, 62)
+        val instance = WarStatistics()
     }
 }

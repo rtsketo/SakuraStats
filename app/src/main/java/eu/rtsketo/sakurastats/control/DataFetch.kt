@@ -49,8 +49,8 @@ class DataFetch(private val acti: Interface) {
     }
 
     private fun caught(e: Exception) {
-        Log.w(Interface.TAG, "Data fetching failed!", e)
-        Console.logln("Fetch failed!")
+//        Log.w(Interface.TAG, "Data fetching failed!", e)
+//        Console.logln("Fetch failed!")
         acti.badConnection()
     }
 

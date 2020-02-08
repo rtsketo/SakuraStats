@@ -8,7 +8,6 @@ import eu.rtsketo.sakurastats.dbobjects.ClanPlayer
 import eu.rtsketo.sakurastats.dbobjects.PlayerStats
 import eu.rtsketo.sakurastats.main.Interface
 import io.reactivex.subjects.ReplaySubject
-import java.util.*
 
 class PlayerMap private constructor(private val acti: Interface) {
     private var playerMap = mutableMapOf<String, Pair<ClanPlayer, PlayerStats>>()
@@ -45,9 +44,10 @@ class PlayerMap private constructor(private val acti: Interface) {
 
     fun reset(size: Int) {
         synchronized(PlayerMap::class.java) {
-            if (playerMap != null) playerMap.clear() else playerMap = HashMap(size)
+            playerMap.clear()
             this.size = size
         }
+
         val wFrag = acti.getWarFrag()
         val aFrag = acti.getActiFrag()
         psSub = ReplaySubject.create()

@@ -3,7 +3,6 @@ package eu.rtsketo.sakurastats.main
 import android.app.Activity
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.os.SystemClock.sleep
 import android.view.View.*
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
@@ -27,25 +26,27 @@ import eu.rtsketo.sakurastats.hashmaps.PlayerMap
 import eu.rtsketo.sakurastats.hashmaps.SDPMap
 import eu.rtsketo.sakurastats.hashmaps.SDPMap.Companion.sdp2px
 import kotlinx.android.synthetic.main.activity_interface.*
+import kotlinx.android.synthetic.main.fragment_activity.*
 import kotlinx.android.synthetic.main.fragment_prognose.*
+import kotlinx.android.synthetic.main.fragment_prognose.view.*
+import kotlinx.android.synthetic.main.fragment_warstats.*
 import java.util.*
 
 class Interface : AppCompatActivity() {
+    private lateinit var sectionsPagerAdapter: SectionsPagerAdapter
     private lateinit var preferences: SharedPreferences
     private val tab = arrayListOf<MagicTextView>()
-    private var actiFrag: PlayerActivity? = null
-    private var warFrag: WarStatistics? = null
-    private var settiFrag: AppSettings? = null
-    private var progFrag: Prognostics? = null
 
-    inner class SectionsPagerAdapter internal constructor(fm: FragmentManager) : FragmentPagerAdapter(fm) {
+
+    inner class SectionsPagerAdapter internal constructor(fm: FragmentManager)
+        : FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
         override fun getCount() = 4
         override fun getItem(pos: Int): Fragment {
             return when (pos) {
-                0 -> Prognostics()
-                1 -> WarStatistics()
-                2 -> PlayerActivity()
-                else -> AppSettings()
+                0 -> Prognostics.instance
+                1 -> WarStatistics.instance
+                2 -> PlayerActivity.instance
+                else -> AppSettings.instance
             }
         }
     }
@@ -55,10 +56,10 @@ class Interface : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val mSectionsPagerAdapter = SectionsPagerAdapter(supportFragmentManager)
+        sectionsPagerAdapter = SectionsPagerAdapter(supportFragmentManager)
         preferences = getPreferences(Activity.MODE_PRIVATE)
         setContentView(R.layout.activity_interface)
-        viewPager.adapter = mSectionsPagerAdapter
+        viewPager.adapter = sectionsPagerAdapter
         viewPager.addOnPageChangeListener(pageChangeListener)
         viewPager.offscreenPageLimit = 4
         supportActionBar?.hide()
@@ -71,15 +72,15 @@ class Interface : AppCompatActivity() {
         super.onCreate(savedInstanceState)
     }
 
-    override fun onAttachFragment(frag: Fragment) {
-        when (frag) {
-            is PlayerActivity -> actiFrag = frag
-            is WarStatistics -> warFrag = frag
-            is AppSettings -> settiFrag = frag
-            is Prognostics -> progFrag = frag
-        }
-        super.onAttachFragment(frag)
-    }
+//    override fun onAttachFragment(frag: Fragment) {
+//        when (frag) {
+//            is PlayerActivity -> actiFrag = frag
+//            is WarStatistics -> warFrag = frag
+//            is AppSettings -> settiFrag = frag
+//            is Prognostics -> progFrag = frag
+//        }
+//        super.onAttachFragment(frag)
+//    }
 
     private fun startApp() {
         ThreadPool.cachePool.execute {
@@ -209,25 +210,22 @@ class Interface : AppCompatActivity() {
         tab[num].visibility = VISIBLE
     }
 
-    var pageChangeListener: OnPageChangeListener = object : OnPageChangeListener {
+    private var pageChangeListener: OnPageChangeListener = object: OnPageChangeListener {
         override fun onPageScrolled(i: Int, v: Float, i1: Int) {}
-        override fun onPageSelected(i: Int) {
-            changeTab(i)
-        }
-
+        override fun onPageSelected(i: Int) { changeTab(i) }
         override fun onPageScrollStateChanged(i: Int) {}
     }
 
     fun badConnection() {
-        if (warFrag != null && actiFrag != null && progFrag != null) {
             runOnUiThread {
-                if (warFrag?.loading == true)
+                if (getWarFrag().loading)
                     warFrag?.wifi?.visibility = VISIBLE
-                if (actiFrag?.loading == true)
+                if (getActiFrag().loading)
                     actiFrag?.wifi?.visibility = VISIBLE
                 progFrag?.wifi?.visibility = VISIBLE
                 progFrag?.wifiOp?.visibility = VISIBLE
             }
+
             val timer = Timer()
             timer.schedule(object : TimerTask() {
                 override fun run() {
@@ -239,40 +237,14 @@ class Interface : AppCompatActivity() {
                     }
                 }
             }, 1500)
-        }
     }
 
-    override fun onBackPressed() {
-        moveTaskToBack(true)
-    }
-
-    fun getWarFrag(): WarStatistics {
-        while (warFrag == null) sleep(50)
-        waitForView(warFrag!!)
-        return warFrag as WarStatistics
-    }
-
-    fun getActiFrag(): PlayerActivity {
-        while (actiFrag == null) sleep(50)
-        waitForView(actiFrag!!)
-        return actiFrag as PlayerActivity
-    }
-
-    fun getProgFrag(): Prognostics {
-        while (progFrag == null) sleep(50)
-        waitForView(progFrag!!)
-        return progFrag as Prognostics
-    }
-
-    fun getSettiFrag(): AppSettings {
-        while (settiFrag == null) sleep(500)
-        waitForView(settiFrag!!)
-        return settiFrag as AppSettings
-    }
-
-    private fun waitForView(frag: Fragment) {
-        while (frag.view == null) sleep(500)
-    }
+    fun getWarFrag()= getFrag(1) as WarStatistics
+    fun getActiFrag() = getFrag(2) as PlayerActivity
+    fun getProgFrag() = getFrag(0) as Prognostics
+    fun getSettiFrag() = getFrag(3) as AppSettings
+    private fun getFrag(pos: Int) = sectionsPagerAdapter.getItem(pos)
+    override fun onBackPressed() { moveTaskToBack(true) }
 
     companion object {
         const val TAG = "eu.rtsketo.sakurastats"

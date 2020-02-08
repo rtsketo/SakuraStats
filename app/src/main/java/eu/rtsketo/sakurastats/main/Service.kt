@@ -13,6 +13,7 @@ import eu.rtsketo.sakurastats.hashmaps.SiteMap
 import jcrapi.model.Member
 import jcrapi.model.TopClan
 import kotlinx.android.synthetic.main.fragment_prognose.*
+import kotlinx.android.synthetic.main.fragment_prognose.view.*
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.CountDownLatch
@@ -69,7 +70,7 @@ class Service private constructor(private val acti: Interface) {
         val pm: PlayerMap = PlayerMap.instance
         val db= DataRoom.instance?.dao
         acti.runOnUiThread {
-            acti.getProgFrag().console?.visibility = VISIBLE
+            acti.progFrag?.console?.visibility = VISIBLE
         }
         acti.getProgFrag().removeViews()
         SiteMap.clearPages()
@@ -104,14 +105,14 @@ class Service private constructor(private val acti: Interface) {
         }
         waitLatch(psLatch)
         ps.reverse()
-        Console.Companion.logln(" \nFetching member stats...")
+        Console.logln(" \nFetching member stats...")
         val cpLatch = CountDownLatch(ps.size)
         for (playerStats in ps) ThreadPool.fixedPool.execute {
             if (!stop && playerStats != null) {
                 val pTag = playerStats.tag
                 val clanPlayer = df.getPlayerProfile(pTag, force)
-                Console.Companion.logln("\t\t" +
-                        Console.Companion.convertRole(clanPlayer.role)
+                Console.logln("\t\t" +
+                        Console.convertRole(clanPlayer.role)
                         + "\t\t" + playerStats.name)
                 pm.put(pTag, clanPlayer)
                 cp.add(clanPlayer)
@@ -121,7 +122,7 @@ class Service private constructor(private val acti: Interface) {
         }
         waitLatch(cpLatch)
         acti.getWarFrag().loading = false
-        Console.Companion.logln(" \nFetching member activity...")
+        Console.logln(" \nFetching member activity...")
         val acLatch = CountDownLatch(cp.size)
         @SuppressLint("SimpleDateFormat") val sdf = SimpleDateFormat("MM/dd HH:mm")
         for (tempPlayer in cp) ThreadPool.fixedPool.execute {

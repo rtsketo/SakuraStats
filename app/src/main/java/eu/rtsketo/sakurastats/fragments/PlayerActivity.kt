@@ -267,10 +267,10 @@ class PlayerActivity : Fragment() {
             lila.addView(info)
         }
 
-        for (c in playerView.indices) {
+        for (c in 0..50) {
             val frame = LayoutInflater.from(acti)
                     .inflate(R.layout.frame_activity, null)
-            playerView[c] = PlayerView(frame)
+            playerView.add(PlayerView(frame))
             val bgFrame = frame.findViewById<ImageView>(R.id.frameBG3)
             if (c % 2 == 1) bgFrame.setImageResource(R.drawable.background_2)
             playerView[c].warChest = frame.findViewById(R.id.magicalImage)
@@ -421,5 +421,9 @@ class PlayerActivity : Fragment() {
         var magi = MagicTextView(context)
         var lege = MagicTextView(context)
         var smc = MagicTextView(context)
+    }
+
+    companion object {
+        val instance = PlayerActivity()
     }
 }

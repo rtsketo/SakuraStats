@@ -25,9 +25,6 @@ import eu.rtsketo.sakurastats.hashmaps.SDPMap.Companion.sdp2px
 import eu.rtsketo.sakurastats.main.Console
 import eu.rtsketo.sakurastats.main.Interface
 import kotlinx.android.synthetic.main.fragment_prognose.*
-import kotlinx.android.synthetic.main.fragment_prognose.loadView
-import kotlinx.android.synthetic.main.fragment_prognose.loadingAnim
-import kotlinx.android.synthetic.main.fragment_warstats.*
 import java.util.*
 import kotlin.math.roundToInt
 
@@ -128,8 +125,8 @@ class Prognostics : Fragment() {
             info.textAlignment = View.TEXT_ALIGNMENT_CENTER
             more.textAlignment = View.TEXT_ALIGNMENT_CENTER
             acti?.runOnUiThread {
-                lineage?.addView(info)
-                lineage?.addView(more)
+                warClanList?.addView(info)
+                warClanList?.addView(more)
             }
         }
 
@@ -137,7 +134,7 @@ class Prognostics : Fragment() {
     }
 
     fun removeViews() {
-        acti?.runOnUiThread { lineage?.removeAllViews() }
+        acti?.runOnUiThread { warClanList?.removeAllViews() }
     }
 
     private fun addClan(clan: ClanStats) {
@@ -167,7 +164,7 @@ class Prognostics : Fragment() {
         acti?.resources?.getIdentifier(clan.badge,
                 "drawable", acti?.packageName)
                 ?.let { badge.setImageResource(it) }
-        acti?.runOnUiThread { lineage?.addView(frame) }
+        acti?.runOnUiThread { warClanList?.addView(frame) }
     }
 
     internal inner class SortByPrediction : Comparator<ClanStats> {
@@ -175,5 +172,9 @@ class Prognostics : Fragment() {
             return ((b.estimatedWins + b.extraWins) * 100
                     - (a.estimatedWins + a.extraWins) * 100).toInt()
         }
+    }
+
+    companion object {
+        val instance = Prognostics()
     }
 }

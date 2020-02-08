@@ -151,4 +151,8 @@ class AppSettings : Fragment() {
                 .guestToken(APIDevKey.gitKey)
                 .launch(context)
     }
+
+    companion object {
+        val instance = AppSettings()
+    }
 }

@@ -37,10 +37,19 @@ object SiteMap {
     fun getCWPage(tag: String): Document {
         if (pageMap.containsKey("CWPage$tag"))
             return pageMap["CWPage$tag"]!!
-        val page = "https://royaleapi.com/inc/player/cw_history/$tag"
+
+        val pPage = "https://royaleapi.com/player/9R9JY2UQ"
+        Log.v("SiteFetch", pPage)
+        val wholePage = getPage(pPage).toString()
+        val token = "let TOKEN = '.*';".toRegex()
+                .find(wholePage)?.value
+                ?.split("'")?.get(1)
+                ?: "ohsnap"
+
+        val cwPage = "https://royaleapi.com/inc/player/cw_history/$tag?token=$token"
         permissionToFetch
-        Log.v("SiteFetch", page)
-        val clanURL = URL(page).openConnection()
+        Log.v("SiteFetch", cwPage)
+        val clanURL = URL(cwPage).openConnection()
         clanURL.setRequestProperty("Accept", "*/*")
         clanURL.setRequestProperty("Referer", "https://royaleapi.com/player/$tag")
         clanURL.setRequestProperty("X-Requested-With", "XMLHttpRequest")
@@ -49,7 +58,7 @@ object SiteMap {
         clanURL.setRequestProperty("Sec-Fetch-Mode", "cors")
         clanURL.connect()
         val input = clanURL.getInputStream()
-        val doc = Jsoup.parse(input, "UTF-8", page)
+        val doc = Jsoup.parse(input, "UTF-8", cwPage)
         pageMap["CWPage$tag"] = doc
         input.close()
         return doc
