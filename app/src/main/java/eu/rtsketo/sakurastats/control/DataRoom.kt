@@ -9,7 +9,7 @@ import eu.rtsketo.sakurastats.dbobjects.ClanStats
 import eu.rtsketo.sakurastats.dbobjects.PlayerStats
 import eu.rtsketo.sakurastats.dbobjects.WarDay
 
-@Database(entities = [WarDay::class, PlayerStats::class, ClanStats::class, ClanPlayer::class], exportSchema = false, version = 1)
+@Database(entities = [WarDay::class, PlayerStats::class, ClanStats::class, ClanPlayer::class], exportSchema = false, version = 2)
 abstract class DataRoom : RoomDatabase() {
     abstract val dao: DAObject
 
@@ -19,7 +19,9 @@ abstract class DataRoom : RoomDatabase() {
 
         fun init(context: Context) {
             instance = Room.databaseBuilder(context.applicationContext,
-                    DataRoom::class.java, "sakuradb").build()
+                    DataRoom::class.java, "sakuradb")
+                    .fallbackToDestructiveMigration()
+                    .build()
         }
     }
 }

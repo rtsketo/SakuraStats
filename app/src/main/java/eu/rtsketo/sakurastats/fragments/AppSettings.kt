@@ -54,7 +54,7 @@ class AppSettings : Fragment() {
         frag.settingsClanSelect4?.let { clanSele.add(it) }
         frag.settingsClanSelect5?.let { clanSele.add(it) }
 
-        val size: Int = SDPMap.Companion.sdp2px(7)
+        val size: Int = SDPMap.sdp2px(7)
         frag.settingsClanLabel?.let { decorate(it, "Stored Clans", SDPMap.Companion.sdp2px(9).toFloat()) }
         frag.settingsLegend?.let { decorate(it, "Legend", SDPMap.Companion.sdp2px(9).toFloat()) }
         frag.settingsSupport?.let { decorate(it, "Support", SDPMap.Companion.sdp2px(9).toFloat()) }
