@@ -120,9 +120,9 @@ class WarStatistics: Fragment() {
         observers[obs] = true
         if (!observers[1 - obs]) {
             acti?.runOnUiThread {
-//                acti!!.changeTabTo(1)
                 info.visibility = VISIBLE
             }
+
             loading = true
             clearList()
         }

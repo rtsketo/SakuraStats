@@ -87,6 +87,7 @@
             android:id="@+id/tag"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="@string/three_qm"
             app:layout_constraintBottom_toBottomOf="@+id/trohpyImage"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/trohpyImage" />
@@ -99,6 +100,7 @@
             android:shadowDx="0"
             android:shadowDy="0"
             android:shadowRadius="6"
+            android:text="@string/nine_qm"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
@@ -110,6 +112,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/_2sdp"
             android:layout_marginEnd="@dimen/_6sdp"
+            android:text="@string/three_qm"
             app:layout_constraintBottom_toBottomOf="@+id/trohpyImage"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
@@ -147,6 +150,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/_3sdp"
+            android:text="@string/three_qm"
             app:layout_constraintBottom_toBottomOf="@+id/scoreImage"
             app:layout_constraintStart_toEndOf="@+id/scoreImage"
             app:layout_constraintTop_toTopOf="@+id/scoreImage" />
@@ -156,6 +160,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/_2sdp"
+            android:text="@string/one_qm"
             app:layout_constraintBottom_toBottomOf="@+id/warImage"
             app:layout_constraintStart_toEndOf="@+id/warImage"
             app:layout_constraintTop_toTopOf="@+id/warImage" />
@@ -164,6 +169,7 @@
             android:id="@+id/cards"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="@string/three_qm"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@+id/cardImage"
             app:layout_constraintStart_toEndOf="@+id/cardImage"
@@ -186,6 +192,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/_2sdp"
+            android:text="@string/one_qm"
             app:layout_constraintBottom_toBottomOf="@+id/missedImage"
             app:layout_constraintStart_toEndOf="@+id/missedImage"
             app:layout_constraintTop_toTopOf="@+id/missedImage" />
@@ -253,6 +260,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/_8sdp"
+            android:text="@string/one_qm"
             app:layout_constraintBottom_toBottomOf="@+id/ratioImage"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/ratioImage" />
@@ -262,6 +270,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/_3sdp"
+            android:text="@string/three_qm"
             app:layout_constraintBottom_toBottomOf="@+id/normaImage"
             app:layout_constraintStart_toEndOf="@+id/normaImage"
             app:layout_constraintTop_toTopOf="@+id/normaImage" />

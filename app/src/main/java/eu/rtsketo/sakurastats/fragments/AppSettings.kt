@@ -72,10 +72,11 @@ class AppSettings : Fragment() {
         refreshStored()
         for (c in 0..4) {
             clanSele[c].setOnClickListener { view ->
-                acti?.apply {
-                    ViewDecor.bounce(view, acti!!) }
+                acti?.let {
+                    ViewDecor.bounce(view, it)  }
                 selectClan(c)
             }
+
             clanEdit[c].setOnClickListener {
                 DialogView(SakuraDialog.INPUT, c, acti as Interface) }
         }
@@ -86,7 +87,9 @@ class AppSettings : Fragment() {
     }
 
     fun selectClan(c: Int) {
-        acti?.runOnUiThread { setSelect(false) }
+        acti?.runOnUiThread {
+            setSelect(false)
+            acti?.changeTabTo(0)  }
         val cTag = acti?.getStoredClan(c) ?: ""
         if (cTag.isNotEmpty()) {
             Service.getThread().start(cTag, force = false, tab = true)
@@ -111,26 +114,27 @@ class AppSettings : Fragment() {
                         acti?.getStoredClan(c) ?: "")
 
                 acti?.runOnUiThread {
-                if (button) {
-                    clanSele[c].isEnabled = true
-                    clanSele[c].colorFilter = null
+                    if (button) {
+                        clanSele[c].isEnabled = true
+                        clanSele[c].colorFilter = null
+                    }
+
+                    if (clan != null) {
+                        decorate(clanName[c], clan.name, size.toFloat())
+                        if (clan.badge.isNotEmpty())
+                            Picasso.get().load(clan.badge).into(clanBadge[c])
+                    } else {
+                        decorate(clanName[c], "#" +
+                                acti?.getStoredClan(c), size.toFloat(), Color.LTGRAY)
+                        clanBadge[c].setImageResource(R.drawable.no_clan)
+                    }
                 }
-                if (clan != null) {
-                    decorate(clanName[c], clan.name, size.toFloat())
-                    if (clan.badge.isNotEmpty())
-                        Picasso.get().load(clan.badge).into(clanBadge[c])
-                } else {
-                    decorate(clanName[c], "#" +
-                            acti?.getStoredClan(c), size.toFloat(), Color.LTGRAY)
-                    clanBadge[c].setImageResource(R.drawable.no_clan)
-                }
+            } else acti?.runOnUiThread {
+                clanSele[c].isEnabled = false
+                clanSele[c].setColorFilter(Color.argb(100, 200, 200, 200))
+                if (c < 5) decorate(clanName[c], "Edit to Add a Clan", sdp2px(8).toFloat(), Color.LTGRAY)
+                else decorate(clanName[c], "Not yet Available!", sdp2px(6).toFloat(), Color.GRAY)
             }
-        } else acti?.runOnUiThread {
-            clanSele[c].isEnabled = false
-            clanSele[c].setColorFilter(Color.argb(100, 200, 200, 200))
-            if (c < 5) decorate(clanName[c], "Edit to Add a Clan", sdp2px(8).toFloat(), Color.LTGRAY)
-            else decorate(clanName[c], "Not yet Available!", sdp2px(6).toFloat(), Color.GRAY)
-        }
     }
 
     fun refreshStored() {
