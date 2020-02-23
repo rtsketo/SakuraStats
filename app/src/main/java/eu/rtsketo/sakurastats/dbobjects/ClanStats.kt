@@ -21,5 +21,4 @@ class ClanStats {
     var clan2 = ""
     var clan3 = ""
     var clan4 = ""
-
 }

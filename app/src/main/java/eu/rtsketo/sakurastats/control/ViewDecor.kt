@@ -20,8 +20,8 @@ import eu.rtsketo.sakurastats.hashmaps.SDPMap.Companion.sdp2px
 object ViewDecor {
     private lateinit var tf: Typeface
     fun init(res: Resources) {
-        tf = Typeface.createFromAsset(res.assets,
-                "fonts/Supercell-Magic_5.ttf")
+        tf = Typeface.createFromAsset(res.assets, "" +
+                "fonts/somefont.ttf")
     }
 
     fun animateView(view: ImageView, animate: Boolean) {

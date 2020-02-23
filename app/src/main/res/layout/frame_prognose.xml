@@ -69,7 +69,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/cherry_blossom_04"
         tools:ignore="ContentDescription" />
 
     <com.qwerjk.better_text.MagicTextView

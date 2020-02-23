@@ -215,11 +215,10 @@ class DataFetch(private val acti: Interface) {
                     else "collectionDay"
             clanWar.state = warState
             val namae = doc.selectFirst(".p_head_item .header").ownText()
-            var badge = doc.selectFirst(".attached .floated")
-                    .attr("data-cfsrc").toLowerCase(Locale.ROOT)
-            badge = badge.split("/").toTypedArray()[badge.split("/").toTypedArray().size - 1].split("\\.").toTypedArray()[0]
+            val badge = doc.selectFirst(".attached .floated")
+                    .attr("src").split("?")[0]
             val clanBadge = Badge()
-            clanBadge.name = badge
+            clanBadge.name = "https://royaleapi.com$badge"
             clan.badge = clanBadge
             clan.name = namae
             clan.tag = tag
@@ -456,12 +455,10 @@ class DataFetch(private val acti: Interface) {
         val clan = clanWar.clan
         val clanStats = ClanStats()
         clanStats.state = clanWar.state
-        clanStats.badge = clan.badge
-                .name.toLowerCase()
+        clanStats.badge = clan.badge.name
         clanStats.name = ""
         clanStats.tag = tag
-        Console.Companion.logln("\t\tClan... \t"
-                + clan.name)
+        Console.logln("\t\tClan... \t" + clan.name)
         clanStats.crowns = 0
         clanStats.remaining = 0
         clanStats.actualWins = 0

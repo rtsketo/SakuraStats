@@ -10,11 +10,12 @@ import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import com.heinrichreimersoftware.androidissuereporter.IssueReporterLauncher
 import com.qwerjk.better_text.MagicTextView
+import com.squareup.picasso.Picasso
 import eu.rtsketo.sakurastats.R
 import eu.rtsketo.sakurastats.control.*
 import eu.rtsketo.sakurastats.control.DialogView.SakuraDialog
 import eu.rtsketo.sakurastats.control.ViewDecor.decorate
-import eu.rtsketo.sakurastats.hashmaps.SDPMap
+import eu.rtsketo.sakurastats.hashmaps.SDPMap.Companion.sdp2px
 import eu.rtsketo.sakurastats.main.Interface
 import eu.rtsketo.sakurastats.main.Service
 import kotlinx.android.synthetic.main.fragment_settings.view.*
@@ -54,10 +55,10 @@ class AppSettings : Fragment() {
         frag.settingsClanSelect4?.let { clanSele.add(it) }
         frag.settingsClanSelect5?.let { clanSele.add(it) }
 
-        val size: Int = SDPMap.sdp2px(7)
-        frag.settingsClanLabel?.let { decorate(it, "Stored Clans", SDPMap.Companion.sdp2px(9).toFloat()) }
-        frag.settingsLegend?.let { decorate(it, "Legend", SDPMap.Companion.sdp2px(9).toFloat()) }
-        frag.settingsSupport?.let { decorate(it, "Support", SDPMap.Companion.sdp2px(9).toFloat()) }
+        val size: Int = sdp2px(7)
+        frag.settingsClanLabel?.let { decorate(it, "Stored Clans", sdp2px(9).toFloat()) }
+        frag.settingsLegend?.let { decorate(it, "Legend", sdp2px(9).toFloat()) }
+        frag.settingsSupport?.let { decorate(it, "Support", sdp2px(9).toFloat()) }
         frag.settingsLegend1?.let { decorate(it, "The current number of won battles.", size.toFloat()) }
         frag.settingsLegend2?.let { decorate(it, "The estimated battles that might be won in this war, based on the statistics of each player.", size.toFloat()) }
         frag.settingsLegend3?.let { decorate(it, "A score based on the current levels of the cards each player has. From zero to over 9000!", size.toFloat()) }
@@ -96,8 +97,8 @@ class AppSettings : Fragment() {
     private fun setSelect(sele: Boolean) {
         for (c in 0..4) {
             if (acti?.getStoredClan(c) != null) clanSele[c].isEnabled = sele
-            if (sele) clanSele[c].colorFilter = null else clanSele[c].setColorFilter(Color.argb(
-                    100, 200, 200, 200))
+            if (sele) clanSele[c].colorFilter = null else clanSele[c]
+                    .setColorFilter(Color.argb(100, 200, 200, 200))
         }
     }
 
@@ -105,7 +106,7 @@ class AppSettings : Fragment() {
     fun refreshStored(c: Int, button: Boolean = true) {
         if (acti?.getStoredClan(c) != null)
             ThreadPool.cachePool.execute {
-                val size: Int = SDPMap.Companion.sdp2px(9)
+                val size: Int = sdp2px(9)
                 val clan = db?.getClanStats(
                         acti?.getStoredClan(c) ?: "")
 
@@ -116,21 +117,19 @@ class AppSettings : Fragment() {
                 }
                 if (clan != null) {
                     decorate(clanName[c], clan.name, size.toFloat())
-                    acti?.resources?.getIdentifier(clan.badge,
-                                    "drawable", acti?.packageName)
-                            ?.let { clanBadge[c].setImageResource(it) }
+                    if (clan.badge.isNotEmpty())
+                        Picasso.get().load(clan.badge).into(clanBadge[c])
                 } else {
                     decorate(clanName[c], "#" +
                             acti?.getStoredClan(c), size.toFloat(), Color.LTGRAY)
                     clanBadge[c].setImageResource(R.drawable.no_clan)
                 }
             }
-        } else {
-            acti?.runOnUiThread {
-                clanSele[c].setColorFilter(Color.argb(100, 200, 200, 200))
-                clanSele[c].isEnabled = false
-                if (c < 5) decorate(clanName[c], "Edit to Add a Clan", SDPMap.Companion.sdp2px(8).toFloat(), Color.LTGRAY) else decorate(clanName[c], "Not yet Available!", SDPMap.Companion.sdp2px(6).toFloat(), Color.GRAY)
-            }
+        } else acti?.runOnUiThread {
+            clanSele[c].isEnabled = false
+            clanSele[c].setColorFilter(Color.argb(100, 200, 200, 200))
+            if (c < 5) decorate(clanName[c], "Edit to Add a Clan", sdp2px(8).toFloat(), Color.LTGRAY)
+            else decorate(clanName[c], "Not yet Available!", sdp2px(6).toFloat(), Color.GRAY)
         }
     }
 
@@ -138,7 +137,7 @@ class AppSettings : Fragment() {
         for (c in 0..4) refreshStored(c)
     }
 
-    fun reportIssue(context: Context) {
+    private fun reportIssue(context: Context) {
         IssueReporterLauncher.forTarget("rtsketo", "SakuraStats")
                 .putExtraInfo("Clan_Tag_1", acti?.getStoredClan(0))
                 .putExtraInfo("Clan_Tag_2", acti?.getStoredClan(1))

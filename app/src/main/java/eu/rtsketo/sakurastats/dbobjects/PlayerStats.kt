@@ -20,5 +20,4 @@ class PlayerStats {
     var cards = 0
     var wars = 0
     var chest = 0
-
 }

@@ -50,8 +50,7 @@ class Service private constructor(private val acti: Interface) {
                     tp.addAll(df.topClans)
                     for (clan in tp) {
                         val cTag = clan.tag
-                        Console.Companion.logln("\t\t\t\t\t\t-\t\t"
-                                + clan.name)
+                        Console.Companion.logln("\t\t\t\t\t\t-\t\t" + clan.name)
                         if (df.getClanWar(cTag).state == "warDay") {
                             acti.lastClan = cTag
                             collectData(cTag)
