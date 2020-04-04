@@ -115,16 +115,16 @@ class Prognostics : Fragment() {
         acti?.runOnUiThread { console.visibility = View.GONE }
         if (clans.size == 5)
             clans.sortedWith(SortByPrediction()).forEach { addClan(it) }
-        else {
-            val info = MagicTextView(acti)
-            val more = MagicTextView(acti)
+        else acti?.also {
+            val info = MagicTextView(it)
+            val more = MagicTextView(it)
             val params = LayoutParams(MATCH_PARENT, WRAP_CONTENT)
             info.layoutParams = params; more.layoutParams = params
             decorate(info, "The clan isn't currently in War\n\n\n\n\n\n\n\n\n", sdp2px(10).toFloat())
             decorate(more, "Stats can't be refreshed in less than 15min", sdp2px(8).toFloat())
             info.textAlignment = View.TEXT_ALIGNMENT_CENTER
             more.textAlignment = View.TEXT_ALIGNMENT_CENTER
-            acti?.runOnUiThread {
+            it.runOnUiThread {
                 warClanList?.addView(info)
                 warClanList?.addView(more)
             }

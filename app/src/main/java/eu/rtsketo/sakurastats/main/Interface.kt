@@ -6,8 +6,6 @@ import android.os.Bundle
 import android.view.View.*
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.qwerjk.better_text.MagicTextView
@@ -69,6 +67,8 @@ class Interface : AppCompatActivity() {
         DataRoom.init(this)
         initTabs()
         startApp()
+
+        println("HELLOOLOOLOLO ${System.getenv("GITHUB")}")
         super.onCreate(savedInstanceState)
     }
 
