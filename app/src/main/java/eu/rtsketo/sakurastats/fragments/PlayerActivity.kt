@@ -168,6 +168,9 @@ class PlayerActivity : Fragment() {
         if (!observers[1 - obs]) loading = false
     }
 
+    private fun chestCheck(num: Int)
+            = if (num < 0) "--" else num.toString()
+
     private fun displayStats(ps: PlayerStats? = null, cp: ClanPlayer? = null) {
         val tagString: String = ps?.tag ?: cp?.tag ?: ""
         val maxy = 140
@@ -181,8 +184,8 @@ class PlayerActivity : Fragment() {
             val lastBattle = lastBattleText(cp.last)
             acti?.runOnUiThread {
                 decorate(pv.role, "#" + cp.tag, size[1])
-                decorate(pv.lege, cp.legendary, size[1])
-                decorate(pv.smc, cp.smc, size[1])
+                decorate(pv.lege, chestCheck(cp.legendary), size[1])
+                decorate(pv.smc, chestCheck(cp.smc), size[1])
                 decorate(pv.time, lastBattle, size[1])
                 pv.frame.visibility = VISIBLE
             }

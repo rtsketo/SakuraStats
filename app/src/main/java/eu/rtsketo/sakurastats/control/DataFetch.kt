@@ -80,7 +80,7 @@ class DataFetch(private val acti: Interface) {
                     val playerTag = clan.replace("#", "")
                     if (playerTag != tag) {
                         val member = Member()
-                        val selector = "a[href='/player/$playerTag']"
+                        val selector = "a[href='/spy/player/$playerTag']"
                         val ele = doc.selectFirst(selector)
                         val playerName = ele.ownText()
                         member.name = playerName
@@ -193,12 +193,12 @@ class DataFetch(private val acti: Interface) {
         }
     }
 
-    private fun extractNum(ele: Element): String {
-        val chestNum: String =
-                if (ele.ownText() == "") "0"
-                else ele.ownText()
-        return chestNum.replace("+", "")
-    }
+    private fun extractNum(ele: Element?) =
+        ele?.run {
+            if (ele.ownText() == "") "0"
+            else ele.ownText()
+                    .replace("+",
+                            "") } ?: "-1"
 
     fun getClanWar(tag: String): ClanWar {
         return try {
