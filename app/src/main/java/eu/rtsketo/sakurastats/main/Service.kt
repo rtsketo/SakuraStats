@@ -50,8 +50,7 @@ class Service private constructor(private val acti: Interface) {
                     tp.addAll(df.topClans)
                     for (clan in tp) {
                         val cTag = clan.tag
-                        Console.Companion.logln("\t\t\t\t\t\t-\t\t"
-                                + clan.name)
+                        Console.Companion.logln("\t\t\t\t\t\t-\t\t" + clan.name)
                         if (df.getClanWar(cTag).state == "warDay") {
                             acti.lastClan = cTag
                             collectData(cTag)
@@ -156,7 +155,8 @@ class Service private constructor(private val acti: Interface) {
     private fun updateLoading(cur: Int, max: Int) {
         val warMax = 2 * max
         val actMax = 3 * max
-        if (cur < warMax) acti.getWarFrag().updateLoading(cur, warMax)
+        if (cur < warMax)
+            acti.getWarFrag().updateLoading(cur, warMax)
         acti.getActiFrag().updateLoading(cur, actMax)
     }
 
@@ -169,7 +169,9 @@ class Service private constructor(private val acti: Interface) {
         }
 
         fun getThread(acti: Interface): Service {
-            if (bth == null || getThread().acti != acti) bth = Service(acti)
+            if (bth == null ||
+                    getThread().acti != acti)
+                bth = Service(acti)
             return bth as Service
         }
     }

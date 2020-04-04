@@ -69,6 +69,8 @@ class Interface : AppCompatActivity() {
         DataRoom.init(this)
         initTabs()
         startApp()
+
+        println("HELLOOLOOLOLO ${System.getenv("GITHUB")}")
         super.onCreate(savedInstanceState)
     }
 
@@ -198,10 +200,10 @@ class Interface : AppCompatActivity() {
         editor.apply()
     }
 
-    fun getStoredClan(index: Int): String {
-        return preferences.getString(
-                "StoredClan$index",
-                "") ?: ""
+    fun getStoredClan(index: Int): String? {
+        val tag = preferences.getString(
+                "StoredClan$index", "") ?: ""
+        return if (tag.isEmpty()) null else tag
     }
 
     private fun changeTab(num: Int) {
@@ -211,9 +213,9 @@ class Interface : AppCompatActivity() {
     }
 
     private var pageChangeListener: OnPageChangeListener = object: OnPageChangeListener {
-        override fun onPageScrolled(i: Int, v: Float, i1: Int) {}
+        override fun onPageScrolled(i: Int, v: Float, i1: Int) = Unit
+        override fun onPageScrollStateChanged(i: Int) = Unit
         override fun onPageSelected(i: Int) { changeTab(i) }
-        override fun onPageScrollStateChanged(i: Int) {}
     }
 
     fun badConnection() {

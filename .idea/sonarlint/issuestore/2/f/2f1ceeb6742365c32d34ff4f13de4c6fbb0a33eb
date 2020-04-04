@@ -1,0 +1,11 @@
+
+pkotlin:S3776„"RRefactor this method to reduce its Cognitive Complexity from 21 to the 15 allowed.(ÛÀ†Äúÿÿÿÿ
+Ekotlin:S1144",Remove this unused private "lastWin" method.(Œ¬†
+kkotlin:S3776®"RRefactor this method to reduce its Cognitive Complexity from 45 to the 15 allowed.(¸‹ë›
+kkotlin:S1192í"RDefine a constant instead of duplicating this literal "td:nth-child(2) a" 4 times.(ı£âª
+Gkotlin:S11723"*Remove this unused function parameter "e".(İÃ£€ıÿÿÿÿ
+kkotlin:S3776ó"RRefactor this method to reduce its Cognitive Complexity from 29 to the 15 allowed.(ş§æè
+kkotlin:S3776Œ"RRefactor this method to reduce its Cognitive Complexity from 60 to the 15 allowed.(¿õ­ç
+Gkotlin:S1144Œ".Remove this unused private "getPlayer" method.(¿õ­ç
+;kotlin:S1254"Remove this commented out code.( æÇŠıÿÿÿÿ
+ckotlin:S1192<"LDefine a constant instead of duplicating this literal ".text-muted" 4 times.(˜×ı

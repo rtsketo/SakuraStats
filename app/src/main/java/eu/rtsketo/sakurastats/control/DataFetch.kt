@@ -80,7 +80,7 @@ class DataFetch(private val acti: Interface) {
                     val playerTag = clan.replace("#", "")
                     if (playerTag != tag) {
                         val member = Member()
-                        val selector = "a[href='/player/$playerTag']"
+                        val selector = "a[href='/spy/player/$playerTag']"
                         val ele = doc.selectFirst(selector)
                         val playerName = ele.ownText()
                         member.name = playerName
@@ -193,12 +193,12 @@ class DataFetch(private val acti: Interface) {
         }
     }
 
-    private fun extractNum(ele: Element): String {
-        val chestNum: String =
-                if (ele.ownText() == "") "0"
-                else ele.ownText()
-        return chestNum.replace("+", "")
-    }
+    private fun extractNum(ele: Element?) =
+        ele?.run {
+            if (ele.ownText() == "") "0"
+            else ele.ownText()
+                    .replace("+",
+                            "") } ?: "-1"
 
     fun getClanWar(tag: String): ClanWar {
         return try {
@@ -215,11 +215,10 @@ class DataFetch(private val acti: Interface) {
                     else "collectionDay"
             clanWar.state = warState
             val namae = doc.selectFirst(".p_head_item .header").ownText()
-            var badge = doc.selectFirst(".attached .floated")
-                    .attr("data-cfsrc").toLowerCase(Locale.ROOT)
-            badge = badge.split("/").toTypedArray()[badge.split("/").toTypedArray().size - 1].split("\\.").toTypedArray()[0]
+            val badge = doc.selectFirst(".attached .floated")
+                    .attr("src").split("?")[0]
             val clanBadge = Badge()
-            clanBadge.name = badge
+            clanBadge.name = "https://royaleapi.com$badge"
             clan.badge = clanBadge
             clan.name = namae
             clan.tag = tag
@@ -456,12 +455,10 @@ class DataFetch(private val acti: Interface) {
         val clan = clanWar.clan
         val clanStats = ClanStats()
         clanStats.state = clanWar.state
-        clanStats.badge = clan.badge
-                .name.toLowerCase()
+        clanStats.badge = clan.badge.name
         clanStats.name = ""
         clanStats.tag = tag
-        Console.Companion.logln("\t\tClan... \t"
-                + clan.name)
+        Console.logln("\t\tClan... \t" + clan.name)
         clanStats.crowns = 0
         clanStats.remaining = 0
         clanStats.actualWins = 0

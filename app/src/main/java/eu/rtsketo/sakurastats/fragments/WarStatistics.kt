@@ -34,12 +34,12 @@ import kotlinx.android.synthetic.main.fragment_warstats.view.*
 import java.util.*
 
 class WarStatistics: Fragment() {
-    private val playerView = arrayListOf<PlayerView>()
-    private val maxy = intArrayOf(112, 62)
     private val size = intArrayOf(sdp2px(9), sdp2px(8))
     private var playerMap = mutableMapOf<String, PlayerView>()
+    private val playerView = arrayListOf<PlayerView>()
     private val observers = BooleanArray(2)
     private lateinit var info: MagicTextView
+    private val maxy = intArrayOf(112, 62)
     private var acti: Interface? = null
 
     var loading = false
@@ -62,10 +62,10 @@ class WarStatistics: Fragment() {
                 }
             else if (!loading && this.loading) {
                 acti?.runOnUiThread {
+                    info.visibility = GONE
                     sortRatio.isEnabled = true
                     sortScore.isEnabled = true
                     sortTroph.isEnabled = true
-                    info.visibility = GONE
                     sortRatio.colorFilter = null
                     sortScore.colorFilter = null
                     sortTroph.colorFilter = null
@@ -120,9 +120,9 @@ class WarStatistics: Fragment() {
         observers[obs] = true
         if (!observers[1 - obs]) {
             acti?.runOnUiThread {
-//                acti!!.changeTabTo(1)
                 info.visibility = VISIBLE
             }
+
             loading = true
             clearList()
         }
@@ -343,7 +343,7 @@ class WarStatistics: Fragment() {
 
     private inner class SortByRatio : Comparator<PlayerStats> {
         override fun compare(a: PlayerStats, b: PlayerStats): Int {
-            return (b.norma * 10000 - a.norma * 10000) as Int
+            return (b.norma * 10000 - a.norma * 10000).toInt()
         }
     }
 

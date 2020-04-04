@@ -14,6 +14,7 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import com.qwerjk.better_text.MagicTextView
+import com.squareup.picasso.Picasso
 import eu.rtsketo.sakurastats.R
 import eu.rtsketo.sakurastats.control.DataFetch
 import eu.rtsketo.sakurastats.control.DataRoom
@@ -66,7 +67,7 @@ class Prognostics : Fragment() {
         }
     }
 
-    fun setLoading(loading: Boolean) {
+    private fun setLoading(loading: Boolean) {
         val size = sdp2px(10)
         if (loading && !this.loading)
             acti?.runOnUiThread {
@@ -110,21 +111,20 @@ class Prognostics : Fragment() {
         this.loading = loading
     }
 
-    fun setStats(clans: List<ClanStats>) {
+    private fun setStats(clans: List<ClanStats>) {
         acti?.runOnUiThread { console.visibility = View.GONE }
         if (clans.size == 5)
-            clans.sortedWith(SortByPrediction())
-                    .forEach { addClan(it) }
-        else {
-            val info = MagicTextView(acti)
-            val more = MagicTextView(acti)
+            clans.sortedWith(SortByPrediction()).forEach { addClan(it) }
+        else acti?.also {
+            val info = MagicTextView(it)
+            val more = MagicTextView(it)
             val params = LayoutParams(MATCH_PARENT, WRAP_CONTENT)
             info.layoutParams = params; more.layoutParams = params
             decorate(info, "The clan isn't currently in War\n\n\n\n\n\n\n\n\n", sdp2px(10).toFloat())
             decorate(more, "Stats can't be refreshed in less than 15min", sdp2px(8).toFloat())
             info.textAlignment = View.TEXT_ALIGNMENT_CENTER
             more.textAlignment = View.TEXT_ALIGNMENT_CENTER
-            acti?.runOnUiThread {
+            it.runOnUiThread {
                 warClanList?.addView(info)
                 warClanList?.addView(more)
             }
@@ -161,10 +161,11 @@ class Prognostics : Fragment() {
         decorate(pone, "$plusOne%", sdp2px(6).toFloat())
         decorate(troph, clan.warTrophies, sdp2px(6).toFloat(),
                 Color.rgb(240, 179, 255))
-        acti?.resources?.getIdentifier(clan.badge,
-                "drawable", acti?.packageName)
-                ?.let { badge.setImageResource(it) }
-        acti?.runOnUiThread { warClanList?.addView(frame) }
+
+        acti?.runOnUiThread {
+            Picasso.get().load(clan.badge).into(badge)
+            warClanList?.addView(frame)
+        }
     }
 
     internal inner class SortByPrediction : Comparator<ClanStats> {

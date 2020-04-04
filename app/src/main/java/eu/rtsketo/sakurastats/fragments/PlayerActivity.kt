@@ -22,7 +22,7 @@ import eu.rtsketo.sakurastats.dbobjects.ClanPlayer
 import eu.rtsketo.sakurastats.dbobjects.PlayerStats
 import eu.rtsketo.sakurastats.hashmaps.LeagueMap
 import eu.rtsketo.sakurastats.hashmaps.PlayerMap
-import eu.rtsketo.sakurastats.hashmaps.SDPMap
+import eu.rtsketo.sakurastats.hashmaps.SDPMap.Companion.sdp2px
 import eu.rtsketo.sakurastats.main.Interface
 import eu.rtsketo.sakurastats.main.Service
 import io.reactivex.Observer
@@ -31,7 +31,13 @@ import kotlinx.android.synthetic.main.fragment_activity.*
 import java.util.*
 
 class PlayerActivity : Fragment() {
+    private var size = intArrayOf(sdp2px(6), sdp2px(9))
+    private var playerMap = mutableMapOf<String, PlayerView>()
+    private val playerView = arrayListOf<PlayerView>()
+    private val observers = BooleanArray(2)
     private lateinit var info: MagicTextView
+    private var acti: Interface? = null
+    private var maxChest = 0
 
     var loading = false
         set(loading) {
@@ -54,6 +60,7 @@ class PlayerActivity : Fragment() {
                     sortTime.setColorFilter(Color.argb(100, 200, 200, 200))
             } else if (!loading && this.loading) {
                 acti?.runOnUiThread {
+                    info.visibility = GONE
                     sortSMC.isEnabled = true
                     sortTime.isEnabled = true
                     sortMagi.isEnabled = true
@@ -62,7 +69,6 @@ class PlayerActivity : Fragment() {
                     sortMagi.colorFilter = null
                     sortLege.colorFilter = null
                     sortTime.colorFilter = null
-                    info.visibility = GONE
                     ViewDecor.animateView(loadingAnim, false)
                     ViewDecor.blinkView(acti!!.getTab(2), false)
                     loadingAnim.setImageResource(R.drawable.refresh)
@@ -72,30 +78,21 @@ class PlayerActivity : Fragment() {
                 val timer = Timer()
                 timer.schedule(object : TimerTask() {
                     override fun run() {
-                        acti?.apply {
-                            val refresh = 60 - getLastForce(2)
-                            if (refresh < 0) runOnUiThread {
-                                loadView.visibility = INVISIBLE
-                                loadingAnim.colorFilter = null
-                                loadingAnim.isEnabled = true
-                                timer.cancel()
-                            } else runOnUiThread {
-                                loadView.visibility = VISIBLE
-                                decorate(loadView, refresh.toString() + "min", size[1])
-                            }
+                        val refresh = 60 - (acti?.getLastForce(2) ?: 0)
+                        if (refresh < 0) acti?.runOnUiThread {
+                            loadView.visibility = INVISIBLE
+                            loadingAnim.colorFilter = null
+                            loadingAnim.isEnabled = true
+                            timer.cancel()
+                        } else acti?.runOnUiThread {
+                            loadView.visibility = VISIBLE
+                            decorate(loadView, refresh.toString() + "min", size[1])
                         }
                     }
                 }, 0, 60000)
             }
             field = loading
         }
-
-    private var acti: Interface? = null
-    private var maxChest = 0
-    private var playerMap = mutableMapOf<String, PlayerView>()
-    private val observers = BooleanArray(2)
-    private val playerView = arrayListOf<PlayerView>()
-    private var size = intArrayOf(SDPMap.sdp2px(6), SDPMap.sdp2px(9))
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -171,11 +168,13 @@ class PlayerActivity : Fragment() {
         if (!observers[1 - obs]) loading = false
     }
 
-    @JvmOverloads
+    private fun chestCheck(num: Int)
+            = if (num < 0) "--" else num.toString()
+
     private fun displayStats(ps: PlayerStats? = null, cp: ClanPlayer? = null) {
         val tagString: String = ps?.tag ?: cp?.tag ?: ""
         val maxy = 140
-        val size = intArrayOf(SDPMap.Companion.sdp2px(9), SDPMap.Companion.sdp2px(8))
+        val size = intArrayOf(sdp2px(9), sdp2px(8))
         val pv =
                 if (playerMap[tagString] == null)
                     getPV(tagString)
@@ -185,8 +184,8 @@ class PlayerActivity : Fragment() {
             val lastBattle = lastBattleText(cp.last)
             acti?.runOnUiThread {
                 decorate(pv.role, "#" + cp.tag, size[1])
-                decorate(pv.lege, cp.legendary, size[1])
-                decorate(pv.smc, cp.smc, size[1])
+                decorate(pv.lege, chestCheck(cp.legendary), size[1])
+                decorate(pv.smc, chestCheck(cp.smc), size[1])
                 decorate(pv.time, lastBattle, size[1])
                 pv.frame.visibility = VISIBLE
             }
@@ -324,7 +323,7 @@ class PlayerActivity : Fragment() {
             }
             conSet.clone(actiBar)
             conSet.connect(R.id.actiSelection,
-                    ConstraintSet.END, idView, posView, SDPMap.Companion.sdp2px(2))
+                    ConstraintSet.END, idView, posView, sdp2px(2))
             conSet.setVisibility(R.id.actiSelection, seleVis)
             TransitionManager.beginDelayedTransition(actiBar)
             acti?.runOnUiThread { conSet.applyTo(actiBar) }
@@ -332,7 +331,7 @@ class PlayerActivity : Fragment() {
         }
     }
 
-    fun refreshList(choice: Int) {
+    private fun refreshList(choice: Int) {
         val pm: PlayerMap = PlayerMap.instance
         loading = true
         clearList()
@@ -367,7 +366,7 @@ class PlayerActivity : Fragment() {
         loading = false
     }
 
-    fun clearList() {
+    private fun clearList() {
         playerMap.clear()
         acti?.runOnUiThread {
             for (pv in playerView)

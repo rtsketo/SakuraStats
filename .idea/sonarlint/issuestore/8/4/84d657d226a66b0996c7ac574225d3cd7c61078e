@@ -1,0 +1,24 @@
+
+[
+java:S1155~">Use isEmpty() to check whether the collection is empty or not.(èöºÅ8äòÂ¿‰.
+o
+java:S3776@"RRefactor this method to reduce its Cognitive Complexity from 28 to the 15 allowed.(¤¿—8äòÂ¿‰.
+v
+java:S2293B"YReplace the type specification in this constructor call with the diamond operator ("<>").(®´•˜8äòÂ¿‰.
+l
+java:S4201¾"IRemove this unnecessary null check; "instanceof" returns false for nulls.(Ùº ¤úÿÿÿÿ8äòÂ¿‰.
+`
+java:S1117t">Rename "strokeJoin" which hides the field declared at line 45.(ãµ–ğÿÿÿÿÿ8äòÂ¿‰.
+C	java:S131u""Add a default case to this switch.(ÉŞ‘ˆüÿÿÿÿ8äòÂ¿‰.
+{
+java:S2293D"YReplace the type specification in this constructor call with the diamond operator ("<>").(·Ä¢çùÿÿÿÿ8äòÂ¿‰.
+\
+java:S1117q"?Rename "strokeWidth" which hides the field declared at line 43.(€ê†8äòÂ¿‰.
+v
+java:S2293A"YReplace the type specification in this constructor call with the diamond operator ("<>").(ÌáÕ«8äòÂ¿‰.
+a
+java:S1117s"?Rename "strokeMiter" which hides the field declared at line 46.(ä­ÇÔşÿÿÿÿ8äòÂ¿‰.
+[
+java:S1155Ô">Use isEmpty() to check whether the collection is empty or not.(‘²”V8äòÂ¿‰.
+a
+java:S1117r"?Rename "strokeColor" which hides the field declared at line 44.(°ñ¼¾ıÿÿÿÿ8äòÂ¿‰.

@@ -2,4 +2,8 @@
     <string name="app_name">SakuraStats</string>
     <string name="title_activity_main">SakuraStats</string>
     <string name="title_activity_main_interface">SakuraStats</string>
+    <string name="nine_qm">\?????????</string>
+    <string name="six_qm">\??????</string>
+    <string name="three_qm">\???</string>
+    <string name="one_qm">\?</string>
 </resources>

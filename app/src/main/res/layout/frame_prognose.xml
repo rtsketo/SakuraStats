@@ -69,7 +69,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/cherry_blossom_04"
         tools:ignore="ContentDescription" />
 
     <com.qwerjk.better_text.MagicTextView
@@ -81,6 +80,7 @@
         android:layout_weight="1"
         android:gravity="end"
         android:padding="3dp"
+        android:text="@string/nine_qm"
         android:textAllCaps="false"
         android:textColor="@android:color/background_light"
         android:textStyle="bold"
@@ -98,6 +98,7 @@
         android:layout_marginStart="@dimen/_1sdp"
         android:layout_weight="1"
         android:padding="@dimen/_2sdp"
+        android:text="#??????"
         android:textColor="@android:color/white"
         app:layout_constraintBaseline_toBaselineOf="@+id/clanTrophies"
         app:layout_constraintStart_toEndOf="@+id/clanBadge" />
@@ -125,6 +126,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="@dimen/_2sdp"
+        android:text="@string/three_qm"
         android:textColor="@android:color/holo_purple"
         app:layout_constraintBottom_toBottomOf="@+id/warTrophy"
         app:layout_constraintStart_toEndOf="@+id/warTrophy"
@@ -146,6 +148,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="@dimen/_2sdp"
+            android:text="@string/one_qm"
             app:layout_constraintBottom_toBottomOf="@+id/sword"
             app:layout_constraintStart_toEndOf="@+id/sword"
             app:layout_constraintTop_toTopOf="@+id/sword" />
@@ -188,6 +191,7 @@
             android:layout_marginEnd="@dimen/_6sdp"
             android:layout_weight="1"
             android:padding="@dimen/_2sdp"
+            android:text="@string/three_qm"
             app:layout_constraintBottom_toBottomOf="@+id/uknown"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/uknown" />
@@ -210,6 +214,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="@dimen/_2sdp"
+            android:text="@string/one_qm"
             app:layout_constraintBottom_toBottomOf="@+id/plusOne"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/plusOne" />
@@ -230,6 +235,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="@dimen/_2sdp"
+            android:text="@string/one_qm"
             app:layout_constraintBottom_toBottomOf="@+id/crown"
             app:layout_constraintStart_toEndOf="@+id/crown"
             app:layout_constraintTop_toTopOf="@+id/crown" />
@@ -240,6 +246,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:padding="@dimen/_2sdp"
+            android:text="@string/three_qm"
             app:layout_constraintBottom_toBottomOf="@+id/winMedal"
             app:layout_constraintStart_toEndOf="@+id/winMedal"
             app:layout_constraintTop_toTopOf="@+id/winMedal" />

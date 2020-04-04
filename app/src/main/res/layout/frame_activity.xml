@@ -76,6 +76,7 @@
             android:shadowDx="0"
             android:shadowDy="0"
             android:shadowRadius="6"
+            android:text="@string/nine_qm"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -84,6 +85,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/_2sdp"
+            android:text="@string/six_qm"
             app:layout_constraintStart_toStartOf="@+id/namae"
             app:layout_constraintTop_toBottomOf="@+id/namae" />
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -105,6 +107,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/_2sdp"
+            android:text="@string/three_qm"
             app:layout_constraintBottom_toBottomOf="@+id/legendImage"
             app:layout_constraintStart_toEndOf="@+id/legendImage"
             app:layout_constraintTop_toTopOf="@+id/legendImage" />
@@ -114,6 +117,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/_2sdp"
+            android:text="@string/three_qm"
             app:layout_constraintBottom_toBottomOf="@+id/smcImage"
             app:layout_constraintStart_toEndOf="@+id/smcImage"
             app:layout_constraintTop_toTopOf="@+id/smcImage" />
@@ -123,6 +127,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/_1sdp"
+            android:text="@string/three_qm"
             app:layout_constraintBottom_toBottomOf="@+id/magicalImage"
             app:layout_constraintStart_toEndOf="@+id/magicalImage"
             app:layout_constraintTop_toTopOf="@+id/magicalImage" />
@@ -166,6 +171,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/_6sdp"
         android:layout_marginBottom="@dimen/_6sdp"
+        android:text="@string/three_qm"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/time" />
 
@@ -175,6 +181,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/_6sdp"
         android:layout_marginBottom="@dimen/_6sdp"
+        android:text="@string/three_qm"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
