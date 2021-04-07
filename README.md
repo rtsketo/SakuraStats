@@ -2,7 +2,7 @@
 <img src="https://i.imgur.com/UvZdoRj.png" height="256"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://i.imgur.com/KKm89AT.png" height="256"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://i.imgur.com/pyBMDuf.png" height="256"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="https://i.imgur.com/mAt0LnE.png" height="256"/>
 
 &nbsp;
-
+ 
 ### App Discription
 &nbsp;&nbsp;&nbsp;&nbsp;SakuraStats is an Android app that gathers players' stats of the same clan. You can use it for your clan to determine which players are performing well in Clan Wars, which of them still have low level cards and who are inactive.
 
