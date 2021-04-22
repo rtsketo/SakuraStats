@@ -58,7 +58,7 @@ dependencies {
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'org.apache.commons:commons-math3:3.6.1'
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'androidx.room:room-runtime:2.2.6'
+    implementation 'androidx.room:room-runtime:2.3.0'
     annotationProcessor 'androidx.room:room-compiler:2.2.6'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
